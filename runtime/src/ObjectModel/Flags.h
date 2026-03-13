@@ -76,10 +76,53 @@ constexpr U32 MODIFIER_ABSTRACT    = 0x1 << 9;
 constexpr U32 MODIFIER_SEALED      = 0x1 << 10;
 constexpr U32 MODIFIER_MUT         = 0x1 << 11;
 constexpr U32 MODIFIER_STATIC      = 0x1 << 12;
+
+// EnumKind0 contains three enum types:
+// 1. EXHAUSTIVE_ZERO_SIZE
+//    enum E { A }
+//    Memory layout of E.A: {}
+// 2. NON_EXHAUSTIVE_UNASSOCIATED
+//    enum E { A | B | ... }
+//    Memory layout of E.A: { i32 tag }
+// 3. EXHAUSITIVE_UNASSOCIATED
+//    enum E { A | B }
+//    Memory layout of E.A: { i32 tag }
 constexpr U32 MODIFIER_ENUM_KIND0  = 0x1 << 13;
+
+// EnumKind1 contains two enum types:
+// 1. NON_EXHAUSTIVE_ASSOCIATED
+//    enum E { A(Bool, Int64) | B(Int32) | C(Float32) | ... }
+// 2. EXHAUSTIVE_OTHER
+//    class C {}
+//    enum E { A(C, Int64) | B(Int32) | C(Float32) }
+// EnumKind1's memory layout is represented as an object.
+// The object header stores the constructor's TypeInfo,
+// and the object body stores this enum's tag and associated values.
+// The memory alignment rules are the same as Struct.
+// Memory layout of E.B(value): { E:1.ti, i32 tag, i32 value }
 constexpr U32 MODIFIER_ENUM_KIND1  = 0x1 << 14;
+
+// EnumKind2 contains three enum types:
+// 1. EXHAUSTIVE_ASSOCIATED_OPTION_LIKE_NOREF
+//    enum E { A(Int32) | B }
+//    Memory layout of E.A(value): { i1 tag, i32 value }
+//    Memory layout of E.B: { i1 tag, i32 0 }
+// 2. EXHAUSTIVE_ASSOCIATED_OPTION_LIKE_REF
+//    class C {}
+//    enum E { A(C) | B }
+//    Memory layout of E.A(value): { value }
+//    Memory layout of E.B: { nullptr }
+// 3. EXHAUSTIVE_ASSOCIATED_OPTION_LIKE_T
+//    enum E<T> { A(T) | B }
 constexpr U32 MODIFIER_ENUM_KIND2  = 0x1 << 15;
+
+
+// ENUMKIND3: EXHAUSTIVE_ASSOCIATED_NONREF
+// enum E { A(Bool, Int64) | B(Int8) | C(Float32) }
+// This type has no padding in its memory layout.
+// Memory layout of E.A(v1, v2): { i32 tag, i1 v1, i64 v2 }, offset: {0, 4, 5}
 constexpr U32 MODIFIER_ENUM_KIND3  = 0x1 << 16;
+
 constexpr U32 MODIFIER_HAS_SRET0   = 0x1 << 17; // has sret but it is'not generic'
 constexpr U32 MODIFIER_HAS_SRET1   = 0x1 << 18; // has sret and it is 'T'
 constexpr U32 MODIFIER_HAS_SRET2   = 0x1 << 19; // has sret and it is 'known struct T'
@@ -87,8 +130,15 @@ constexpr U32 MODIFIER_HAS_SRET3   = 0x1 << 20; // has sret and it is 'unknow st
 constexpr U32 MODIFIER_ENUM_CTOR   = 0x1 << 21;
 constexpr U32 MODIFIER_UNKNOWN_SIZE     = 0x1 << 22;
 constexpr U32 MODIFIER_ENUM_PARSED      = 0x1 << 23;
+
+// Reflection does not support enum, tuple, and function types.
 constexpr U32 MODIFIER_REFLECT_VER_BIT1 = 0x1 << 28;
+
+// Reflection supports enum, tuple, and function types,
+// but does not support getting enum constructor's annotations.
 constexpr U32 MODIFIER_REFLECT_VER_BIT2 = 0x1 << 29;
+
+// Reflection supports getting enum constructor annotations.
 constexpr U32 MODIFIER_REFLECT_VER_BIT3 = 0x1 << 30;
 constexpr U32 MODIFIER_INVALID     = 0x1 << 31;
 } // namespace MapleRuntime

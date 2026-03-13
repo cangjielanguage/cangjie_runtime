@@ -558,20 +558,7 @@ bool TypeInfoManager::IsEnumInfoReady(TypeTemplate* tt, TypeInfo* ti)
     if (ti->GetEnumInfo() != nullptr && ti->GetEnumInfo()->IsParsed()) {
         return true;
     }
-    if (tt->IsEnumCtor() && ti->GetReflectInfo() != nullptr) {
-        return true;
-    }
     return false;
-}
-
-void TypeInfoManager::HandleEnumCtorReflectInfo(TypeTemplate* tt, TypeInfo* ti)
-{
-    EnumCtorReflectInfo* ttEnumCtorInfo = tt->GetEnumCtorReflectInfo();
-    EnumCtorReflectInfo* enumCtorInfo =
-        reinterpret_cast<EnumCtorReflectInfo*>(Allocate(sizeof(EnumCtorReflectInfo)));
-    MapleRuntime::MemoryCopy(reinterpret_cast<Uptr>(enumCtorInfo), sizeof(EnumCtorReflectInfo),
-        reinterpret_cast<uintptr_t>(ttEnumCtorInfo), sizeof(EnumCtorReflectInfo));
-    ti->SetEnumCtorReflectInfo(enumCtorInfo);
 }
 
 EnumInfo* TypeInfoManager::AllocateEnumInfo(EnumInfo* ttEnumInfo)
@@ -579,6 +566,12 @@ EnumInfo* TypeInfoManager::AllocateEnumInfo(EnumInfo* ttEnumInfo)
     size_t enumInfoSize = sizeof(EnumInfo);
     enumInfoSize += ttEnumInfo->GetNumOfInstanceMethodInfos() * sizeof(DataRefOffset64<MethodInfo>);
     enumInfoSize += ttEnumInfo->GetNumOfStaticMethodInfos() * sizeof(DataRefOffset64<MethodInfo>);
+    // In early versions of enumInfo, there was no enum constructor's annotations field.
+    // To ensure compatibility, enum constructor's annotations are processed only when
+    // the reflect version is >= 2.
+    if (ttEnumInfo->GetReflectVersion() >= 2) {
+        enumInfoSize += ttEnumInfo->GetNumOfEnumCtor() * sizeof(Uptr);
+    }
     uintptr_t enumInfoAddr = Allocate(enumInfoSize);
     MapleRuntime::MemoryCopy(enumInfoAddr, enumInfoSize,
         reinterpret_cast<uintptr_t>(ttEnumInfo), enumInfoSize);
@@ -641,11 +634,7 @@ void TypeInfoManager::ParseEnumInfo(TypeTemplate* tt, U32 argSize, TypeInfo* arg
     return;
 #endif
     EnumInfo* ttEnumInfo = tt->GetEnumInfo();
-    if (ttEnumInfo == nullptr || IsEnumInfoReady(tt, ti)) {
-        return;
-    }
-    if (tt->IsEnumCtor() && ti->GetReflectInfo() == nullptr) {
-        HandleEnumCtorReflectInfo(tt, ti);
+    if (ttEnumInfo == nullptr || IsEnumInfoReady(tt, ti) || tt->IsEnumCtor()) {
         return;
     }
     if (!tt->ReflectIsEnable()) {

@@ -69,7 +69,6 @@ private:
     void CopyMethodInfo(MethodInfo* ttMethodInfo, MethodInfo* tiMethodInfo, TypeInfo* ti);
 
     bool IsEnumInfoReady(TypeTemplate* tt, TypeInfo* ti);
-    void HandleEnumCtorReflectInfo(TypeTemplate* tt, TypeInfo* ti);
     EnumInfo* AllocateEnumInfo(EnumInfo* ttEnumInfo);
     EnumDebugInfo* AllocateEnumDebugInfo(EnumInfo* ttEnumInfo);
     void SetEnumConstructors(EnumDebugInfo* enumDebugInfo, EnumInfo* ttEnumInfo, U32 argSize, TypeInfo* args[]);
