@@ -145,8 +145,6 @@ void Mutator::HandleSuspensionRequest()
             }
         } else if (HasPreemptRequest()) {
             SuspendForPreempt();
-            SetInSaferegion(SAFE_REGION_FALSE);
-            return;
         } else if (HasSuspensionRequest(SUSPENSION_FOR_EXIT)) {
             while (true) {
                 sleep(INT_MAX);
