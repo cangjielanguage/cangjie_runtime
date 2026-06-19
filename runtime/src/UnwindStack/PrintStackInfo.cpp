@@ -22,8 +22,7 @@ void PrintStackInfo::FillInStackTrace()
             stack.emplace_back(uwContext.frameInfo);
         }
 #ifdef INTERPRETER_ENABLED
-        if (currentFrameType == FrameType::INTERPRETER_I2I || currentFrameType == FrameType::INTERPRETER_C2I ||
-            currentFrameType == FrameType::INTERPRETER_PROLOGUE) {
+        if (currentFrameType == FrameType::INTERPRETER) {
             stack.emplace_back(uwContext.frameInfo);
         }
 #endif

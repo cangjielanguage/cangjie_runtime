@@ -443,8 +443,7 @@ intptr_t Mutator::FixExtendedStack(intptr_t frameBase, uint32_t adjustedSize, vo
         // Otherwise, the stack expansion continues to reach the limit.
 #ifdef INTERPRETER_ENABLED
         uintptr_t currentIp = reinterpret_cast<uintptr_t>(ip);
-        bool isInterpreterC2I = IsC2IStubAddr(currentIp);
-        bool isInterpreterPrologue = !isInterpreterC2I && IsInterpreterPrologueAddr(currentIp);
+        bool isInInterpreter = StackManager::IsInterpreterCodeAddr(currentIp);
 #endif
         if (frameBase == 0) {
             stackOffset = CJThreadStackGrow(CJTHREAD_MAX_STACK_SIZE);
@@ -452,25 +451,25 @@ intptr_t Mutator::FixExtendedStack(intptr_t frameBase, uint32_t adjustedSize, vo
                 return 0;
             }
 #ifdef INTERPRETER_ENABLED
-        } else if (isInterpreterC2I || isInterpreterPrologue) {
-                // The interpreter stack-grow path passes the full size that must fit below the caller
-                // frame base after StackGrowStub resumes execution in the transition stub/prologue.
-                DLOG(INTERPRETER, "Stack overflow happened in %s, stack size: %zu",
-                    isInterpreterPrologue ? "interpreter prologue" : "C2I", stackSize);
-                // SP of caller of C2I/prologue
-                uintptr_t callerFrameBase = static_cast<uintptr_t>(*reinterpret_cast<intptr_t*>(frameBase));
-                size_t requiredSize = stackBaseAddr - callerFrameBase + adjustedSize;
-                size_t newSize = stackSize + stackSize;
-                while (requiredSize > newSize - CJThreadStackReversedGet()) {
-                    newSize += newSize;
-                }
-                DLOG(INTERPRETER, "   try to grow stack size: %zu -> %zu", stackSize, newSize);
-                stackOffset = CJThreadStackGrow(newSize);
-                if (stackOffset == -1 || stackOffset == 0) {
-                    DLOG(INTERPRETER, "       stack overflow at %p", ip);
-                    ExceptionManager::StackOverflow(adjustedSize, ip);
-                    return 0;
-                }
+        } else if (isInInterpreter) {
+            // The interpreter stack-grow path passes the full size that must fit below the caller
+            // frame base after StackGrowStub passes execution into the prologue of interpreted method.
+            DLOG(INTERPRETER, "Stack overflow happened in interpreter, stack size: %zu", stackSize);
+            uintptr_t stubFrameBase = frameBase;
+            uintptr_t interpFrameBase = static_cast<uintptr_t>(*reinterpret_cast<intptr_t*>(stubFrameBase));
+
+            size_t requiredSp = interpFrameBase - GetFrameSize(interpFrameBase);
+            size_t newSize = stackSize + stackSize;
+            while (stackBaseAddr - requiredSp > newSize - CJThreadStackReversedGet()) {
+                newSize += newSize;
+            }
+            DLOG(INTERPRETER, "   try to grow stack size: %zu -> %zu", stackSize, newSize);
+            stackOffset = CJThreadStackGrow(newSize);
+            if (stackOffset == -1 || stackOffset == 0) {
+                DLOG(INTERPRETER, "       stack overflow at %p", ip);
+                ExceptionManager::StackOverflow(adjustedSize, ip);
+                return 0;
+            }
 #endif // INTERPRETER_ENABLED
         } else {
             UnwindContext& stackGrowContext = Mutator::GetMutator()->GetUnwindContext();
