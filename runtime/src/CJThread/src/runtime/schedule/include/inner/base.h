@@ -112,7 +112,10 @@ static inline int SemaphoreDestroy(struct Semaphore *sem)
     return sem_destroy(&sem->sem);
 }
 
-#if defined (__ANDROID__) && (VOS_WORDSIZE == 32) && (MRT_HARDWARE_PLATFORM == MRT_ARM)
+// Bionic's pthread_spin_init/lock/unlock/destroy/trylock are __INTRODUCED_IN(24)
+// (Android 7.0 Nougat). API < 24 (e.g. API 23 = Android 6.0) lacks these symbols,
+// so fall back to pthread_mutex_t to avoid link/load failure on low-API devices.
+#if defined (__ANDROID__) && (!defined(__ANDROID_API__) || __ANDROID_API__ < 24)
 struct CJthreadSpinLock {
     pthread_mutex_t lock;
 };

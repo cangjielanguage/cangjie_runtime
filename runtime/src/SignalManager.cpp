@@ -117,7 +117,10 @@ void PrintSignalHandlerStack(int sig, const siginfo_t* info, void* context)
     constexpr uint8_t threadNameLen = 16;
     constexpr uint32_t simpleSigStrSize = 256;
     char threadName[threadNameLen];
-#if defined (__arm__) && defined (__ANDROID__)
+// Bionic's 3-arg pthread_getname_np is __INTRODUCED_IN(26) (Android 8.0 Oreo).
+// API < 26 (e.g. API 23 = Android 6.0) lacks the symbol, so fall back to
+// prctl(PR_GET_NAME) to avoid link/load failure on low-API devices.
+#if defined(__ANDROID__) && (!defined(__ANDROID_API__) || __ANDROID_API__ < 26)
     prctl(PR_GET_NAME, threadName, 0, 0, 0);
 #else
     pthread_t thread = pthread_self();
