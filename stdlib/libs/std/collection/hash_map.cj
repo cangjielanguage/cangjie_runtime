@@ -248,6 +248,7 @@ class HashMapEntryView<K, V> <: MapEntryView<K, V> where K <: Hashable & Equatab
         set(value) {
             return if (value.isNone()) {
                 map.remove(_key)
+                lockVersion = map.version()
                 _isAbsent = true
             } else {
                 setValue(value.getOrThrow())
