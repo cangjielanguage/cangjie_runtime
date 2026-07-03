@@ -257,12 +257,16 @@ public:
 
     void CollectFromSpaceGarbage()
     {
-        // bypass garbageList — reclaim from-regions directly to freeTree.
+#if defined(__OHOS__)
+        // OHOS keeps the low-fragmentation path: reclaim from-regions directly to dirtyTree.
         RegionInfo* region = fromRegionList.TakeHeadRegion();
         while (region != nullptr) {
             ReclaimRegion(region);
             region = fromRegionList.TakeHeadRegion();
         }
+#else
+        garbageRegionList.MergeRegionList(fromRegionList, RegionInfo::RegionType::GARBAGE_REGION);
+#endif
     }
 
     size_t GetThreadLocalRegionSize() const
@@ -276,8 +280,12 @@ public:
              region->GetLiveByteCount(), region->GetRegionEnd(), region->GetRegionType());
 
         region->LockWriteRegion();
-        // bypass garbageList — reclaim directly to freeTree.
+#if defined(__OHOS__)
+        // OHOS keeps the low-fragmentation path: reclaim directly to dirtyTree.
         ReclaimRegion(region);
+#else
+        garbageRegionList.PrependRegion(region, RegionInfo::RegionType::GARBAGE_REGION);
+#endif
         region->UnlockWriteRegion();
 
         if (region->IsLargeRegion()) {
