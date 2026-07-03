@@ -154,7 +154,20 @@ public func readToEnd(): ?String
 
 功能：从标准输入中读取所有字符。
 
-直到读取到文件结束符`EOF`，或者在 Linux 上键入 `Ctrl+D` 或在 Windows 上键入 `Ctrl+Z` + 回车结束。读取到字符，返回 ?[String](../../core/core_package_api/core_package_structs.md#struct-string)，否则返回 `None`。读取失败时会返回 `None`，该接口不会抛出异常，即使输入不符合 `UTF-8` 编码的字符串，也会构造出一个 [String](../../core/core_package_api/core_package_structs.md#struct-string) 并返回，其行为等同于 [String](../../core/core_package_api/core_package_structs.md#struct-string).[fromUtf8Uncheck](../../core/core_package_api/core_package_structs.md#static-func-fromutf8uncheckedarrayuint8)([Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)>)。
+该函数在终端规范模式下工作，读取过程如下：
+
+1. 读取输入直到遇到文件结束符 EOF
+2. 在 Linux 环境下，按 `Ctrl+D` 触发 EOF：
+   - 若输入缓冲区有内容但未按回车，需按两次 `Ctrl+D`（第一次返回缓冲区内容，第二次触发 EOF）
+   - 若输入缓冲区为空，按一次 `Ctrl+D` 即可触发 EOF
+   - 若已按回车，再按 `Ctrl+D` 即可触发 EOF
+3. 在 Windows 环境下，需按 `Ctrl+Z` 后加回车触发 EOF
+
+读取成功返回 ?[String](../../core/core_package_api/core_package_structs.md#struct-string)，无输入或到达 EOF 时返回 `None`。该接口不会抛出异常，即使输入不符合 `UTF-8` 编码的字符串，也会构造出一个 [String](../../core/core_package_api/core_package_structs.md#struct-string) 并返回，其行为等同于 [String](../../core/core_package_api/core_package_structs.md#struct-string).[fromUtf8Uncheck](../../core/core_package_api/core_package_structs.md#static-func-fromutf8uncheckedarrayuint8)([Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)>)。
+
+> **注意：**
+>
+> 由于该函数使用终端规范模式（行缓冲），输入内容后需按回车或 `Ctrl+D` 才能被读取。若需按键即时响应（如游戏、TUI 应用），当前暂不支持。
 
 返回值：
 
@@ -164,29 +177,26 @@ public func readToEnd(): ?String
 
 <!-- compile -->
 ```cangjie
-import std.env.*
+import std.console.*
 
 main() {
-    // 获取标准输入实例
-    let stdin = getStdIn()
+    // 获取标准输入流
+    let stdin = Console.stdIn
 
-    // 读取所有输入直到 EOF
-    let result = stdin.readToEnd()
-
-    // 检查是否有输入
-    match (result) {
-        case Some(input) => println("Read input: ${input}")
-        case None => println("No input or error occurred")
-    }
+    // 从标准输入读取所有字符直到遇到EOF
+    // 注意：在实际运行中，程序会等待用户输入，直到遇到EOF（Ctrl+D或Ctrl+Z）
+    // 当前示例假设输入abcde之后按Ctrl+D两次
+    // 若输入缓冲区不为空（比如你刚输入了 abcde 但没按回车）：Ctrl+D 仅将缓冲区的内容 “flush（刷新）” 给程序，不触发 EOF
+    // 若输入缓冲区为空（比如你刚按了回车，光标在新行开头，没有未提交的输入）：Ctrl+D 才会向程序发送 EOF 信号，告知 “没有更多输入了”。）
+    let str = stdin.readToEnd()
+    println("输入的是: ${str}")
 }
 ```
 
 运行结果：
 
 ```text
-// 用户需要输入一些文本并按 Ctrl+D (Linux) 或 Ctrl+Z+Enter (Windows) 来结束输入
-// 示例输出：
-// Read input: Hello, World!
+abcde输入的是: Some(abcde)
 ```
 
 ### func readUntil((Rune) -> Bool)
