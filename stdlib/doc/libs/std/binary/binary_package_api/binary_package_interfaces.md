@@ -27,10 +27,6 @@ static func readBigEndian(buffer: Array<Byte>): T
 
 - T - T 值。
 
-异常：
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 T 值时，抛出异常。
-
 ### func writeBigEndian(Array\<Byte>)
 
 ```cangjie
@@ -46,10 +42,6 @@ func writeBigEndian(buffer: Array<Byte>): Int64
 返回值：
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 写入的数据的字节数。
-
-异常：
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 T 值时，抛出异常。
 
 ### extend Bool <: BigEndianOrder\<Bool>
 
@@ -172,7 +164,7 @@ public static func readBigEndian(buffer: Array<Byte>): Float16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
 
 示例：
 
@@ -212,7 +204,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
 
 示例：
 
@@ -267,7 +259,7 @@ public static func readBigEndian(buffer: Array<Byte>): Float32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
 
 示例：
 
@@ -306,7 +298,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
 
 示例：
 
@@ -361,7 +353,7 @@ public static func readBigEndian(buffer: Array<Byte>): Float64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
 
 示例：
 
@@ -396,7 +388,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
 
 示例：
 
@@ -444,7 +436,7 @@ public static func readBigEndian(buffer: Array<Byte>): Int16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
 
 示例：
 
@@ -479,7 +471,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
 
 示例：
 
@@ -527,7 +519,7 @@ public static func readBigEndian(buffer: Array<Byte>): Int32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
 
 示例：
 
@@ -562,7 +554,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
 
 示例：
 
@@ -610,7 +602,7 @@ public static func readBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
 
 示例：
 
@@ -645,7 +637,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
 
 示例：
 
@@ -776,7 +768,7 @@ public static func readBigEndian(buffer: Array<Byte>): UInt16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
 
 示例：
 
@@ -811,7 +803,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
 
 示例：
 
@@ -859,7 +851,7 @@ public static func readBigEndian(buffer: Array<Byte>): UInt32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
 
 示例：
 
@@ -894,7 +886,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
 
 示例：
 
@@ -942,7 +934,7 @@ public static func readBigEndian(buffer: Array<Byte>): UInt64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
 
 示例：
 
@@ -977,7 +969,7 @@ public func writeBigEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
 
 示例：
 
@@ -1105,10 +1097,6 @@ static func readLittleEndian(buffer: Array<Byte>): T
 
 - T - T 值。
 
-异常：
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 T 值时，抛出异常。
-
 ### func writeLittleEndian(Array\<Byte>)
 
 ```cangjie
@@ -1124,10 +1112,6 @@ func writeLittleEndian(buffer: Array<Byte>): Int64
 返回值：
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 写入的数据的字节数。
-
-异常：
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 T 值时，抛出异常。
 
 ### extend Bool <: LittleEndianOrder\<Bool>
 
@@ -1242,7 +1226,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Float16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
 
 示例：
 
@@ -1277,7 +1261,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) 值时，抛出异常。
 
 示例：
 
@@ -1325,7 +1309,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Float32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
 
 示例：
 
@@ -1360,7 +1344,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) 值时，抛出异常。
 
 示例：
 
@@ -1408,7 +1392,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Float64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
 
 示例：
 
@@ -1443,7 +1427,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) 值时，抛出异常。
 
 示例：
 
@@ -1491,7 +1475,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Int16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
 
 示例：
 
@@ -1526,7 +1510,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) 值时，抛出异常。
 
 示例：
 
@@ -1574,7 +1558,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Int32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
 
 示例：
 
@@ -1609,7 +1593,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) 值时，抛出异常。
 
 示例：
 
@@ -1657,7 +1641,7 @@ public static func readLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
 
 示例：
 
@@ -1692,7 +1676,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 值时，抛出异常。
 
 示例：
 
@@ -1823,7 +1807,7 @@ public static func readLittleEndian(buffer: Array<Byte>): UInt16
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
 
 示例：
 
@@ -1858,7 +1842,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) 值时，抛出异常。
 
 示例：
 
@@ -1906,7 +1890,7 @@ public static func readLittleEndian(buffer: Array<Byte>): UInt32
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
 
 示例：
 
@@ -1941,7 +1925,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) 值时，抛出异常。
 
 示例：
 
@@ -1989,7 +1973,7 @@ public static func readLittleEndian(buffer: Array<Byte>): UInt64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以读出 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以读出 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
 
 示例：
 
@@ -2024,7 +2008,7 @@ public func writeLittleEndian(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 太小，不足以存储 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - 当 buffer 太小，不足以存储 [UInt64](../../core/core_package_api/core_package_intrinsics.md#uint64) 值时，抛出异常。
 
 示例：
 
