@@ -27,10 +27,6 @@ Returns:
 
 - T - The value of type T.
 
-Exceptions:
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a value of type T.
-
 ### func writeBigEndian(Array\<UInt8>)
 
 ```cangjie
@@ -46,10 +42,6 @@ Parameters:
 Returns:
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - Number of bytes written.
-
-Exceptions:
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a value of type T.
 
 ### extend Bool <: BigEndianOrder\<Bool>
 
@@ -173,7 +165,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
 
 Example:
 
@@ -213,7 +205,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
 
 Example:
 
@@ -268,7 +260,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
 
 Example:
 
@@ -307,7 +299,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
 
 Example:
 
@@ -362,7 +354,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
 
 Example:
 
@@ -397,7 +389,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
 
 Example:
 
@@ -443,7 +435,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read an [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read an [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
 
 Example:
 
@@ -478,7 +470,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store an [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store an [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
 
 Example:
 
@@ -526,7 +518,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
 
 Example:
 
@@ -561,7 +553,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
 
 Example:
 
@@ -610,7 +602,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read an [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read an [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) value.
 
 Example:
 
@@ -645,7 +637,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store an [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store an [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) value.
 
 Example:
 
@@ -776,7 +768,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) value.
 
 Example:
 
@@ -811,7 +803,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) value.
 
 Example:
 
@@ -862,10 +854,6 @@ Returns:
 
 - T - The value of type T.
 
-Exceptions:
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a value of type T.
-
 ### func writeLittleEndian(Array\<UInt8>)
 
 ```cangjie
@@ -881,10 +869,6 @@ Parameters:
 Returns:
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - Number of bytes written.
-
-Exceptions:
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a value of type T.
 
 ### extend Bool <: LittleEndianOrder\<Bool>
 
@@ -999,7 +983,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
 
 Example:
 
@@ -1034,7 +1018,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float16](../../core/core_package_api/core_package_intrinsics.md#float16) value.
 
 Example:
 
@@ -1082,7 +1066,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
 
 Example:
 
@@ -1117,7 +1101,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) value.
 
 Example:
 
@@ -1165,7 +1149,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
 
 Example:
 
@@ -1200,7 +1184,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store a [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) value.
 
 Example:
 
@@ -1248,7 +1232,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read a [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read a [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) value.
 
 Example:
 
@@ -1295,7 +1279,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to read an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
 
 Example:
 
@@ -1330,7 +1314,7 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to store an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the buffer is too small to store an [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) value.
 
 Example:
 
