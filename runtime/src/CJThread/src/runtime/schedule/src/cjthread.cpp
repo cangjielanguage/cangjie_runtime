@@ -55,6 +55,9 @@ void CJThreadStackMemFree(struct CJThread *cjthread, char *stackTopAddr, size_t 
     DWORD oldProt = 0;
     int error;
 
+    if (stackTopAddr == nullptr) {
+        return;
+    }
     if (cjthread->schedule->schdCJThread.stackProtect == false) {
         stackFreeAddr = stackTopAddr;
         free(stackFreeAddr);
@@ -87,6 +90,9 @@ void CJThreadStackMemFree(struct CJThread *cjthread, char *stackTopAddr, size_t 
     size_t pageSize;
     int error;
 
+    if (stackTopAddr == nullptr) {
+        return;
+    }
 #if defined(CANGJIE_TSAN_SUPPORT)
     MapleRuntime::Sanitizer::TsanFree(stackTopAddr, stackSize);
 #endif
