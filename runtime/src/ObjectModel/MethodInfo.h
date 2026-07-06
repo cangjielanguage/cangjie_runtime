@@ -86,8 +86,8 @@ private:
     void* GetEntryPoint();
     TypeInfo* GetActualTypeFromGenericType(GenericTypeInfo* genericTi, void* genericArgs);
     TypeInfo* GetActualTypeFromGenericTypeImpl(GenericTypeInfo* genericTi, void* genericArgs);
-    void ApplyCJMethodImpl(ArgValue* argValues, void* &sret, Value &ret);
-    void PrepareSRet(ArgValue *argValues, void*& sret, TypeInfo* retType);
+    Value ApplyCJMethodImpl(ArgValue* argValues, void* sret, void** sretSlot);
+    void PrepareSRet(ArgValue *argValues, void*& sret, void**& sretSlot, TypeInfo* retType);
     void PrepareCJMethodActualArgs(ArgValue* argValues, void* actualArgsArray, void *genericArgsArray);
     void PrepareCJMethodGenericArgs(ArgValue* argValues, void *genericArgsArray);
     void AddCJArg(ArgValue* argValues, TypeInfo* argType, ObjRef argObj);

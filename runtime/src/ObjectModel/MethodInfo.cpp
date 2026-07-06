@@ -439,8 +439,10 @@ void* MethodInfo::RetValueToAny(Value ret, void* sret, TypeInfo* retType)
     return nullptr;
 }
 
-void MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* &sret, Value &ret)
+Value MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* sret, void** sretSlot)
 {
+    Value ret;
+    ret.ref = nullptr;
     uintptr_t threadData = MapleRuntime::MRT_GetThreadLocalData();
     if (returnType->IsFloat16() || returnType->IsFloat32()) {
         ret.f = ApplyCangjieMethodStubFloat32(argValues->GetData(), reinterpret_cast<void*>(argValues->GetStackSize()),
@@ -452,7 +454,7 @@ void MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* &sret, Value &ret)
     } else if (HasSRetWithGeneric()) {
         ret.l = reinterpret_cast<Uptr>(ApplyCangjieMethodStub(argValues->GetData(),
             reinterpret_cast<void*>(argValues->GetStackSize()), GetEntryPoint(),
-            reinterpret_cast<void*>(threadData), &sret));
+            reinterpret_cast<void*>(threadData), sretSlot));
     } else {
         ret.l = reinterpret_cast<Uptr>(ApplyCangjieMethodStub(argValues->GetData(),
             reinterpret_cast<void*>(argValues->GetStackSize()), GetEntryPoint(),
@@ -470,9 +472,10 @@ void MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* &sret, Value &ret)
     if (GetReturnType()->IsUnit()) {
         ret.ref = nullptr;
     }
+    return ret;
 }
 
-void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, TypeInfo* retType)
+void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, void**& sretSlot, TypeInfo* retType)
 {
     U32 size = 0;
     if (retType->IsVArray()) {
@@ -490,9 +493,11 @@ void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, TypeInfo* retType
     } else if (HasSRetWithGeneric()) {
         U32 objSize = MRT_ALIGN(size + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
         sret = ObjectManager::NewObject(retType, objSize, AllocType::RAW_POINTER_OBJECT);
+        sretSlot = static_cast<void**>(MemoryAlloc(1, sizeof(void*)));
+        *sretSlot = sret;
 #if defined(__aarch64__)
 #else
-        argValues->AddInt64(reinterpret_cast<Uptr>(&sret));
+        argValues->AddInt64(reinterpret_cast<Uptr>(sretSlot));
 #endif
         return;
     } else if (HasSRetWithUnknowGenericStruct()) {
@@ -512,8 +517,7 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
     ScopedAllocBuffer scopedAllocBuffer;
     ArgValue argValues;
     void* sret = nullptr;
-    Value ret;
-    ret.ref = nullptr;
+    void** sretSlot = nullptr;
     TypeInfo* retType = GetReturnType();
     U8 reflectVersion = 0;
     if (declaringTi != nullptr) {
@@ -523,7 +527,7 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
         if (retType->IsGeneric()) {
             retType = GetActualTypeFromGenericType(reinterpret_cast<GenericTypeInfo*>(retType), genericArgs);
         }
-        PrepareSRet(&argValues, sret, retType);
+        PrepareSRet(&argValues, sret, sretSlot, retType);
     }
     if (instanceObj != nullptr) {
         // When a struct is passed as 'this' parameter and its size is unknown at compile time,
@@ -569,9 +573,11 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
     if (argValues.GetStackIdx() % 2 != 0) {
         argValues.AddReference(nullptr);
     }
-    ApplyCJMethodImpl(&argValues, sret, ret);
+    Value ret = ApplyCJMethodImpl(&argValues, sret, sretSlot);
 
     if (HasSRetWithGeneric()) {
+        sret = *sretSlot;
+        MemoryFree(sretSlot);
         return sret;
     }
     if (HasSRetWithUnknowGenericStruct()) {
