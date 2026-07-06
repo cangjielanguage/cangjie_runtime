@@ -73,6 +73,9 @@ public:
     MemMap& operator=(MemMap&& that) = delete;
 
 private:
+#if defined(__APPLE__)
+    static void* MapMemoryOnApple(void* reqBase, size_t reqSize, size_t initSize, const Option& opt);
+#endif
     static bool ProtectMemInternal(void* addr, size_t size, int prot);
 
     void* memBaseAddr;      // start of the mapped memory
