@@ -11,7 +11,7 @@ import std.collection.*
 import std.regex.Regex
 import std.unittest.common.*
 
-func substituteTemplate(template: String, values: JsonValue): String {
+protected func substituteTemplate(template: String, values: JsonValue): String {
     Root(template).substitute(values)
 }
 
@@ -177,7 +177,8 @@ extend JsonValue {
     // Index in SoA and AoS simultaneously
     func getIndexed(field: String, index: Int64): ?JsonValue {
         if (let Some(arr) <- (this as JsonArray)) {
-            return (arr.get(index) as JsonObject)?.get(field) ?? None
+            let element = arr.get(index) ?? return None
+            return (element as JsonObject)?.get(field) ?? None
         }
 
         if (!(this is JsonObject)) {

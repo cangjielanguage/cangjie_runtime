@@ -25,7 +25,7 @@ import std.unittest.prop_test.ShrinkHelpers
  * kde calculation method is adaptive, so it has different values of parameters (bandwidth, next grid step, etc) in different points of the grid
  * class KdeParamsState stores and updates them
  */
-class KdeParamsState {
+protected class KdeParamsState {
     /**
      * invariant - everything (mainly gridPoint) in this algorithm moves only from left to right, this is important to maintain the time complexity of the algorithm
      * to quickly find the closest (less or equal) to the current gridPoint value in data, the algorithm stores it in a separate variable (gridPointClosestLessEqIndexInData)
@@ -155,23 +155,23 @@ class KdeParamsState {
     }
 }
 
-class Sample {
-    Sample(let data: ArrayList<Float64>) {
+protected class Sample {
+    protected Sample(let data: ArrayList<Float64>) {
         // sorted to easily get percentiles
         this.data.removeIf { x => x.isNaN() }
         this.data.sort()
     }
 
-    prop size: Int64 {
+    protected prop size: Int64 {
         get() { data.size }
     }
 
-    func mean(): Float64 {
+    protected func mean(): Float64 {
         let sum = data |> fold(0.0) { a, b => a + b }
         sum / Float64(data.size)
     }
 
-    func percentile(ratio: Float64): Float64 {
+    protected func percentile(ratio: Float64): Float64 {
         if (this.data.size == 0) {
             return Float64.NaN
         }
@@ -179,28 +179,28 @@ class Sample {
         (this.data[Int64(ceil(x))] + this.data[Int64(floor(x))]) / 2.0
     }
 
-    static func create(data: ArrayList<Float64>): Sample {
+    protected static func create(data: ArrayList<Float64>): Sample {
         Sample(data)
     }
 
-    func stddev(): Float64 {
+    protected func stddev(): Float64 {
         let avg = mean()
         let sumSquared = data.iterator().fold(0.0) { acc, p => (p - avg)**2.0 + acc }
         sqrt(sumSquared / Float64(data.size))
     }
 
-    func irq(): Float64 {
+    protected func irq(): Float64 {
         this.percentile(0.75) - this.percentile(0.25)
     }
 
-    func skewness(): Float64 {
+    protected func skewness(): Float64 {
         let avg = mean()
         let sumCubic = data.iterator().fold(0.0) { acc, p => (p - avg)**3.0 + acc }
         sumCubic / Float64(data.size) / stddev()**3.0
     }
 
     // kernel density estimation
-    func kde(kdeThroughput: Float64): ArrayList<(Float64, Float64)> {
+    protected func kde(kdeThroughput: Float64): ArrayList<(Float64, Float64)> {
 
         // you can add additional kernels in the future
         func gaussianKernel(distance: Float64, bandwidth: Float64): Float64 {
@@ -262,19 +262,19 @@ class Sample {
     }
 }
 
-class Measurements {
-    Measurements(
+protected class Measurements {
+    protected Measurements(
         private let data: Array<(Float64,Float64)>
     ) {}
 
-    var slopes: Sample = Sample(ArrayList())
-    var mainSlope: Float64 = 0.0
-    var intercept: Float64 = 0.0
-    var errorEst: Float64 = 0.0
-    var r2: Float64 = 0.0
+    protected var slopes: Sample = Sample(ArrayList())
+    protected var mainSlope: Float64 = 0.0
+    protected var intercept: Float64 = 0.0
+    protected var errorEst: Float64 = 0.0
+    protected var r2: Float64 = 0.0
 
     // Calculates mean slope according to ordinary least squares linear regression.
-    func calculateMean(): This {
+    protected func calculateMean(): This {
         let sumx = data.iterator().map { p => p[0] }.sum()
         let sumy = data.iterator().map { p => p[1] }.sum()
         let sumx2 = data.iterator().map { p => p[0] * p[0] }.sum()

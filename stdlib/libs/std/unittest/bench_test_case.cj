@@ -505,21 +505,21 @@ class Notifier {
 
 // Exponential moving average
 // While number of added elements is less than maxLength it works exactly like regular average
-struct Ema {
-    var result: Float64 = 0.0
+protected struct Ema {
+    protected var result: Float64 = 0.0
     private var currentLength: Float64 = 0.0
-    Ema(let maxLength: Int64) {}
+    protected Ema(let maxLength: Int64) {}
 
-    mut func reset() {
+    protected mut func reset() {
         result = 0.0
         currentLength = 0.0
     }
 
-    func reachedMax(): Bool {
+    protected func reachedMax(): Bool {
         currentLength >= Float64(maxLength - 1)
     }
 
-    mut func append(next: Float64) {
+    protected mut func append(next: Float64) {
         result = (result * currentLength + next) / (currentLength + 1.0)
         currentLength = min(currentLength + 1.0, Float64(maxLength - 1))
     }
