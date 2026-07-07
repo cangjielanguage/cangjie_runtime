@@ -500,10 +500,11 @@ extend Rune <: Serializable<Rune> {
             case dms: DataModelString => dms.getValue()
             case _ => throw DataModelException("this data is not DataModelString")
         }
-        if (charStr.toRuneArray().size != 1) {
+        let runeArray = charStr.toRuneArray()
+        if (runeArray.size != 1) {
             throw Exception("this data is not Rune")
         }
-        return Rune(charStr[0])
+        return runeArray[0]
     }
 }
 
