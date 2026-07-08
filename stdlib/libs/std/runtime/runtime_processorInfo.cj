@@ -16,6 +16,11 @@ import std.fs.*
 func startCjCPUProfiling(): Bool
 
 @When[backend == "cjnative"]
+func boxStopCjCPUProfiling(fd: Int32): Bool {
+    return stopCjCPUProfiling(fd)
+}
+
+@When[backend == "cjnative"]
 @Intrinsic
 func stopCjCPUProfiling(fd: Int32): Bool
 
@@ -55,7 +60,7 @@ public func startCPUProfiling(): Unit {
     return
 }
 
-@When[backend == "cjnative"]
+@When[backend == "cjnative" && os != "Windows"]
 public func stopCPUProfiling(path: Path): Unit {
     try (file = File(path, ReadWrite)) {
         let success = stopCjCPUProfiling(Int32(file.fileDescriptor.fileHandle))
@@ -63,5 +68,12 @@ public func stopCPUProfiling(path: Path): Unit {
             throw ProfilingInfoException("Failed to stop cpu profiling.")
         }
     }
-    return
+}
+
+@When[backend == "cjnative" && os == "Windows"]
+public func stopCPUProfiling(path: Path): Unit {
+    let success = executeWithWindowsFd(path, boxStopCjCPUProfiling)
+    if (!success) {
+        throw ProfilingInfoException("Failed to stop cpu profiling.")
+    }
 }

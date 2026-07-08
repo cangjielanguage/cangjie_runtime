@@ -11,6 +11,12 @@ package std.runtime
 @When[backend == "cjnative"]
 import std.fs.*
 
+@When[os == "Windows"]
+foreign func CJ_Runtime_OpenFileForFd(path: CString): Int32
+
+@When[os == "Windows"]
+foreign func CJ_Runtime_CloseFd(fd: Int32): Int32
+
 @Intrinsic
 func getMaxCjHeapSize(): UIntNative
 
@@ -25,10 +31,15 @@ func getRealHeapSize(): UIntNative
 func dumpCjHeapData(fd: Int32): Bool
 
 @When[backend == "cjnative"]
+func boxDumpCjHeapData(fd: Int32): Bool {
+    return dumpCjHeapData(fd)
+}
+
+@When[backend == "cjnative"]
 @Frozen
 @Intrinsic
 public func blackBox<T>(input: T): T
- 
+
 class MemoryInfoException <: Exception {
     init(message: String) {
         super(message)
@@ -114,7 +125,7 @@ func resolvePath(path: Path): Path {
     } else {
         canonicalize(Path(".")).join(path)
     }
-    
+
     let resolvedPath = try {
         let parentDir = absolutePath.parent
         if (exists(parentDir)) {
@@ -131,24 +142,53 @@ func resolvePath(path: Path): Path {
     } catch (e: Exception) {
         absolutePath
     }
-    
+
     return resolvedPath
 }
 
 @When[backend == "cjnative"]
-public func dumpHeapData(path: Path): Unit {
+func validateAndResolvePath(path: Path, invalidPathMsg: String): Path {
     let pathStr = path.toString()
     if (!validatePathString(pathStr)) {
-        throw IllegalArgumentException("Heap dump path is invalid or contains forbidden characters for security reasons.")
+        throw IllegalArgumentException(invalidPathMsg)
     }
-    
-    let resolvedPath = resolvePath(path)
-    
+    return resolvePath(path)
+}
+
+@When[backend == "cjnative" && os == "Windows"]
+func executeWithWindowsFd(path: Path, action: (Int32) -> Bool): Bool {
+    unsafe {
+        var success = false
+        try (cPath = LibC.mallocCString(path.toString()).asResource()) {
+            let fd = CJ_Runtime_OpenFileForFd(cPath.value)
+            if (fd == -1) {
+                return false
+            }
+            success = action(fd)
+            CJ_Runtime_CloseFd(fd)
+        }
+        return success
+    }
+}
+
+@When[backend == "cjnative" && os != "Windows"]
+public func dumpHeapData(path: Path): Unit {
+    let resolvedPath = validateAndResolvePath(path,
+        "Heap dump path is invalid or contains forbidden characters for security reasons.")
     try (file = File(resolvedPath, ReadWrite)) {
         let success = dumpCjHeapData(Int32(file.fileDescriptor.fileHandle))
         if (!success) {
             throw MemoryInfoException("Failed to dump heap data.")
         }
     }
-    return
+}
+
+@When[backend == "cjnative" && os == "Windows"]
+public func dumpHeapData(path: Path): Unit {
+    let resolvedPath = validateAndResolvePath(path,
+        "Heap dump path is invalid or contains forbidden characters for security reasons.")
+    let success = executeWithWindowsFd(resolvedPath, boxDumpCjHeapData)
+    if (!success) {
+        throw MemoryInfoException("Failed to dump heap data.")
+    }
 }

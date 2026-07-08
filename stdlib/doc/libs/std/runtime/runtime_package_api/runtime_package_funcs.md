@@ -55,6 +55,7 @@ public func dumpHeapData(path: Path): Unit
 异常：
 
 - MemoryInfoException - 生成堆内存快照失败时，抛出此异常。
+- [IllegalArgumentException](./../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当路径验证失败时，抛出此异常。
 
 示例：
 
@@ -762,7 +763,7 @@ public func stopCPUProfiling(path: Path): Unit
 
 > **注意：**
 >
-> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling)与[stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath)两个函数必须一一对应。
+> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) 与 [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) 两个函数必须一一对应。
 
 参数：
 
@@ -770,7 +771,7 @@ public func stopCPUProfiling(path: Path): Unit
 
 异常：
 
-- ProfilingInfoException - 若没有调用了[startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling)，直接调用[stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath)则抛出异常。
+- ProfilingInfoException - 若没有调用了 [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling)，直接调用[stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) 则抛出异常。
 
 示例：
 <!-- associated_example -->
