@@ -98,17 +98,8 @@ static bool GetStackGuardFlagEnv()
 void CJThreadModel::Init(const ConcurrencyParam param, ScheduleType scheduleType)
 {
     ScheduleAttr attr;
-    ScheduleAttrInit(&attr);
-    ScheduleAttrThstackSizeSet(&attr, param.thStackSize * KB);
-    ScheduleAttrCostackSizeSet(&attr, param.coStackSize * KB);
-    ScheduleAttrProcessorNumSet(&attr, param.processorNum);
     stackGuardCheck = GetStackGuardFlagEnv();
-    if (stackGuardCheck) {
-        ScheduleAttrStackProtectSet(&attr, true);
-    }
-    if (scheduleType == SCHEDULE_UI_THREAD) {
-        ScheduleAttrStackGrowSet(&attr, false);
-    }
+    ScheduleAttrInitWithParams(&attr, param, stackGuardCheck, scheduleType != SCHEDULE_UI_THREAD);
 
     ScheduleGetTlsHookRegister((GetTlsHookFunc)MRT_GetThreadLocalData);
 
