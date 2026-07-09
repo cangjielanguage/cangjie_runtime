@@ -38,6 +38,7 @@ const unsigned long long NANO_TO_MILLISECONDS = 1000 * 1000; /* Used to convert 
 const unsigned long long MAX_RUN_CJSINGLETHREAD_TIME = 10000000; /* Max run cj single thread time is 10ms */
 const size_t MAX_RUN_CJSINGLETHREAD_COUNT = 5; /* Max run cj single thread count is 5 times */
 const unsigned int MAX_RETRY_CJSINGLETHREAD_COUNT = 3; /* Max retry cj single thread count is 3 times */
+const size_t KB = 1024;
 
 #if defined(TLS_COMMON_DYNAMIC)
 GetTlsHookFunc g_getTlsFunc = nullptr;
@@ -107,6 +108,22 @@ int ScheduleAttrInit(struct ScheduleAttr *usrAttr)
         return res;
     }
     attr->processorNum = static_cast<unsigned int>(res);
+    return 0;
+}
+
+int ScheduleAttrInitWithParams(struct ScheduleAttr *usrAttr, const ConcurrencyParam param,
+                               bool stackProtect, bool stackGrow)
+{
+    struct ScheduleAttrInner *attr = reinterpret_cast<struct ScheduleAttrInner *>(usrAttr);
+
+    if (attr == nullptr) {
+        return ERRNO_SCHD_ATTR_INVALID;
+    }
+    attr->thstackSize = param.thStackSize * KB;
+    attr->costackSize = param.coStackSize * KB;
+    attr->stackProtect = stackProtect;
+    attr->stackGrow = stackGrow;
+    attr->processorNum = static_cast<unsigned int>(param.processorNum);
     return 0;
 }
 

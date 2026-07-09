@@ -225,14 +225,11 @@ void* CangjieRuntime::CreateSubSchedulerAndInit(ScheduleType type)
 
 void* CangjieRuntime::CreateSingleThreadScheduler()
 {
-    auto defaultParam = CangjieRuntime::GetConcurrencyParam();
+    auto coParam = CangjieRuntime::GetConcurrencyParam();
     ScheduleAttr attr;
-    ScheduleAttrInit(&attr);
-    ScheduleAttrThstackSizeSet(&attr, defaultParam.thStackSize * KB);
-    ScheduleAttrCostackSizeSet(&attr, defaultParam.coStackSize * KB);
-    ScheduleAttrProcessorNumSet(&attr, 1);
-    ScheduleAttrStackGrowSet(&attr, false);
-    ScheduleAttrStackProtectSet(&attr, false);
+
+    coParam.processorNum = 1;
+    ScheduleAttrInitWithParams(&attr, coParam, false, false);
 
     ScheduleGetTlsHookRegister((GetTlsHookFunc)MRT_GetThreadLocalData);
 

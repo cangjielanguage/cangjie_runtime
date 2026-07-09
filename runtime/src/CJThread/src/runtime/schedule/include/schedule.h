@@ -765,6 +765,20 @@ int CJThreadGetState(void* cjthreadPtr);
 int ScheduleAttrInit(struct ScheduleAttr *usrAttr);
 
 /**
+ * @brief Initialize scheduler attributes with the specified concurrency parameters.
+ * @param usrAttr      [IN] Scheduler attributes to be initialized.
+ * @param param        [IN] Concurrency parameters, including the default thread stack size
+ * (thStackSize, in KB), the default cjthread stack size (coStackSize, in KB), and the number
+ * of processors (processorNum).
+ * @param stackProtect [IN] Whether to enable stack protection.
+ * @param stackGrow    [IN] Whether to enable stack capacity expansion.
+ * @retval If the operation is successful, 0 is returned. If the operation fails, an error
+ * code is returned.
+ */
+int ScheduleAttrInitWithParams(struct ScheduleAttr *usrAttr, const ConcurrencyParam param,
+                               bool stackProtect, bool stackGrow);
+
+/**
  * @brief Set scheduler attributes and default cjthread stack size
  * @param  usrAttr          [IN]  scheduler attributes
  * @param  size             [IN]  cjthread stack size
