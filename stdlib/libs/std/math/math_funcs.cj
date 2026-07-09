@@ -1103,13 +1103,7 @@ public func countOnes(x: UInt8): Int64 {
  */
 @OverflowWrapping
 public func countOnes(x: Int8): Int64 {
-    return if (x >= 0) {
-        countOnes(UInt8(x))
-    } else if (x == Int8.Min) {
-        0x1
-    } else {
-        countOnes(UInt8(-x) + UInt8(Int8.Min))
-    }
+    return countOnes(UInt8(x))
 }
 
 /**
@@ -1122,13 +1116,7 @@ public func countOnes(x: Int8): Int64 {
  */
 @OverflowWrapping
 public func countOnes(x: Int16): Int64 {
-    return if (x >= 0) {
-        countOnes(UInt16(x))
-    } else if (x == Int16.Min) {
-        0x1
-    } else {
-        countOnes(UInt16(-x) + UInt16(Int16.Min))
-    }
+    return countOnes(UInt16(x))
 }
 
 /**
@@ -1141,13 +1129,7 @@ public func countOnes(x: Int16): Int64 {
  */
 @OverflowWrapping
 public func countOnes(x: Int32): Int64 {
-    return if (x >= 0) {
-        countOnes(UInt32(x))
-    } else if (x == Int32.Min) {
-        0x1
-    } else {
-        countOnes(UInt32(-x) + UInt32(Int32.Min))
-    }
+    return countOnes(UInt32(x))
 }
 
 /**
@@ -1160,13 +1142,7 @@ public func countOnes(x: Int32): Int64 {
  */
 @OverflowWrapping
 public func countOnes(x: Int64): Int64 {
-    return if (x >= 0) {
-        countOnes(UInt64(x))
-    } else if (x == Int64.Min) {
-        0x1
-    } else {
-        countOnes(UInt64(-x) + UInt64(Int64.Min))
-    }
+    return countOnes(UInt64(x))
 }
 
 @Deprecated[message: "Use global funtion `public func countOnes(x: Int8): Int64` instead."]
