@@ -278,11 +278,6 @@ void TracingCollector::RecordC2NStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr f
     RegRoot::RecordC2NStubCalleeSaved(regSlotsMap, fp);
 }
 
-void TracingCollector::RecordC2RStackArgsStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr fp)
-{
-    RegRoot::RecordC2RStackArgsStubCalleeSaved(regSlotsMap, fp);
-}
-
 void TracingCollector::RecordExclusiveStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr fp)
 {
     RegRoot::RecordExclusiveStubCalleeSaved(regSlotsMap, fp);

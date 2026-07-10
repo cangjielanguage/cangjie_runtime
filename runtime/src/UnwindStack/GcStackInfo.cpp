@@ -14,16 +14,6 @@
 
 namespace MapleRuntime {
 #ifdef __arm__
-static void RecordArmC2RStubCalleeSaved(RegSlotsMap& regSlotsMap, const MachineFrame& frame)
-{
-    Uptr fp = reinterpret_cast<Uptr>(frame.GetFA());
-    if (frame.IsC2RStackArgsStubFrame()) {
-        TracingCollector::RecordC2RStackArgsStubCalleeSaved(regSlotsMap, fp);
-        return;
-    }
-    TracingCollector::RecordStubCalleeSaved(regSlotsMap, fp);
-}
-
 void GCStackInfo::VisitStackRoots(const RootVisitor& func, Mutator& mutator) const
 {
     RegSlotsMap regSlotsMap;
@@ -40,7 +30,7 @@ void GCStackInfo::VisitStackRoots(const RootVisitor& func, Mutator& mutator) con
                 TracingCollector::RecordStubAllRegister(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
                 break;
             case FrameType::C2R_STUB:
-                RecordArmC2RStubCalleeSaved(regSlotsMap, frame.mFrame);
+                TracingCollector::RecordStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
                 break;
             case FrameType::C2N_STUB:
                 TracingCollector::RecordC2NStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
@@ -68,7 +58,7 @@ void GCStackInfo::VisitHeapReferencesOnStack(const RootVisitor& rootVisitor, con
                 break;
             }
             case FrameType::C2R_STUB:
-                RecordArmC2RStubCalleeSaved(regSlotsMap, frame.mFrame);
+                TracingCollector::RecordStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
                 break;
             case FrameType::C2N_STUB:
                 TracingCollector::RecordC2NStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
@@ -108,7 +98,7 @@ void RecordStackInfo::VisitStackRoots(const RootVisitor &func, Mutator &mutator)
                 TracingCollector::RecordStubAllRegister(regSlotsMap, reinterpret_cast<Uptr>(frame->mFrame.GetFA()));
                 break;
             case FrameType::C2R_STUB:
-                RecordArmC2RStubCalleeSaved(regSlotsMap, frame->mFrame);
+                TracingCollector::RecordStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame->mFrame.GetFA()));
                 break;
             case FrameType::C2N_STUB:
                 TracingCollector::RecordC2NStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame->mFrame.GetFA()));

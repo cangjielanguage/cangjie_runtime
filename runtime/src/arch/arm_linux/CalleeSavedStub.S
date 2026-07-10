@@ -7,6 +7,7 @@
 #define cfi_adjust_cfa_offset(off)      .cfi_adjust_cfa_offset off
 #define cfi_rel_offset(reg, off)        .cfi_rel_offset reg, off
 #define cfi_restore(reg)                .cfi_restore reg
+#define cfi_def_cfa(reg, off)           .cfi_def_cfa reg, off
 #define cfi_def_cfa_register(reg)       .cfi_def_cfa_register reg
 
 #define StubFrameContextSize      (4 * 12)
@@ -20,9 +21,9 @@
 //                 | r7           |
 //                 | r6           |
 //                 | r5           |
-//                 | null         |
-//                 | null         |
 // callee saved    | r4           |
+//                 | null         |
+//                 | null         |
 //                 | lr           |
 //   stub fp  -->  | caller fp    |
 
@@ -96,8 +97,8 @@ CalleeSavedStubFrameSize:
     .size \funcNameStub, .-\funcNameStub
     .endm
 
-#define StubFrameContextSizeForStackArgs    (4 * 18)
-#define StubCalleeSaveAreaSizeForStackArgs  (4 * 10)
+#define StubFrameContextSizeForStackArgs    (4 * 20)
+#define StubCalleeSaveAreaSizeForStackArgs  (4 * 12)
 #define StubFrameAddrAreaSizeForStackArgs   (4 * 8)
 
 // caller sp  -->  | arg7         |
@@ -109,6 +110,8 @@ CalleeSavedStubFrameSize:
 //                 | r6           |
 //                 | r5           |
 // callee saved    | r4           |
+//                 | null         |
+//                 | null         |
 //                 | lr           |
 //   stub fp  -->  | caller fp    |
 //                 | arg11        |
@@ -135,8 +138,8 @@ CalleeSavedStubFrameSize:
     cfi_rel_offset (r11, StubFrameAddrAreaSizeForStackArgs)
     cfi_rel_offset (lr, StubFrameAddrAreaSizeForStackArgs+4)
 
-    mov  r11, sp
-    cfi_def_cfa_register (sp)
+    add  r11, sp, #StubFrameAddrAreaSizeForStackArgs
+    cfi_def_cfa (r11, StubCalleeSaveAreaSizeForStackArgs)
 
     // save all used callee-saved registers.
     str  r4, [sp, #StubCalleeSaveAreaSizeForStackArgs]
@@ -146,13 +149,13 @@ CalleeSavedStubFrameSize:
     str  r8, [sp, #StubCalleeSaveAreaSizeForStackArgs+16]
     str  r9, [sp, #StubCalleeSaveAreaSizeForStackArgs+20]
     str  r10, [sp, #StubCalleeSaveAreaSizeForStackArgs+24]
-    cfi_rel_offset(r4, StubCalleeSaveAreaSizeForStackArgs)
-    cfi_rel_offset(r5, StubCalleeSaveAreaSizeForStackArgs+4)
-    cfi_rel_offset(r6, StubCalleeSaveAreaSizeForStackArgs+8)
-    cfi_rel_offset(r7, StubCalleeSaveAreaSizeForStackArgs+12)
-    cfi_rel_offset(r8, StubCalleeSaveAreaSizeForStackArgs+16)
-    cfi_rel_offset(r9, StubCalleeSaveAreaSizeForStackArgs+20)
-    cfi_rel_offset(r10, StubCalleeSaveAreaSizeForStackArgs+24)
+    cfi_rel_offset(r4, 16)
+    cfi_rel_offset(r5, 20)
+    cfi_rel_offset(r6, 24)
+    cfi_rel_offset(r7, 28)
+    cfi_rel_offset(r8, 32)
+    cfi_rel_offset(r9, 36)
+    cfi_rel_offset(r10, 40)
 
     // save extra parameters stored on stack. Fixed quntity is 8 temporarily.
     // r10 <- previous sp
@@ -245,11 +248,7 @@ unwindPCForC2RStubStart:
     CalleeSavedRegistersStub MCC_DumpCJHeapData CJ_MCC_DumpCJHeapData
     CalleeSavedRegistersStub MCC_NewAndInitEnumTupleObject CJ_MCC_NewAndInitEnumTupleObject
     CalleeSavedRegistersStub MCC_GetAssociatedValues CJ_MCC_GetAssociatedValues
-    .global unwindPCForC2RStackArgsStubStart
-unwindPCForC2RStackArgsStubStart:
     CalleeSavedRegistersAndStackArgsStub MCC_DecodeStackTraceImpl CJ_MCC_DecodeStackTrace
-    .global unwindPCForC2RStackArgsStubEnd
-unwindPCForC2RStackArgsStubEnd:
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
     CalleeSavedRegistersStub MCC_ThrowException CJ_MCC_ThrowException
     CalleeSavedRegistersStub MCC_ThrowStackOverflowError CJ_MCC_ThrowStackOverflowError
