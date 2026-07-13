@@ -439,7 +439,7 @@ void* MethodInfo::RetValueToAny(Value ret, void* sret, TypeInfo* retType)
     return nullptr;
 }
 
-Value MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* sret, void** sretSlot)
+Value MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void** sretSlot)
 {
     Value ret;
     ret.ref = nullptr;
@@ -458,7 +458,7 @@ Value MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* sret, void** sret
     } else {
         ret.l = reinterpret_cast<Uptr>(ApplyCangjieMethodStub(argValues->GetData(),
             reinterpret_cast<void*>(argValues->GetStackSize()), GetEntryPoint(),
-            reinterpret_cast<void*>(threadData), sret));
+            reinterpret_cast<void*>(threadData), sretSlot == nullptr ? nullptr : *sretSlot));
     }
 #else
     } else {
@@ -475,7 +475,7 @@ Value MethodInfo::ApplyCJMethodImpl(ArgValue* argValues, void* sret, void** sret
     return ret;
 }
 
-void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, void**& sretSlot, TypeInfo* retType)
+void MethodInfo::PrepareSRet(ArgValue* argValues, void**& sretSlot, TypeInfo* retType)
 {
     U32 size = 0;
     if (retType->IsVArray()) {
@@ -483,18 +483,17 @@ void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, void**& sretSlot,
     } else {
         size = retType->GetInstanceSize();
     }
+    sretSlot = static_cast<void**>(MemoryAlloc(1, sizeof(void*)));
     if (HasSRetNotGeneric() || HasSRetWithKnowGenericStruct()) {
-        sret = MemoryAlloc(1, size);
+        *sretSlot = MemoryAlloc(1, size);
 #if defined(__aarch64__)
 #else
-        argValues->AddReference(static_cast<BaseObject*>(sret));
+        argValues->AddReference(static_cast<BaseObject*>(*sretSlot));
 #endif
         return;
     } else if (HasSRetWithGeneric()) {
         U32 objSize = MRT_ALIGN(size + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
-        sret = ObjectManager::NewObject(retType, objSize, AllocType::RAW_POINTER_OBJECT);
-        sretSlot = static_cast<void**>(MemoryAlloc(1, sizeof(void*)));
-        *sretSlot = sret;
+        *sretSlot = ObjectManager::NewObject(retType, objSize, AllocType::RAW_POINTER_OBJECT);
 #if defined(__aarch64__)
 #else
         argValues->AddInt64(reinterpret_cast<Uptr>(sretSlot));
@@ -502,10 +501,10 @@ void MethodInfo::PrepareSRet(ArgValue* argValues, void* &sret, void**& sretSlot,
         return;
     } else if (HasSRetWithUnknowGenericStruct()) {
         U32 objSize = MRT_ALIGN(size + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
-        sret = ObjectManager::NewObject(retType, objSize, AllocType::RAW_POINTER_OBJECT);
+        *sretSlot = ObjectManager::NewObject(retType, objSize, AllocType::RAW_POINTER_OBJECT);
 #if defined(__aarch64__)
 #else
-        argValues->AddInt64(reinterpret_cast<Uptr>(sret));
+        argValues->AddInt64(reinterpret_cast<Uptr>(*sretSlot));
 #endif
         return;
     }
@@ -516,7 +515,6 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
 {
     ScopedAllocBuffer scopedAllocBuffer;
     ArgValue argValues;
-    void* sret = nullptr;
     void** sretSlot = nullptr;
     TypeInfo* retType = GetReturnType();
     U8 reflectVersion = 0;
@@ -527,7 +525,7 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
         if (retType->IsGeneric()) {
             retType = GetActualTypeFromGenericType(reinterpret_cast<GenericTypeInfo*>(retType), genericArgs);
         }
-        PrepareSRet(&argValues, sret, sretSlot, retType);
+        PrepareSRet(&argValues, sretSlot, retType);
     }
     if (instanceObj != nullptr) {
         // When a struct is passed as 'this' parameter and its size is unknown at compile time,
@@ -573,17 +571,20 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
     if (argValues.GetStackIdx() % 2 != 0) {
         argValues.AddReference(nullptr);
     }
-    Value ret = ApplyCJMethodImpl(&argValues, sret, sretSlot);
+    Value ret = ApplyCJMethodImpl(&argValues, sretSlot);
 
     if (HasSRetWithGeneric()) {
-        sret = *sretSlot;
+        void* retObj = *sretSlot;
         MemoryFree(sretSlot);
-        return sret;
+        return retObj;
     }
     if (HasSRetWithUnknowGenericStruct()) {
 #if defined(__aarch64__)
-        return sret;
+        void* retObj = *sretSlot;
+        MemoryFree(sretSlot);
+        return retObj;
 #else
+        MemoryFree(sretSlot);
         return ret.ref;
 #endif
     }
@@ -592,13 +593,15 @@ void* MethodInfo::ApplyCJMethod(ObjRef instanceObj, void* genericArgs, void* act
         return instanceObj;
     } else if (IsInitializer() && declaringTi->IsStruct()) {
         ret.ref = instanceObj;
-        void* any = RetValueToAny(ret, sret, declaringTi);
+        void* any = RetValueToAny(ret, sretSlot == nullptr ? nullptr : *sretSlot, declaringTi);
         MemoryFree(instanceObj);
-        MemoryFree(sret);
+        MemoryFree(sretSlot == nullptr ? nullptr : *sretSlot);
+        MemoryFree(sretSlot);
         return any;
     }
-    void* any = RetValueToAny(ret, sret, retType);
-    MemoryFree(sret);
+    void* any = RetValueToAny(ret, sretSlot == nullptr ? nullptr : *sretSlot, retType);
+    MemoryFree(sretSlot == nullptr ? nullptr : *sretSlot);
+    MemoryFree(sretSlot);
     return any;
 }
 
