@@ -143,6 +143,7 @@ add_compile_definitions(
    "TLS_COMMON_DYNAMIC"
    "CANGJIE"
    "MRT_MACOS"
+   "__IOS__"
    "_XOPEN_SOURCE=600"
    "_DARWIN_C_SOURCE"
 )
