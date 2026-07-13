@@ -8,7 +8,6 @@ CANGJIE {
   global: *;
   local: unwindPCForSafepointHandlerStub;unwindPCForN2CStub;unwindPCForC2NStub;
       unwindPCForC2RStubStart;unwindPCForC2RStubEnd;unwindPCForStackGrowStub;
-      unwindPCForC2RStackArgsStubStart;unwindPCForC2RStackArgsStubEnd;
       unwindPCForRuntimeStubStart;unwindPCForRuntimeStubEnd;unwindPCForC2NStubExceptionReturn;
       CalleeSavedStubFrameSize;C2NStubFrameSize;*__stack_chk_fail*;unwindPCForExclusiveStub;
       unwindPCForExclusiveStubFull;

@@ -164,10 +164,6 @@ public:
 
     bool IsC2RStubFrame() const;
 
-#ifdef __arm__
-    bool IsC2RStackArgsStubFrame() const;
-#endif
-
     bool IsExclusiveStubFrame() const;
 
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)

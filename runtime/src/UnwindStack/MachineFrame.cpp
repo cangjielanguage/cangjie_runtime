@@ -20,10 +20,6 @@ extern uintptr_t unwindPCForN2CStub;
 extern uintptr_t unwindPCForC2NStub;
 extern uintptr_t unwindPCForC2RStubStart;
 extern uintptr_t unwindPCForC2RStubEnd;
-#ifdef __arm__
-extern uintptr_t unwindPCForC2RStackArgsStubStart;
-extern uintptr_t unwindPCForC2RStackArgsStubEnd;
-#endif
 extern uintptr_t unwindPCForStackGrowStub;
 extern uintptr_t unwindPCForExclusiveStubFull;
 extern uintptr_t unwindPCForExclusiveStub;
@@ -91,14 +87,6 @@ bool MachineFrame::IsC2RStubFrame() const
         reinterpret_cast<uintptr_t>(ip) < reinterpret_cast<uintptr_t>(&unwindPCForC2RStubEnd);
 #endif
 }
-
-#ifdef __arm__
-bool MachineFrame::IsC2RStackArgsStubFrame() const
-{
-    return reinterpret_cast<uintptr_t>(ip) > reinterpret_cast<uintptr_t>(&unwindPCForC2RStackArgsStubStart) &&
-        reinterpret_cast<uintptr_t>(ip) < reinterpret_cast<uintptr_t>(&unwindPCForC2RStackArgsStubEnd);
-}
-#endif
 
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
 bool MachineFrame::IsC2NExceptionStubFrame() const
