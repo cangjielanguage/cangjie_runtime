@@ -4687,14 +4687,14 @@ A
 public static func getPreviousFromUtf8(arr: Array<UInt8>, index: Int64): (Rune, Int64)
 ```
 
-Function: Gets the UTF-8 encoded character corresponding to the byte at the specified index in the byte array, along with the byte length of the character.
+Function: Gets the UTF-8 encoded character that the byte at position `index - 1` (i.e., `arr[index - 1]`) belongs to, along with the byte length of the character.
 
-When an index is specified, the function locates the byte at that position in the array and checks if it is the leading byte of a character according to UTF-8 rules. If not, it continues searching backward until the leading byte is found, then uses the byte sequence to determine the corresponding character.
+Starting from `arr[index - 1]`, the function checks whether that byte is the leading byte of a UTF-8 character. If not, it continues searching backward until the leading byte is found, then decodes the byte sequence into the corresponding character. The valid range for `index` is `[1, arr.size]`.
 
 Parameters:
 
 - arr: [Array](core_package_structs.md#struct-arrayt)\<[UInt8](core_package_intrinsics.md#uint8)> - The byte array to search for the character.
-- index: [Int64](core_package_intrinsics.md#int64) - The index of the byte to find the character for.
+- index: [Int64](core_package_intrinsics.md#int64) - The index in the byte array; the function finds the character that `arr[index - 1]` belongs to. Valid range: `[1, arr.size]`.
 
 Returns:
 
@@ -4702,7 +4702,8 @@ Returns:
 
 Exceptions:
 
-- [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception) - If the leading byte cannot be found, i.e., the byte at the specified position does not conform to UTF-8 encoding.
+- [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception) - If `index` is less than or equal to 0, there is no preceding byte and an exception is thrown; if the leading byte cannot be found, i.e., the byte at `arr[index - 1]` does not conform to UTF-8 encoding, an exception is thrown.
+- [IndexOutOfBoundsException](core_package_exceptions.md#class-indexoutofboundsexception) - If `index` is greater than `arr.size`, an exception is thrown.
 
 Example:
 
