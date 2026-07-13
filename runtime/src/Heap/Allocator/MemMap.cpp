@@ -22,6 +22,28 @@
 namespace MapleRuntime {
 using namespace std;
 
+#if defined(__APPLE__)
+void* MemMap::MapMemoryOnApple(void* reqBase, size_t reqSize, size_t initSize, const Option& opt)
+{
+    if (IsCangjieHeapTag(opt.tag)) {
+        unsigned int flags = static_cast<unsigned int>(opt.flags) & ~static_cast<unsigned int>(MAP_NORESERVE);
+        return mmap(reqBase, reqSize, opt.prot, static_cast<int>(flags), VM_MAKE_TAG(CANGJIE_HEAP_VM_TAG), 0);
+    }
+
+    void* mappedAddr = mmap(reqBase, reqSize, PROT_NONE, opt.flags, -1, 0);
+    if (mappedAddr == MAP_FAILED) {
+        return MAP_FAILED;
+    }
+
+    size_t protSize = opt.protAll ? reqSize : initSize;
+    if (!ProtectMemInternal(mappedAddr, protSize, opt.prot)) {
+        ALLOCUTIL_MEM_UNMAP(mappedAddr, reqSize);
+        return MAP_FAILED;
+    }
+    return mappedAddr;
+}
+#endif
+
 // not thread safe, do not call from multiple threads
 MemMap* MemMap::MapMemory(size_t reqSize, size_t initSize, const Option& opt)
 {
@@ -37,27 +59,36 @@ MemMap* MemMap::MapMemory(size_t reqSize, size_t initSize, const Option& opt)
     mappedAddr = VirtualAlloc(NULL, reqSize, MEM_RESERVE, PAGE_READWRITE);
 #else
     DLOG(ALLOC, "MemMap::MapMemory size %zu", reqSize);
+#if defined(__APPLE__)
+    mappedAddr = MapMemoryOnApple(opt.reqBase, reqSize, initSize, opt);
+#else
     mappedAddr = mmap(opt.reqBase, reqSize, PROT_NONE, opt.flags, -1, 0);
+#endif
 #endif
 
     bool failure = false;
-#if defined(_WIN64) || defined(__APPLE__)
-    if (mappedAddr != NULL) {
+#if defined(_WIN64)
+    if (mappedAddr == NULL) {
+        failure = true;
+    }
+#elif defined(__APPLE__)
+    if (mappedAddr == MAP_FAILED) {
+        failure = true;
+    }
 #else
-    if (mappedAddr != MAP_FAILED) {
+    if (mappedAddr == MAP_FAILED) {
+        failure = true;
+    } else {
         (void)madvise(mappedAddr, reqSize, MADV_NOHUGEPAGE);
         MRT_PRCTL(mappedAddr, reqSize, opt.tag);
-#endif
-        // if protAll, all memory is protected at creation, and we never change it (save time)
         size_t protSize = opt.protAll ? reqSize : initSize;
         if (!ProtectMemInternal(mappedAddr, protSize, opt.prot)) {
             failure = true;
-            LOG(RTLOG_ERROR, "MemMap::MapMemory mprotect failed");
             ALLOCUTIL_MEM_UNMAP(mappedAddr, reqSize);
         }
-    } else {
-        failure = true;
     }
+#endif
+
     CHECK_DETAIL(!failure, "MemMap::MapMemory failed reqSize: %zu initSize: %zu", reqSize, initSize);
 
     DLOG(ALLOC, "MemMap::MapMemory size %zu successful at %p", reqSize, mappedAddr);
