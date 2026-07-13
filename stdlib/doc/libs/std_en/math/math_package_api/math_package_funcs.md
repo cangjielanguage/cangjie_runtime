@@ -298,6 +298,7 @@ Exceptions:
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Throws an exception when parameter `x` is greater than 1.0 or less than -1.0.
 
 Example:<!-- verify -->
+
 ```cangjie
 import std.math.acos
 
@@ -597,6 +598,7 @@ Returns:
 Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Throws an exception when parameter `x` is greater than 1.0 or less than -1.0.
+
 ```}
 ```
 
@@ -2668,7 +2670,7 @@ public func gamma(x: Float16): Float16
 
 Function: Computes the gamma function value of a floating-point number, which extends the factorial concept to real numbers. The evaluation formula is:
 
-$${\displaystyle \Gamma (x)=\int _{0}^{\infty }t^{x-1}\mathrm {e} ^{-t}{\rm {{d}t,}}}$$
+$${\Gamma (x)=\int _{0}^{\infty }t^{x-1}{e}^{-t}{\rm {{d}t,}}}$$
 
 Parameters:
 
@@ -2773,6 +2775,7 @@ public func gcd(x: Int16, y: Int16): Int16
 Function: Computes the greatest common divisor (GCD) of two 16-bit signed integers.
 
 Parameters:- x: [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) - The first integer for GCD calculation.
+
 - y: [Int16](../../core/core_package_api/core_package_intrinsics.md#int16) - The second integer for GCD calculation.
 
 Returns:
@@ -3969,6 +3972,7 @@ public func log2(x: Float32): Float32
 Function: Computes the base-2 logarithm of `x`.
 
 Parameters:
+
 - x: [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) - The argument.
 
 Returns:
@@ -5071,6 +5075,7 @@ Execution Result:
 ```text
 0.000000
 ```
+
 - [Float32](../../core/core_package_api/core_package_intrinsics.md#float32) - Returns the hyperbolic sine value of the input parameter.
 
 Example:
@@ -5520,6 +5525,7 @@ public func trailingZeros(x: Int64): Int64
 Function: Counts the number of trailing zero bits (starting from the least significant bit) in the binary representation of a 64-bit signed integer. Returns 0 if the least significant bit is not 0.
 
 Parameters:
+
 - x: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The integer for which trailing zeros are to be counted.
 
 Returns:

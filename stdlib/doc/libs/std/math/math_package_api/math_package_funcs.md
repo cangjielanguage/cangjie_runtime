@@ -2886,7 +2886,7 @@ public func gamma(x: Float16): Float16
 
 功能：求浮点数的伽马函数值，该函数是阶乘概念在实数上的推广，其求值公式为：
 
-$${\displaystyle \Gamma (x)=\int _{0}^{\infty }t^{x-1}\mathrm {e} ^{-t}{\rm {{d}t,}}}$$
+$${\Gamma (x)=\int _{0}^{\infty }t^{x-1}{e}^{-t}{\rm {{d}t,}}}$$
 
 参数：
 
