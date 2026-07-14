@@ -345,8 +345,9 @@ void SetFieldFromArgs(ObjRef obj, TypeInfo* ti, void* args)
         TypeInfo* argType = ti->GetFieldType(idx);
         U32 offset = ti->GetFieldOffset(idx);
 
+        // For enum and temp enum, skip the first element (the tag).
+        // For option-like-ref enum, the first element in the fields is a placeholder, so need skip too.
         if ((ti->IsEnum() || ti->IsTempEnum()) && !ti->IsZeroSizedEnum()) {
-            // For enum and temp enum, skip the first element (the tag).
             argType = ti->GetFieldType(idx + 1);
             offset = ti->GetFieldOffset(idx + 1);
         }
@@ -382,12 +383,12 @@ ObjRef CreateEnumObject(TypeInfo* ti, MSize size)
     EnumInfo* enumInfo = enumTi->GetEnumInfo();
     CHECK_DETAIL(enumInfo != nullptr, "FieldInitializer: enumInfo is nullptr");
 
+    // For EnumKind1, the object's TypeInfo should be the constructor's TypeInfo of the enum.
+    // For other enum kind, the object's TypeInfo should be the enum's TypeInfo.
     ObjRef obj = nullptr;
     if (enumInfo->IsEnumKind1()) {
         obj = ObjectManager::NewObject(ti, size, AllocType::RAW_POINTER_OBJECT);
     } else {
-        // For other enum kind, the object's TypeInfo should be the enum's TypeInfo.
-        // Current ti is the constructor's TypeInfo of the enum.
         obj = ObjectManager::NewObject(enumTi, size, AllocType::RAW_POINTER_OBJECT);
     }
     if (obj == nullptr) {
@@ -395,6 +396,7 @@ ObjRef CreateEnumObject(TypeInfo* ti, MSize size)
         ExceptionManager::CheckAndThrowPendingException("ObjectManager::NewObject return nullptr");
     }
 
+    // For zero-sized enum and option-like-ref enum, the object has no tag.
     if (obj != nullptr && !ti->IsZeroSizedEnum() && !ti->IsOptionLikeRefEnum()) {
         SetEnumTag(obj, ti);
     }
@@ -408,7 +410,8 @@ void SetElementFromObject(ArrayRef array, ObjRef obj, TypeInfo* ti, U16 fieldNum
         TypeInfo* fieldTi = ti->GetFieldType(idx);
         U32 offset = ti->GetFieldOffset(idx);
 
-        // For enum and temp enum, skip the first element (the tag)
+        // For enum and temp enum, skip the first element (the tag).
+        // For option-like-ref enum, the first element in the fields is a placeholder, so need skip too.
         if ((ti->IsEnum() || ti->IsTempEnum()) && !ti->IsZeroSizedEnum()) {
             fieldTi = ti->GetFieldType(idx + 1);
             offset = ti->GetFieldOffset(idx + 1);
@@ -521,6 +524,7 @@ I32 GetEnumTag(ObjRef obj, TypeInfo* ti)
             }
         }
     } else if (enumInfo->IsEnumKind2()) {
+        // EnumKind2's tag type is bool.
         tag = obj->Load<I8>(TYPEINFO_PTR_SIZE);
     } else {
         tag = obj->Load<I32>(TYPEINFO_PTR_SIZE);

@@ -1364,8 +1364,11 @@ extern "C" TypeInfo** MCC_GetFieldTypes(TypeInfo* ti)
     TypeInfo** fieldTypes = ti->GetFieldTypes();
     if ((ti->IsEnum() || ti->IsTempEnum()) && !ti->IsZeroSizedEnum()) {
         if (ti->IsOptionLikeUnassociatedCtor()) {
+            // The unassociated constructor in option-like enum, don't have field,
+            // but its fieldtypes has two placeholder, so return nullptr.
             return nullptr;
         }
+        // skip the tag
         return fieldTypes + 1;
     }
     return fieldTypes;
@@ -1383,7 +1386,6 @@ extern "C" ObjRef MCC_NewAndInitEnumTupleObject(TypeInfo* ti, void* args)
     MSize size = MRT_ALIGN(ti->GetInstanceSize() + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
     ObjRef obj = nullptr;
 
-    // Need set tag for enum and temp enum.
     if (ti->IsEnum() || ti->IsTempEnum()) {
         obj = FieldInitializer::CreateEnumObject(ti, size);
     } else if (ti->IsTuple()) {
@@ -1416,8 +1418,9 @@ extern "C" ObjRef MCC_GetAssociatedValues(ObjRef obj, TypeInfo* arrayTi)
 {
     TypeInfo* ti = obj->GetTypeInfo();
     U16 fieldNum = ti->GetFieldNum();
-    // For enum and temp enum, fields include the tag,
-    // but the tag is not part of associated values.
+    // For enum and temp enum, except zero-sized enum, fields include the tag,
+    // but the tag is not part of associated values, need skip the tag.
+    // Option-like-ref enum has no tag, but the first element in the fields is a placeholder, so need skip too.
     if (ti->IsEnum() || ti->IsTempEnum()) {
         if (!ti->IsEnumCtor()) {
             // The object's TypeInfo(ti) is the enum's TypeInfo.
@@ -1429,6 +1432,8 @@ extern "C" ObjRef MCC_GetAssociatedValues(ObjRef obj, TypeInfo* arrayTi)
         }
         if (!ti->IsZeroSizedEnum()) {
             if (ti->IsOptionLikeUnassociatedCtor()) {
+                // 2: the unassociated constructor in option-like enum, fieldtypes has two element,
+                //    they are placeholder, not part of associatd values, need skip them.
                 fieldNum -= 2;
             } else {
                 fieldNum -= 1;
