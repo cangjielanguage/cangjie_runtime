@@ -1107,6 +1107,7 @@ extend StatisticsSample {
         if (rc != 0) {
             eprintln("Error: gnuplot call failed.")
         }
+        fixGnuplotSvg(into)
         remove(noGcFile)
     }
 }
@@ -1175,8 +1176,31 @@ extend BenchmarkResult {
         if (rc != 0) {
             eprintln("Error: gnuplot call failed.")
         }
+        fixGnuplotSvg(into)
         remove(dataFile)
     }
+}
+
+// gnuplot 6.0's svg terminal wraps its JavaScript in a CDATA section, but the
+// script contains the literal "]]>" (in a replaceAll that strips CDATA markers
+// from innerHTML). That sequence prematurely closes the CDATA, so the later JS
+// (which uses "<"/">" as comparison operators) is parsed as XML markup and the
+// SVG stops being well-formed. Rewrite that one JS string literal so "]]>" no
+// longer appears verbatim (string concatenation yields the same value at
+// runtime). No-op when the bug is absent.
+protected func fixGnuplotSvg(path: Path): Unit {
+    if (!exists(path)) {
+        return
+    }
+    let content = String.fromUtf8(File.readFrom(path))
+    let buggy = "replaceAll(\"]]>\", \"\")"
+    if (!content.contains(buggy)) {
+        return
+    }
+    let fixed = content.replace(buggy, "replaceAll(\"]]\" + \">\", \"\")")
+    let out = File(path, OpenMode.Write)
+    out.write(fixed.toArray())
+    out.close()
 }
 
 extend JsonObject {
