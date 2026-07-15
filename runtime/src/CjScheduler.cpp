@@ -305,7 +305,8 @@ void* StartMainTask(void* arg, unsigned int len)
     TRACE_START_ASYNC(TRACE_CJTHREAD_EXIT, CJThreadId());
 #elif defined(__ANDROID__)
     TRACE_FINISH();
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, CJThreadId()));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, CJThreadId());
+    TRACE_START(traceInfo.Str());
 #endif
     CpuProfiler::GetInstance().TryStopSampling();
     RTErrorCode rtCode = SetRuntimeFiniFlag();
@@ -427,7 +428,8 @@ bool MRT_NewForeignCJThread()
 #ifdef __OHOS__
     TRACE_START_ASYNC(TRACE_CJTHREAD_EXEC, CJThreadGetId(cjthread));
 #elif defined(__ANDROID__)
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, CJThreadGetId(cjthread)));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, CJThreadGetId(cjthread));
+    TRACE_START(traceInfo.Str());
 #endif
     return true;
 }

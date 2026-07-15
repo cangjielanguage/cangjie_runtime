@@ -225,7 +225,7 @@ private:
 #define TRACE_CJTHREAD_SETNAME                       "CJTHREAD_CJThreadSetName"
 
 #ifdef __ANDROID__
-const char* TraceInfoFormat(const char* name, unsigned long long id, unsigned int argNum = 0, ...);
+CString TraceInfoFormat(const char* name, unsigned long long id, unsigned int argNum = 0, ...);
 #endif
 
 class ScopedEntryTrace {
