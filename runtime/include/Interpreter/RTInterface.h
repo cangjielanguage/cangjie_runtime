@@ -62,6 +62,12 @@ typedef const void* DYN_DerivedPtrVisitor;
 // Pointer to ExceptionWrapper.
 typedef void* DYN_ExceptionWrapper;
 
+// Interpreter specific data, used for getting interpreted frame description.
+typedef const void* INT_FunctionHandle;
+
+// Interpreter specific data, used for getting interpreted frame description.
+typedef const void* INT_BytecodePos;
+
 typedef const char* INT_InterpreterArg;
 typedef const INT_InterpreterArg* INT_InterpreterArgs;
 
@@ -71,13 +77,21 @@ typedef struct INT_FrameDesc {
     DYN_InstructionPointer ip;
 } INT_FrameDesc;
 
-// This struct describes frame. Interpreter would fill this structure in `INT_FrameInfoProviderFn` function.
+// This struct is used for getting interpreted frame info.
 typedef struct INT_InterpretedFrameInfo {
+    INT_FunctionHandle fuh;
+    INT_BytecodePos bcPos;
+} INT_InterpretedFrameInfo;
+
+// This struct describes interpreted method. Interpreter would fill this structure in `INT_FrameDescProviderFn` function
+// using `INT_InterpretedFrameInfo`.
+typedef struct INT_InterpretedFrameDesc {
     size_t lineNumber;
     char* methodName;
     char* className;
     char* fileName;
-} INT_InterpretedFrameInfo;
+    void (*freeResources)(char* methodName, char* className, char* fileName);
+} INT_InterpretedFrameDesc;
 
 // endregion Types
 
@@ -94,7 +108,7 @@ typedef struct INT_InterpretedFrameInfo {
 
 // endregion Calling Conventions
 
-#define INT_INTERPRETER_INTERFACE_VERSION 1
+#define INT_INTERPRETER_INTERFACE_VERSION 2
 #define DYN_CJNATIVE_INTERFACE_VERSION 2
 
 // region interpreter interface
@@ -174,17 +188,36 @@ typedef void (*INT_CJThreadOnStartFn)(DYN_CJThreadSpecificData*);
 // - Pointer to CJThreadSpecificData
 typedef void (*INT_CJThreadOnDestroyFn)(DYN_CJThreadSpecificData*);
 
-// Provides information about given frame which could be used for precise stack trace generation.
-// This method could be called by any thread (e.g. auxiliary stack dumper thread) to query information about interpreter
-// frames.
+// Provides size of interpreted frame by frame pointer.
+// Notes:
+//  Frame pointer should point on valid interpreter frame that is not cleared at the moment of
+//  this function call.
+typedef uint32_t (*INT_GetFrameSize)(DYN_FramePointer fp);
+
+// Provides description of given frame which could be used for precise stack trace generation.
+// This method could be called by any thread (e.g. auxiliary stack dumper thread) to query information about
+// interpreter frames.
 // Important: this function may invoke "long-running" tasks (fseek, pthread_mutex_lock) so CJNative runtime
 //            should treat this method as "foreign" code.
 // params:
-// - fp - Frame pointer. Must be provided by CJNative runtime.
+// - fuh - Internal interpreter data pointer that's got by `INT_FrameInfoProviderFn`.
+// - bc - Internal interpreter data pointer that's got by `INT_FrameInfoProviderFn`.
+// - frameDesc - [OUT] Pointer to INT_InterpretedFrameDesc. Fields of this struct will be initialized by interpreter.
+typedef void (*INT_FrameDescProviderFn)(
+    INT_FunctionHandle fuh, INT_BytecodePos pos, INT_InterpretedFrameDesc* frameDesc);
+
+// Provides information related to interpreted frame that can be used later for getting a description of the frame
+// for printable stacktrace collection.
+// This method could be called by any thread (e.g. auxiliary stack dumper thread) to query information about
+// interpreter frames.
+// Important: this function may invoke "long-running" tasks (fseek, pthread_mutex_lock) so CJNative runtime
+//            should treat this method as "foreign" code.
+// params:
 // - ip - Instruction pointer in frame (callsite position).
+// - fp - Frame pointer. Must be provided by CJNative runtime.
 // - frameInfo - [OUT] Pointer to INT_InterpretedFrameInfo. Fields of this struct will be initialized by interpreter.
 typedef void (*INT_FrameInfoProviderFn)(
-    DYN_FramePointer fp, DYN_InstructionPointer ip, INT_InterpretedFrameInfo* frameInfo);
+    DYN_InstructionPointer ip, DYN_FramePointer fp, INT_InterpretedFrameInfo* frameInfo);
 
 // Landing pad which handles pending exception.
 // If there is suitable catch block in current last interpreted frame, interprets catch block.
@@ -578,9 +611,6 @@ struct INT_InterpreterInterface {
     uintptr_t i2iAdapterStartAddr;
     uintptr_t i2iAdapterEndAddr;
 
-    uintptr_t interpreterPrologueStartAddr;
-    uintptr_t interpreterPrologueEndAddr;
-
     INT_IterateFramesWithStateFn iterateFramesWithState;
     INT_VisitFrameRootsExpansionFn visitFrameRootsExpansion;
     INT_VisitFrameRootsMarkingFn visitFrameRootsMarking;
@@ -590,6 +620,8 @@ struct INT_InterpreterInterface {
     INT_CJThreadOnStartFn cjThreadOnStart;
     INT_CJThreadOnDestroyFn cjThreadOnDestroy;
 
+    INT_GetFrameSize getFrameSize;
+    INT_FrameDescProviderFn frameDescProvider;
     INT_FrameInfoProviderFn frameInfoProvider;
     INT_LandingPadFn landingPad;
 };

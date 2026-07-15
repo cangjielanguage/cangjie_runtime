@@ -10,6 +10,7 @@
 #include "CjScheduler.h"
 #include "Common/BaseObject.h"
 #include "Common/ScopedObjectAccess.h"
+#include "Common/StackType.h"
 #include "Common/TypeDef.h"
 #include "ExceptionManager.inline.h"
 #include "Heap/Barrier/Barrier.h"
@@ -70,16 +71,44 @@ struct {
     }
 } g_interpreterInterface;
 
+uint32_t GetFrameSize(uintptr_t fp)
+{
+    assert(g_interpreterInterface.initialized);
+    DLOG(INTERPRETER, "GetFrameSize(fp=%p)", fp);
+
+    auto framePointer = reinterpret_cast<DYN_FramePointer>(fp);
+    return g_interpreterInterface->getFrameSize(framePointer);
+}
+
 void FillInterpretedFrameInfo(uintptr_t fp, uintptr_t ip, INT_InterpretedFrameInfo* fInfo)
 {
+    assert(g_interpreterInterface.initialized); // interpreter frame can exist only if interface is enabled
+
     auto framePointer = reinterpret_cast<DYN_FramePointer>(fp);
     auto instructionPointer = reinterpret_cast<DYN_InstructionPointer>(ip);
 
     DLOG(INTERPRETER, "FillInterpretedFrameInfo(fp=%p, ip=%p)", framePointer, instructionPointer);
+    g_interpreterInterface->frameInfoProvider(instructionPointer, framePointer, fInfo);
+}
 
-    if (g_interpreterInterface) {
-        g_interpreterInterface->frameInfoProvider(framePointer, instructionPointer, fInfo);
-    }
+void FillInterpretedFrameDesc(uint64_t functionHandle, uint64_t position, StackTraceElement& ste)
+{
+    assert(g_interpreterInterface.initialized); // interpreter frame can exist only if interface is enabled
+
+    INT_InterpretedFrameDesc fDesc;
+
+    INT_FunctionHandle fuh = reinterpret_cast<INT_FunctionHandle>(functionHandle);
+    INT_BytecodePos pos = reinterpret_cast<INT_BytecodePos>(position);
+
+    DLOG(INTERPRETER, "FillInterpretedFrameDesc(fuh=%p, bcPos=%p)", fuh, pos);
+    g_interpreterInterface->frameDescProvider(fuh, pos, &fDesc);
+
+    ste.lineNumber = fDesc.lineNumber;
+    ste.methodName = fDesc.methodName; // copying assignment
+    ste.className = fDesc.className;   // copying assignment
+    ste.fileName = fDesc.fileName;     // copying assignment
+
+    fDesc.freeResources(fDesc.methodName, fDesc.className, fDesc.fileName);
 }
 
 void IterateFramesWithState(
@@ -713,20 +742,6 @@ bool IsI2NStubAddr(const uintptr_t address)
     uintptr_t i2nStubEndAddr = reinterpret_cast<uintptr_t>(&CJ_MCC_I2NStubEnd);
     bool res = i2nStubStartAddr <= address && address < i2nStubEndAddr;
     DLOG(INTERPRETER, "Checking I2N stub borders: is %p in [%p, %p)? -- %s", address, i2nStubStartAddr, i2nStubEndAddr,
-        res ? "true" : "false");
-    return res;
-}
-
-bool IsInterpreterPrologueAddr(const uintptr_t address)
-{
-    if (!g_interpreterInterface) {
-        return false;
-    }
-    uintptr_t startAddr = g_interpreterInterface->interpreterPrologueStartAddr;
-    uintptr_t endAddr = g_interpreterInterface->interpreterPrologueEndAddr;
-    bool hasRange = startAddr != 0 && startAddr < endAddr;
-    bool res = hasRange && startAddr <= address && address < endAddr;
-    DLOG(INTERPRETER, "Checking interpreter prologue borders: is %p in [%p, %p)? -- %s", address, startAddr, endAddr,
         res ? "true" : "false");
     return res;
 }

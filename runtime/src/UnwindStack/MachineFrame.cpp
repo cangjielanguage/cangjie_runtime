@@ -80,11 +80,6 @@ bool MachineFrame::IsI2NFrame() const
 {
     return IsI2NStubAddr(reinterpret_cast<uintptr_t>(ip));
 }
-
-bool MachineFrame::IsInterpreterPrologueFrame() const
-{
-    return IsInterpreterPrologueAddr(reinterpret_cast<uintptr_t>(ip));
-}
 #endif
 
 bool MachineFrame::IsC2NStubFrame() const

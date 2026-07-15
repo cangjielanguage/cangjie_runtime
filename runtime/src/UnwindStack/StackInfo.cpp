@@ -134,9 +134,6 @@ void StackInfo::AnalyseAndSetFrameType(UnwindContext& uwContext)
         } else if (mFrame.IsI2NFrame()) {
             DLOG(INTERPRETER, "[Analyzer] INTERPRETER_I2N frame, address: %p", mFrame.GetIP());
             frameInfo.SetFrameType(FrameType::INTERPRETER_I2N);
-        } else if (mFrame.IsInterpreterPrologueFrame()) {
-            DLOG(INTERPRETER, "[Analyzer] INTERPRETER_PROLOGUE frame, address: %p", mFrame.GetIP());
-            frameInfo.SetFrameType(FrameType::INTERPRETER_PROLOGUE);
         } else {
             DLOG(INTERPRETER, "[Analyzer] INTERPRETER frame, address: %p", mFrame.GetIP());
             frameInfo.SetFrameType(FrameType::INTERPRETER);
@@ -208,15 +205,19 @@ void StackInfo::ExtractLiteFrameInfoFromStack(std::vector<uint64_t>& liteFrameIn
                 break;
             }
 #ifdef INTERPRETER_ENABLED
-            case FrameType::INTERPRETER_C2I:
-            case FrameType::INTERPRETER_I2I:
-            case FrameType::INTERPRETER_I2N:
-            case FrameType::INTERPRETER_PROLOGUE: {
-                liteFrameInfos.push_back(reinterpret_cast<uint64_t>(
-                    frameInfo.mFrame.GetIP())); // consumed by interpreter frame info provider
-                liteFrameInfos.push_back(reinterpret_cast<uint64_t>(
-                    frameInfo.mFrame.GetFA()));                    // consumed by interpreter frame info provider
-                liteFrameInfos.push_back(INTERPRETED_FRAME_FDESC); // marks this triple as "non-cjnative"
+            case FrameType::INTERPRETER: {
+                auto ip = reinterpret_cast<uintptr_t>(frameInfo.mFrame.GetIP());
+                auto fp = reinterpret_cast<uintptr_t>(frameInfo.mFrame.GetFA());
+
+                INT_InterpretedFrameInfo fInfo;
+                FillInterpretedFrameInfo(fp, ip, &fInfo);
+
+                // consumed by interpreter frame description provider
+                liteFrameInfos.push_back(reinterpret_cast<uint64_t>(fInfo.fuh));
+                // consumed by interpreter frame description provider
+                liteFrameInfos.push_back(reinterpret_cast<uint64_t>(fInfo.bcPos));
+                // marks this triple as "non-cjnative"
+                liteFrameInfos.push_back(INTERPRETED_FRAME_FDESC);
                 break;
             }
 #endif
@@ -254,16 +255,7 @@ void StackInfo::GetStackTraceByLiteFrameInfo(const uint64_t v1, const uint64_t v
 #ifdef INTERPRETER_ENABLED
     if (v3 == INTERPRETED_FRAME_FDESC) {
         // handle interpreter frame
-        INT_InterpretedFrameInfo info;
-
-        uintptr_t ip = static_cast<uintptr_t>(v1);
-        uintptr_t fa = static_cast<uintptr_t>(v2);
-        FillInterpretedFrameInfo(fa, ip, &info);
-
-        ste.lineNumber = info.lineNumber;
-        ste.methodName = info.methodName;
-        ste.className = info.className;
-        ste.fileName = info.fileName;
+        FillInterpretedFrameDesc(v1, v2, ste);
         return;
     }
 #endif
