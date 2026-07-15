@@ -17,7 +17,15 @@ __CJ_Init_Start:                        // @__CJ_Init_Start
     ldr     x0, [x0, __CJMetadataStart@GOTPAGEOFF]
     ldr     x0, [x0]
     mov     w1, #1
-    bl      _MRT_LibraryOnLoad
+    // Use GOT indirect call (adrp+ldr+blr) instead of bl to support code-model=large.
+    // x16 is chosen because: 1) AAPCS64 designates x16/x17 (IP0/IP1) as intra-procedure
+    // call scratch registers, used by linker branch islands; 2) PLT stubs use the same
+    // pattern (adrp x16, sym@GOTPAGE / ldr x16, [x16, sym@GOTPAGEOFF] / blr x16);
+    // 3) x16 is free before this call (x0/w1 hold arguments); 4) x16 is caller-saved,
+    // no need to restore after call.
+    adrp    x16, _MRT_LibraryOnLoad@GOTPAGE
+    ldr     x16, [x16, _MRT_LibraryOnLoad@GOTPAGEOFF]
+    blr     x16
     ldr     x30, [sp], #16          // 8-byte Folded Reload
     ret
 .Lfunc_end12:
@@ -35,7 +43,10 @@ __CJ_Fini_End:                        // @__CJ_Fini_End
     adrp    x0, __CJMetadataStart@GOTPAGE
     ldr     x0, [x0, __CJMetadataStart@GOTPAGEOFF]
     ldr     x0, [x0]
-    bl      _MRT_LibraryUnLoad
+    // Same GOT indirect call pattern as above. See comment in __CJ_Init_Start.
+    adrp    x16, _MRT_LibraryUnLoad@GOTPAGE
+    ldr     x16, [x16, _MRT_LibraryUnLoad@GOTPAGEOFF]
+    blr     x16
     ldr     x30, [sp], #16          // 8-byte Folded Reload
     ret
 .Lfunc_end:

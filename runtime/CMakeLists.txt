@@ -714,6 +714,7 @@ if (IOS_FLAG MATCHES 1 OR IOS_SIMULATOR_FLAG MATCHES 1 OR IOS_SIMULATOR_FLAG MAT
                 "$<TARGET_OBJECTS:cjthreadmodel>"
                 "$<TARGET_OBJECTS:CjSemanticVersion>"
                 "$<TARGET_OBJECTS:CpuProfiler>"
+                "$<TARGET_OBJECTS:Interpreter>"
                 "${SANITIZER_LIB_STATIC}"
             VERBATIM
         )
