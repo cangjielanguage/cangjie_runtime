@@ -450,10 +450,10 @@ void HiLogForCJThread(RTLogLevel level, const char* format, va_list args)
 
 #ifdef __ANDROID__
 // The trace info format: "name arg1 ... cjthreadId"
-const char* TraceInfoFormat(const char* name, unsigned long long id, unsigned int argNum, ...)
+CString TraceInfoFormat(const char* name, unsigned long long id, unsigned int argNum, ...)
 {
     if (name == nullptr || *name == '\0') {
-        return "null info";
+        return CString("null info");
     }
     CString nameStr(name);
     CString idStr(static_cast<uint32_t>(id));
@@ -472,7 +472,7 @@ const char* TraceInfoFormat(const char* name, unsigned long long id, unsigned in
     }
     nameStr = nameStr.Append(" ");
     nameStr = nameStr.Append(idStr);
-    return nameStr.Str();
+    return nameStr;
 }
 #endif
 

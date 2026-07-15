@@ -495,7 +495,10 @@ void *CJThreadMexit(struct CJThread *delCJThread)
     TRACE_START_ASYNC(TRACE_CJTHREAD_EXIT, cjthreadId);
 #elif defined (__ANDROID__)
     TRACE_FINISH();
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, cjthreadId));
+    // Bind the prvalue to a named local so the CString outlives the full-expression;
+    // Str()'s returned pointer then stays valid for the synchronous ATrace_beginSection() call.
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, cjthreadId);
+    TRACE_START(traceInfo.Str());
 #endif
     struct Schedule *schedule = delCJThread->schedule;
     struct ScheduleCJThread *scheduleCJThread = &schedule->schdCJThread;
@@ -917,7 +920,8 @@ void ExclusiveExecutor(struct Thread* thread, struct CJThread* newCJThread)
     tlData->SetMutator(mutator);
     mutator->PreparedToRun(tlData);
 #if defined(__ANDROID__)
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, CJThreadGetId(newCJThread)));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, CJThreadGetId(newCJThread));
+    TRACE_START(traceInfo.Str());
 #endif
     newCJThread->func(newCJThread->argStart, newCJThread->argSize);
     return;
@@ -980,7 +984,8 @@ void ExclusiveRestore(struct CJThread* oldCJThread, struct Thread* thread,
 
 #if defined(__ANDROID__)
     TRACE_FINISH();
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, CJThreadGetId(newCJThread)));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXIT, CJThreadGetId(newCJThread));
+    TRACE_START(traceInfo.Str());
 #endif
     // Free cjthread and scheduler
     ScheduleAllCJThreadListRemove(newCJThread);
@@ -1028,7 +1033,8 @@ CJThreadHandle CJThreadNew(ScheduleHandle schedule, const struct CJThreadAttr *a
 #ifdef __OHOS__
     TRACE_START_ASYNC(TRACE_CJTHREAD_NEW, cjthreadId);
 #elif defined(__ANDROID__)
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_NEW, cjthreadId));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_NEW, cjthreadId);
+    TRACE_START(traceInfo.Str());
 #endif
     int error = 0;
     struct Schedule *currentSchedule;
@@ -1191,7 +1197,8 @@ void *CJThreadMpark(struct CJThread *parkCJThread)
 #ifdef __OHOS__
             TRACE_START_ASYNC(TRACE_CJTHREAD_EXEC, parkCJThread->id);
 #elif defined(__ANDROID__)
-            TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, parkCJThread->id));
+            MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, parkCJThread->id);
+            TRACE_START(traceInfo.Str());
 #endif
             CJThreadExecute(parkCJThread, (void**)&tlData->cjthread);
         }
@@ -1229,7 +1236,8 @@ int CJThreadParkInForeignThread(CJThread* cjthread, ParkCallbackFunc func, void 
 #ifdef __OHOS__
     TRACE_START_ASYNC(TRACE_CJTHREAD_EXEC, cjthread->id);
 #elif defined(__ANDROID__)
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, cjthread->id));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, cjthread->id);
+    TRACE_START(traceInfo.Str());
 #endif
 
     // Check the timer.
@@ -1356,7 +1364,8 @@ void *CJThreadMRAW(struct CJThread *parkCJThread)
 #ifdef __OHOS__
             TRACE_START_ASYNC(TRACE_CJTHREAD_EXEC, nextCJThread->id);
 #elif defined (__ANDROID__)
-            TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, nextCJThread->id));
+            MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_EXEC, nextCJThread->id);
+            TRACE_START(traceInfo.Str());
 #endif
 #ifdef __OHOS__
             if (nextCJThread->schedule->scheduleType == SCHEDULE_UI_THREAD) {
@@ -1675,7 +1684,9 @@ void CJThreadSetName(CJThreadHandle handle, const char *name, size_t len)
 #ifdef __OHOS__
     MapleRuntime::ScopedEntryAsyncTrace(TRACE_CJTHREAD_SETNAME, cjthread->id, cjthread->name);
 #elif defined(__ANDROID__)
-    TRACE_START(MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_SETNAME, cjthread->id, 1, cjthread->name));
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_SETNAME,
+        cjthread->id, 1, cjthread->name);
+    TRACE_START(traceInfo.Str());
     TRACE_FINISH();
 #endif
 }
