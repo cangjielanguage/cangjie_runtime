@@ -688,7 +688,7 @@ class ArgParser {
             let spec = _shortOptionSpecs.get(runeArray[noValueSpecs.size]) ?? throw ArgumentParseException(
                 "Unknown option: ${runeArray[noValueSpecs.size]}.")
             let key = String(runeArray[noValueSpecs.size])
-            if (spec.mode == RequiredValue && noValueSpecs.size < runeArray.size - 2) {
+            if (spec.mode == RequiredValue && noValueSpecs.size < runeArray.size - 1) {
                 addOptionAndExecuteAction(key, String(runeArray[noValueSpecs.size + 1..]),
                     spec)
             } else if (spec.mode == OptionalValue) {
