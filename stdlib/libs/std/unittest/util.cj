@@ -89,15 +89,6 @@ extend Array<Byte> {
 }
 
 extend<T> ArrayList<T> {
-    func find(pred: (T) -> Bool): Option<T> {
-        for (e in this) {
-            if (pred(e)) {
-                return e
-            }
-        }
-        None
-    }
-
     func pop(): ?T {
         if (size == 0) {
             None
@@ -211,30 +202,6 @@ class ChainIterator<T> <: Iterator<T> {
 
 func chain<T>(l: Iterable<T>, r: Iterable<T>): Iterable<T> {
     ChainIterator(l.iterator(), r.iterator())
-}
-
-private class BeforeEachIterator<T> <: Iterator<T> {
-    private let action: (?T) -> Unit
-    private let it: Iterator<T>
-    private var previous: ?T = None
-
-    public init(it: Iterator<T>, action: (previous: ?T) -> Unit) {
-        this.it = it
-        this.action = action
-    }
-
-    public func next(): Option<T> {
-        action(previous)
-        previous = match (it.next()) {
-            case Some(value) => Some(value)
-            case _ => None
-        }
-        return previous
-    }
-}
-
-func beforeEach<T>(action: (previous: ?T) -> Unit): (Iterable<T>) -> Iterator<T> {
-    return { it: Iterable<T> => BeforeEachIterator(it.iterator(), action) }
 }
 
 extend Semaphore {

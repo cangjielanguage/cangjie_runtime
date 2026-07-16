@@ -11,17 +11,6 @@ import std.random.Random
 import std.unittest.prop_test.RandomSource
 
 extend Configuration {
-    mut prop randomSeed: ?Int64 {
-        get(){ get(KeyRandomSeed.randomSeed) }
-        set(value) {
-            match (value) {
-                case None => remove(KeyRandomSeed.randomSeed)
-                case Some(v) =>
-                    set(KeyRandomSeed.randomSeed, v)
-            }
-            return
-        }
-    }
     mut prop random: ?RandomSource {
         get() { get<RandomSource>(KeyRandom.random) }
         set(value) {

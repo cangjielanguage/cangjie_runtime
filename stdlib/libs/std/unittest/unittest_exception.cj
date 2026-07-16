@@ -26,18 +26,11 @@ class ErrorWrapperException <: Exception {
         super(error.getStackTraceMessage())
     }
 
-    init(message: String, error: Error) {
-        super("${message}:\n${error.getStackTraceMessage()}")
-    }
-
     protected override func getClassName(): String {
         return "ErrorWrapperException"
     }
 
     public override func toString(): String {
-        if (this.message.isEmpty()) {
-            return getClassName()
-        }
         return this.message
     }
 }

@@ -86,13 +86,6 @@ foreign func CJ_MICROFUZZ_GLOBAL_EDGE_COVERAGE_EST(): Float64
 
 foreign func CJ_MICROFUZZ_SET_DBG_CALLBACK(callback: CFunc<(CString, CString, UInt64, UInt64) -> Unit>): Unit
 
-@C
-func printMessage(mes: CString, t: CString, v1: UInt64, v2: UInt64): Unit {
-    print(mes)
-    print(t)
-    println(" ${v1} ${v2}")
-}
-
 func currentCoverageEst() {
     unsafe { CJ_MICROFUZZ_GLOBAL_EDGE_COVERAGE_EST() }
 }

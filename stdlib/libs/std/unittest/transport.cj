@@ -83,17 +83,6 @@ class TransportChannel <: Resource {
         socket.writeTimeout = Duration.second * WRITE_TIMEOUT_S
     }
 
-    prop port: UInt16 {
-        get() {
-            let address = if (isMain) {
-                socket.localAddress as IPSocketAddress
-            } else {
-                socket.remoteAddress as IPSocketAddress
-            }
-            address.getOrThrow().port
-        }
-    }
-
     public func isClosed() {
         socket.isClosed()
     }
