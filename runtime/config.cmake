@@ -324,10 +324,10 @@ elseif (IOS_SIMULATOR_FLAG MATCHES 2)
             -fno-rtti -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common -target x86_64-apple-ios11-simulator")
 elseif (IOS_SIMULATOR_FLAG MATCHES 1)
     set(CMAKE_INIT_FLAGS "-Wno-unused-command-line-argument -fno-omit-frame-pointer -fvisibility=default -fno-exceptions \
-            -fno-rtti -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common -target arm64-apple-ios11-simulator")
+            -fno-rtti -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common -mcmodel=large -target arm64-apple-ios11-simulator")
 elseif (IOS_FLAG MATCHES 1)
     set(CMAKE_INIT_FLAGS "-Wno-unused-command-line-argument -fno-omit-frame-pointer -fvisibility=default -fno-exceptions \
-        -fno-rtti -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common -target arm64-apple-ios11")
+        -fno-rtti -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common -mcmodel=large -target arm64-apple-ios11")
 else ()
     set(CMAKE_INIT_FLAGS "-Wno-unused-command-line-argument -fno-omit-frame-pointer -fvisibility=default -fno-exceptions \
         -fno-rtti -ffunction-sections -Wall -fstack-protector-strong -fPIC -fno-strict-aliasing -fno-common")
