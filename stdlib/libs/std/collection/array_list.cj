@@ -371,10 +371,6 @@ public class ArrayList<T> <: List<T> {
      */
     @Frozen
     public func remove(range: Range<Int64>): Unit {
-        if (range.isEmpty()) {
-            return
-        }
-
         if (range.step != 1) {
             throw IllegalArgumentException("the value of the step should be r'1'")
         }
@@ -392,6 +388,10 @@ public class ArrayList<T> <: List<T> {
         // If start is omitted, start = 0.
         if (!range.hasStart) {
             start = 0
+        }
+        // If start >= end, do nothing.
+        if (start >= end) {
+            return
         }
         if (start < 0 || end < 0 || end > this.mySize) {
             throw IndexOutOfBoundsException(
