@@ -103,7 +103,7 @@ void FillInterpretedFrameDesc(uint64_t functionHandle, uint64_t position, StackT
     DLOG(INTERPRETER, "FillInterpretedFrameDesc(fuh=%p, bcPos=%p)", fuh, pos);
     g_interpreterInterface->frameDescProvider(fuh, pos, &fDesc);
 
-    ste.lineNumber = fDesc.lineNumber;
+    ste.lineNumber = static_cast<int64_t>(fDesc.lineNumber);
     ste.methodName = fDesc.methodName; // copying assignment
     ste.className = fDesc.className;   // copying assignment
     ste.fileName = fDesc.fileName;     // copying assignment

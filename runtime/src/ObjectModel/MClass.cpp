@@ -1097,6 +1097,9 @@ void* TypeInfo::GetAnnotations(TypeInfo* arrayTi)
             return GetEnumInfo()->GetAnnotations(arrayTi);
         }
         EnumInfo* ei = GetSuperTypeInfo()->GetEnumInfo();
+        if (ei == nullptr) {
+            return MapleRuntime::GetAnnotations(0, arrayTi);
+        }
         if (ei->GetReflectVersion() < 2) {
             // Versions earlier than 2 do not support getting enum constructor's annotations.
             return MapleRuntime::GetAnnotations(0, arrayTi);
@@ -1104,6 +1107,9 @@ void* TypeInfo::GetAnnotations(TypeInfo* arrayTi)
         U32 num = ei->GetNumOfEnumCtor();
         if (IsGenericTypeInfo()) {
             EnumInfo* sourceEi = GetSuperTypeInfo()->GetSourceGeneric()->GetEnumInfo();
+            if (sourceEi == nullptr) {
+                return MapleRuntime::GetAnnotations(0, arrayTi);
+            }
             for (U32 idx = 0; idx < num; idx++) {
                 if (ei->GetCtorTypeInfo(idx)->GetUUID() == GetUUID()) {
                     return sourceEi->GetCtorAnnotations(idx, arrayTi);

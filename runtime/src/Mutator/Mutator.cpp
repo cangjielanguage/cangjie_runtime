@@ -455,8 +455,8 @@ intptr_t Mutator::FixExtendedStack(intptr_t frameBase, uint32_t adjustedSize, vo
             // The interpreter stack-grow path passes the full size that must fit below the caller
             // frame base after StackGrowStub passes execution into the prologue of interpreted method.
             DLOG(INTERPRETER, "Stack overflow happened in interpreter, stack size: %zu", stackSize);
-            uintptr_t stubFrameBase = frameBase;
-            uintptr_t interpFrameBase = static_cast<uintptr_t>(*reinterpret_cast<intptr_t*>(stubFrameBase));
+            const uintptr_t* stubFrameBase = reinterpret_cast<const uintptr_t*>(frameBase);
+            uintptr_t interpFrameBase = *stubFrameBase;
 
             size_t requiredSp = interpFrameBase - GetFrameSize(interpFrameBase);
             size_t newSize = stackSize + stackSize;
