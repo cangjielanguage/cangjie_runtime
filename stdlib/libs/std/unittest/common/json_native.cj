@@ -98,38 +98,6 @@ func replaceEscapeChar(input: String, output: Array<Byte>, from!: Int64 = 0): In
     return i - from
 }
 
-@OverflowWrapping
-func writeBufferAppendInt(buffer: Array<Byte>, int: Int64) {
-    if (int == Int64.Min) {
-        MIN_INT_LIT.copyTo(buffer)
-        return MIN_INT_LIT.size
-    }
-    if (int < 0) {
-        buffer[0] = b'-'
-        writeBufferAppendInt(buffer[1..], UInt64(-int))
-    } else {
-        writeBufferAppendInt(buffer, UInt64(int))
-    }
-}
-
-@OverflowWrapping
-func writeBufferAppendInt(buffer: Array<Byte>, int: UInt64) {
-    var digits = 0
-    var tmp = int
-    while (tmp != 0) {
-        digits++
-        tmp /= 10
-    }
-
-    tmp = int
-    for (i in 0..digits) {
-        let pos = digits - i
-        buffer[pos] = UInt8(tmp % 10) + b'0'
-        tmp = tmp / 10
-    }
-    return digits
-}
-
 const MAX_JSON_PARSE_DEPTH = 100
 
 /**
