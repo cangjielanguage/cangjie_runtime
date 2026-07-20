@@ -45,7 +45,11 @@ public:
         while (tryDirtyTree || tryReleasedTree) {
             // first try to get a dirty region.
             if (tryDirtyTree && dirtyUnitTreeMutex.try_lock()) {
+#if defined(__OHOS__)
                 bool dirtyOk = dirtyUnitTree.TakeUnitsLowAddr(num, idx);
+#else
+                bool dirtyOk = dirtyUnitTree.TakeUnits(num, idx);
+#endif
                 if (dirtyOk) {
                     DLOG(REGION, "c-tree %p alloc dirty units[%u+%u, %u) @[0x%zx, 0x%zx), %u dirty-units left",
                         &dirtyUnitTree, idx, num, idx + num, RegionInfo::GetUnitAddress(idx),
@@ -63,7 +67,11 @@ public:
 
             // then try to get a released region.
             if (tryReleasedTree && releasedUnitTreeMutex.try_lock()) {
+#if defined(__OHOS__)
                 bool releasedOk = releasedUnitTree.TakeUnitsLowAddr(num, idx);
+#else
+                bool releasedOk = releasedUnitTree.TakeUnits(num, idx);
+#endif
                 if (releasedOk) {
 #ifdef _WIN64
                     MemMap::CommitMemory(
