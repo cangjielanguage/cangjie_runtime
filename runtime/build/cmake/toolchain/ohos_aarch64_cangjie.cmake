@@ -45,7 +45,8 @@ set(CMAKE_RANLIB "$ENV{OHOS_ROOT}/prebuilts/clang/ohos/${cmake_host_system_name}
 
 # compile flags for common
 set(CMAKE_C_FLAGS
-    "-Wdeprecated-copy -fno-strict-aliasing --param=ssp-buffer-size=4  -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret \
+    "-Wdeprecated-copy -fno-strict-aliasing --param=ssp-buffer-size=4  -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall \
+     -mbranch-protection=pac-ret+b-key \
      -std=c11 \
      -Wdate-time -Wformat=2 -Wswitch-default -Wunused \
      -Wcast-qual \
@@ -58,7 +59,8 @@ set(CMAKE_C_FLAGS
 )
 
 set(CMAKE_CXX_FLAGS
-    "-Wdeprecated-copy -fno-strict-aliasing --param=ssp-buffer-size=4  -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret \
+    "-Wdeprecated-copy -fno-strict-aliasing --param=ssp-buffer-size=4  -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall \
+     -mbranch-protection=pac-ret+b-key \
      -std=gnu++14 \
      -Wdate-time -Wformat=2 -Wswitch-default -Wunused \
      -Wcast-qual -Woverloaded-virtual -Wnon-virtual-dtor -Wdelete-non-virtual-dtor \
@@ -81,8 +83,8 @@ endif()
 
 # if building stage is publish, add CMAKE_C_FLAGS
 if("${BUILDING_STAGE}" STREQUAL "publish")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret+b-key")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto -fvisibility=default -fsanitize=cfi -fno-sanitize=cfi-nvcall,cfi-icall -mbranch-protection=pac-ret+b-key")
 endif()
 
 # compile flags for debug version only
