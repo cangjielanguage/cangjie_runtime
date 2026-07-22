@@ -3,7 +3,7 @@
         "Name": "cangjie_runtime",
         "License": "Apache-2.0 with Runtime Library Exceptions",
         "License File": "LICENSE",
-        "Version Number": "1.2.0-beta.rc1",
+        "Version Number": "1.2.0-beta.rc2",
         "Owner": "zhangbin1@huawei.com",
         "Upstream URL": "https://cangjie-lang.cn/",
         "Description": "The Cangjie runtime is one of the core components of the Cangjie Native backend (CJNative), designed with high performance and lightweight as its goals, and provides strong support for the high performance of the Cangjie language in all scenarios. As the fundamental engine for running Cangjie programs, the Cangjie runtime provides basic driving functions such as garbage collection (GC), CJThread, and loader."
