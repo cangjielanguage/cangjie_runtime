@@ -279,6 +279,8 @@ def do_build(args):
             sys.exit(1)
         os.environ["PATH"] = os.path.join(args.target_toolchain, "bin") + ":" + os.environ["PATH"]
         os.environ["SDKROOT"] = os.path.join(args.target_sysroot)
+        # ios_flag: 1 means ios-aarch64 real device; 0 means ios simulator or non-ios.
+        # ios_simulator_flag: 1 means aarch64 simulator; 2 means x86_64 simulator; 0 means not simulator.
         ios_flag = "1" if target_args == "ios-aarch64" else "0"
         if target_args == "ios-simulator-aarch64":
             target_arch = "aarch64"

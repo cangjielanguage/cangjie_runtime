@@ -66,6 +66,9 @@ if (NOT MACOS_FLAG)
 endif()
 message(STATUS "MACOS_FLAG : ${MACOS_FLAG}")
 
+# IOS_FLAG: 1 means ios real device (aarch64 only); 0 means not ios real device.
+# IOS_SIMULATOR_FLAG: 1 means ios simulator (aarch64); 2 means ios simulator (x86_64); 0 means not ios simulator.
+# IOS_FLAG and IOS_SIMULATOR_FLAG are mutually exclusive: only one of them can be non-zero at a time.
 if (NOT IOS_FLAG AND NOT IOS_SIMULATOR_FLAG)
     set(IOS_FLAG 0 CACHE STRING "ios flag is false" FORCE)
     set(IOS_SIMULATOR_FLAG 0 CACHE STRING "ios simulator flag is false" FORCE)
