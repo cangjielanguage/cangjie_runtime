@@ -24,7 +24,7 @@ add_link_options(--target=${TRIPLE})
 add_compile_definitions(__ohos__)
 add_compile_definitions(OPENSSL_ARM64_PLATFORM)
 
-add_compile_options(-mbranch-protection=pac-ret)
+add_compile_options(-mbranch-protection=pac-ret+b-key)
 
 set(CMAKE_C_FLAGS "-fno-emulated-tls ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "-fno-emulated-tls ${CMAKE_CXX_FLAGS}")
