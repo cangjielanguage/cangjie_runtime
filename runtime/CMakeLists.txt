@@ -289,6 +289,8 @@ elseif (IOS_FLAG MATCHES 1)
     set(CMAKE_IOS_SDK_ROOT "${CMAKE_IOS_DEVELOPER_ROOT}/SDKs/iPhoneOS17.5.sdk")
     set(CMAKE_OSX_SYSROOT "${CMAKE_IOS_DEVELOPER_ROOT}/SDKs/iPhoneOS17.5.sdk")
     set(CMAKE_OSX_DEPLOYMENT_TARGET "")
+    set(CMAKE_SYSTEM_PROCESSOR "aarch64")
+    message(STATUS "IOS_FLAG=${IOS_FLAG}: iOS real device (aarch64) config, force CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}, SDK=${CMAKE_IOS_SDK_ROOT}")
 endif()
 
 link_directories(${OHOS_LIB})
