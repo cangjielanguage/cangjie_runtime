@@ -1019,6 +1019,11 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
     }
 
     @OverflowWrapping
+    private func tryResize(hash: Int64): Unit {
+        tryResize(hash, head.load())
+    }
+
+    @OverflowWrapping
     private func tryResize(hash: Int64, curHT: HNode<K, V>): Unit {
         let sz = curHT.buckets.size
         if ((counts[hash & (counts.size - 1)].load() << COUNT_SIZE) < sz) {
