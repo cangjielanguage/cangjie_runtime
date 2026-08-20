@@ -102,7 +102,7 @@ func loadTZData(name: String, path: String): Array<UInt8> {
             // Each timezone ID in the index is stored in a fixed-size 40-byte field
             var tempArr = Array<Byte>(40, repeat: 0)
             buffer.read(tempArr)
-            var currentId = String.fromUtf8(tempArr).trimEnd([r"\u{0000}"])
+            var currentId = String.fromUtf8(tempArr).trimEnd([r"\u{0}"])
             // next 4 bytes is the offset of this specific timezone's data relative to the start of the main data block
             var zoneDataOffsetArr = Array<Byte>(4, repeat: 0)
             // next 4 bytes is the length of this specific timezone's TZif data.
