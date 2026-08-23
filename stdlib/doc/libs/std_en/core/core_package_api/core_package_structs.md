@@ -1606,7 +1606,7 @@ public func indexOf(elements: Array<T>, fromIndex: Int64): Option<Int64>
 
 Function: Returns the first position where the subarray `elements` appears in the array after `fromIndex`. If not found, returns None.
 
-The function checks the range of `fromIndex`. If `fromIndex` is less than 0, the search will start from position 0. If `fromIndex` is greater than or equal to the size of the array, the result is None.
+The function checks the range of `fromIndex`. If `fromIndex` is less than 0, throws [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception). If `fromIndex` is greater than or equal to the size of the array, the result is None.
 
 Parameters:
 
@@ -1821,7 +1821,7 @@ public func lastIndexOf(elements: Array<T>, fromIndex: Int64): Option<Int64>
 
 Function: Searches backward starting from `fromIndex` and returns the last position where the subarray `elements` appears in the array. If the array does not contain this subarray, returns None.
 
-The function checks the range of `fromIndex`. If `fromIndex` is less than 0, the search will start from position 0. If `fromIndex` is greater than or equal to the size of the array, the result is None.
+The function checks the range of `fromIndex`. If `fromIndex` is less than 0, throws [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception). If `fromIndex` is greater than or equal to the size of the array, the result is None.
 
 Parameters:
 
