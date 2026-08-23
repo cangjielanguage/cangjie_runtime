@@ -227,14 +227,13 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
      */
     @Frozen
     public func indexOf(element: T, fromIndex: Int64): Option<Int64> {
+        if (fromIndex < 0) {
+            throw IllegalArgumentException("fromIndex must be non-negative.")
+        }
         if (size == 0 || fromIndex >= size) {
             return None
         }
-        let start = if (fromIndex >= 0) {
-            fromIndex
-        } else {
-            0
-        }
+        let start = fromIndex
         for (i in start..size) {
             if (this[i] == element) {
                 return Some(i)
@@ -272,14 +271,13 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
      */
     @Frozen
     public func indexOf(elements: Array<T>, fromIndex: Int64): Option<Int64> {
+        if (fromIndex < 0) {
+            throw IllegalArgumentException("fromIndex must be non-negative.")
+        }
         if (this.size < elements.size || fromIndex >= this.size) {
             return None
         }
-        let start = if (fromIndex >= 0) {
-            fromIndex
-        } else {
-            0
-        }
+        let start = fromIndex
         for (i in start..(size - elements.size + 1)) {
             if (this[i..i + elements.size] == elements) {
                 return Some(i)
@@ -303,14 +301,13 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
 
     @Frozen
     public func lastIndexOf(element: T, fromIndex: Int64): Option<Int64> {
+        if (fromIndex < 0) {
+            throw IllegalArgumentException("fromIndex must be non-negative.")
+        }
         if (size == 0 || fromIndex >= size) {
             return None
         }
-        let start = if (fromIndex >= 0) {
-            fromIndex
-        } else {
-            0
-        }
+        let start = fromIndex
         for (i in size - 1..=start : -1) {
             if (this[i] == element) {
                 return Some(i)
@@ -334,14 +331,13 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
 
     @Frozen
     public func lastIndexOf(elements: Array<T>, fromIndex: Int64): Option<Int64> {
+        if (fromIndex < 0) {
+            throw IllegalArgumentException("fromIndex must be non-negative.")
+        }
         if (this.size < elements.size || fromIndex >= this.size) {
             return None
         }
-        let start = if (fromIndex >= 0) {
-            fromIndex
-        } else {
-            0
-        }
+        let start = fromIndex
         for (i in (size - elements.size)..=start : -1) {
             if (this[i..i + elements.size] == elements) {
                 return Some(i)
