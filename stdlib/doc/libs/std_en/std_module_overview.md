@@ -8,6 +8,31 @@ The Cangjie Standard Library has three key characteristics and objectives:
 - **General Functionality**: The standard library offers the most frequently used library capabilities, aiming to solve most fundamental problems for developers.
 - **Quality Benchmark**: The standard library strives to set examples and benchmarks in performance, coding style, and other aspects for other Cangjie libraries.
 
+## Platform Support
+
+The APIs provided by the standard library support running on the following operating systems:
+
+> **Note:**
+>
+> Some APIs do not support running on specific operating systems. For details, please refer to the corresponding API descriptions.
+
+| OS            | CPU Arch  | Environment and Version Requirements |
+| ------------- | --------- | --------------- |
+| Linux         | x86_64    | glibc 2.22; Linux Kernel 4.12 or later; libstdc++ 6.0.24 or later installed |
+| Linux         | aarch64   | glibc 2.27; Linux Kernel 4.15 or later; libstdc++ 6.0.24 or later installed |
+| Windows       | x86_64    | Windows 10 or later |
+| macOS         | aarch64   | macOS 12.0 or later |
+| macOS         | x86_64    | macOS 12.0 or later |
+| OpenHarmony   | aarch64   | OpenHarmony 5.1 or later |
+| OpenHarmony   | arm32     | OpenHarmony 5.1 or later |
+| OpenHarmony   | x86_64    | OpenHarmony 5.1 or later |
+| HarmonyOS     | aarch64   | HarmonyOS 5.1 or later |
+| iOS           | aarch64   | iOS 11 or later (ast library requires iOS 12 or later) |
+| iOS           | x86_64    | iOS 11 or later (simulator, ast library requires iOS 12 or later) |
+| Android       | aarch64   | Android API 23 or later |
+| Android       | x86_64    | Android API 26 or later |
+| Android       | arm32     | Android API 23 or later |
+
 ## Usage Guide
 
 In the Cangjie programming language, the standard library consists of several packages, where a package is the smallest compilation unit. Each package can independently produce outputs such as AST (Abstract Syntax Trees) files, static library files, dynamic library files, etc. Packages can define sub-packages, forming a tree-like structure. A package without a parent is called a root package, and the entire tree formed by the root package and its sub-packages (including sub-packages of sub-packages) is called a module. The module's name is the same as the root package and represents the smallest unit for developer releases.

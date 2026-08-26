@@ -61,7 +61,19 @@ output
     - `native`（默认值）
     - `ohos-aarch64` ： 交叉编译 ohos(aarch64)
     - `ohos-x86_64` ：交叉编译 ohos(x86_64)
+    - `ohos-arm` ：交叉编译 ohos(arm)
     - `windows-x86_64` ： linux 交叉编译 windows
+    - `ios-aarch64` ：交叉编译 ios(aarch64)
+    - `ios-simulator-aarch64` ：交叉编译 ios 模拟器(aarch64)
+    - `ios-simulator-x86_64` ：交叉编译 ios 模拟器(x86_64)
+    - `android-aarch64` ：交叉编译 android(aarch64, 默认 API 23)
+    - `android23-aarch64` ：交叉编译 android(aarch64, API 23)
+    - `android26-aarch64` ：交叉编译 android(aarch64, API 26)
+    - `android31-aarch64` ：交叉编译 android(aarch64, API 31)
+    - `android23-arm` ：交叉编译 android(arm, API 23)
+    - `android-x86_64` ：交叉编译 android(x86_64, 默认 API 31)
+    - `android26-x86_64` ：交叉编译 android(x86_64, API 26)
+    - `android31-x86_64` ：交叉编译 android(x86_64, API 31)
 - `--target-toolchain` ：指定编译工具所在路径（交叉编译需要指定）
 - `--target-sysroot` ：指定编译目标系统库所在目录（交叉编译需要指定）
 - `--build-args` ：cjc 构建选项（可选）

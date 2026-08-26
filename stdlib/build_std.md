@@ -59,9 +59,21 @@ The build functionality of build.py provides the following additional options:
 
 - `--target`: Specifies the build platform, defaults to native build, supported targets are shown below(For cross-compilation, please refer to [Cangjie SDK Integration Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)):
     - `native` (default value)
-    - `ohos-aarch64`: Cross-compile for ohos(ohos-aarch64)
-    - `ohos-x86_64`: Cross-compile for ohos(ohos-x86_64)
+    - `ohos-aarch64`: Cross-compile for ohos(aarch64)
+    - `ohos-x86_64`: Cross-compile for ohos(x86_64)
+    - `ohos-arm`: Cross-compile for ohos(arm)
     - `windows-x86_64`: Cross-compile Windows from Linux
+    - `ios-aarch64`: Cross-compile for ios(aarch64)
+    - `ios-simulator-aarch64`: Cross-compile for ios simulator(aarch64)
+    - `ios-simulator-x86_64`: Cross-compile for ios simulator(x86_64)
+    - `android-aarch64`: Cross-compile for android(aarch64, default API 23)
+    - `android23-aarch64`: Cross-compile for android(aarch64, API 23)
+    - `android26-aarch64`: Cross-compile for android(aarch64, API 26)
+    - `android31-aarch64`: Cross-compile for android(aarch64, API 31)
+    - `android23-arm`: Cross-compile for android(arm, API 23)
+    - `android-x86_64`: Cross-compile for android(x86_64, default API 31)
+    - `android26-x86_64`: Cross-compile for android(x86_64, API 26)
+    - `android31-x86_64`: Cross-compile for android(x86_64, API 31)
 - `--target-toolchain`: Specifies the path to compilation tools (required for cross-compilation)
 - `--target-sysroot`: Specifies the directory of target system libraries (required for cross-compilation)
 - `--build-args`: cjc build options (optional)
