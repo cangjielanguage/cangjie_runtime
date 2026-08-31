@@ -108,7 +108,7 @@ def do_build(args):
     if target_platform in ('linux'):
         shared_linker_flags = "-Wl,--disable-new-dtags,-rpath=\\$ORIGIN"
         exe_linker_flags = "-Wl,--disable-new-dtags,-rpath=\\$ORIGIN/../../runtime/lib/linux_${CMAKE_SYSTEM_PROCESSOR}_cjnative"
-    elif target_platform in ('android', 'android23', 'android26', 'android31'):
+    elif target_platform in ('android', 'android23', 'android26', 'android31') and target_arch != 'arm':
         # android devices may have 16 KB pages; make sure the shared
         # object is laid out accordingly.  linker default is 4 KB.
         shared_linker_flags = ("-Wl,--disable-new-dtags,-rpath=\\$ORIGIN "
