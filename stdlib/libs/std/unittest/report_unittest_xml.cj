@@ -144,6 +144,16 @@ class XmlElementBuilder <: ToString {
     }
 }
 
+func swapOrgName(name: String): String {
+    if (!name.contains("::")) {
+        return name
+    }
+    let nameArr = name.split("::")
+    let index = nameArr.size
+    nameArr.swap(0, index - 1)
+    return nameArr[0] + "@" + nameArr[index - 1]
+}
+
 extend String {
     func toXmlEscapedString() {
         this.replace("&", "&amp;")
@@ -154,7 +164,8 @@ extend String {
     }
 
     func toSafeFileName() {
-        this.replace("<", ".")
+        swapOrgName(this)
+            .replace("<", ".")
             .replace(",", ".")
             .replace(">", "")
             .replace("/", "_")
