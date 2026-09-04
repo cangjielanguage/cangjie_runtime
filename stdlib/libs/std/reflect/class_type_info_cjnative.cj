@@ -152,11 +152,8 @@ public class ClassTypeInfo <: TypeInfo {
         if (this.isAbstract()) {
             throw InvocationTargetException("Constructing abstract classes is not allowed.")
         }
-        let parameterTypes = ArrayList<TypeInfo>()
-        for (i in 0..args.size) {
-            parameterTypes.add(TypeInfo.of(args[i]))
-        }
-        getConstructor(parameterTypes.toArray()).apply(args)
+        let parameterTypes = Array<TypeInfo>(args.size) {i => TypeInfo.of(args[i])}
+        getConstructor(parameterTypes).apply(args)
     }
 
     /**
