@@ -318,4 +318,29 @@ extern "C" MRT_EXPORT void CJ_MRT_LibraryUnLoad(uint64_t address) __attribute__(
 extern "C" MRT_EXPORT void CJ_MRT_PreInitializePackage(uint64_t address)
     __attribute__((alias("MRT_PreInitializePackage")));
 #endif
+
+#if defined(__ANDROID__) && defined(__aarch64__) && defined(__ANDROID_API__) && (__ANDROID_API__ == 23)
+// Android 6 initializes the main pthread's Bionic TLS before libc publishes
+// the process-wide __stack_chk_guard obtained from AT_RANDOM. Consequently,
+// the main pthread can retain a zero canary while later pthreads copy R.
+//
+// This constructor copies the process-global guard into the current pthread's
+// Bionic TLS stack-guard slot. On the investigated Android AArch64 Bionic
+// versions, TPIDR_EL0 + 0x28 selects that slot; 0x28 is a byte offset (40
+// decimal) from the TPIDR_EL0 base.
+//
+// Keep this function free of a compiler-generated stack-protector check: it
+// changes the TLS value used by such a check. It only updates the pthread
+// that executes the constructor.
+extern "C" uintptr_t __stack_chk_guard;
+
+static __attribute__((constructor(), no_stack_protector)) void SyncMainThreadStackGuard()
+{
+    uintptr_t tlsBase = 0;
+    __asm__ volatile("mrs %0, tpidr_el0" : "=r"(tlsBase));
+    // 0x28 is the 40-byte offset of Bionic's AArch64 TLS stack-guard word
+    // from TPIDR_EL0.
+    *reinterpret_cast<uintptr_t*>(tlsBase + 0x28) = __stack_chk_guard;
+}
+#endif
 } // namespace MapleRuntime

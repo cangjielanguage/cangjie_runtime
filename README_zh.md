@@ -93,7 +93,7 @@
 
 ### 使用说明
 
-运行时独立构建产物需要配合 cjc 编译器及标准库等使用，整体可在 Linux、macOS、Windows 与 OpenHarmony 系统上直接运行。具体集成方式请查看[仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
+运行时独立构建产物需要配合 cjc 编译器及标准库等使用，整体可在 Linux、macOS、Windows、OpenHarmony、iOS 与 Android 系统上直接运行。具体集成方式请查看[仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
 
 ## 仓颉编程语言 - 标准库（std）
 
@@ -166,7 +166,7 @@
 
 ### 使用说明
 
-标准库构建产物需要配合 cjc 编译器及运行时等使用，整体可在 Linux、macOS、Windows 与 OpenHarmony 系统上直接运行。具体集成方式请查看[仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
+标准库构建产物需要配合 cjc 编译器及运行时等使用，整体可在 Linux、macOS、Windows、OpenHarmony、iOS 与 Android 系统上直接运行。具体集成方式请查看[仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
 
 ## 平台支持计划
 

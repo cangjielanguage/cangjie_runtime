@@ -392,7 +392,7 @@ class TimerScheduler {
     private let cancelCount = AtomicInt64(0)
 
     func add(timer: Timer) {
-        if (MonoTime.now() > timer.endTime) {
+        if (MonoTime.now() >= timer.endTime) {
             execute(timer)
             return
         }

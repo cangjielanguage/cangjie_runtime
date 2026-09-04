@@ -22,11 +22,16 @@
 | Linux         | aarch64   | glibc 2.27；Linux Kernel 4.15 或更高版本；系统安装 libstdc++ 6.0.24 或更高版本 |
 | Windows       | x86_64    | Windows 10 或更高版本 |
 | macOS         | aarch64   | macOS 12.0 或更高版本 |
+| macOS         | x86_64    | macOS 12.0 或更高版本 |
 | OpenHarmony   | aarch64   | OpenHarmony 5.1 或更高版本 |
 | OpenHarmony   | arm32     | OpenHarmony 5.1 或更高版本 |
+| OpenHarmony   | x86_64    | OpenHarmony 5.1 或更高版本 |
 | HarmonyOS     | aarch64   | HarmonyOS 5.1 或更高版本 |
 | iOS           | aarch64   | iOS 11 或更高版本（ast 库需要 iOS 12 或更高版本） |
-| Android       | aarch64   | Android API 26 或更高版本 |
+| iOS           | x86_64    | iOS 11 或更高版本（模拟器，ast 库需要 iOS 12 或更高版本） |
+| Android       | aarch64   | Android API 23 或更高版本 |
+| Android       | x86_64    | Android API 26 或更高版本 |
+| Android       | arm32     | Android API 23 或更高版本 |
 
 ## 使用指导
 
@@ -36,36 +41,42 @@
 
 - 可以导入某个包中的一个顶层声明或定义，语法如下：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.itemName
     ```
 
     其中 fullPackageName 为完整路径包名，itemName 为声明的名字，例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.ArrayList
     ```
 
 - 如果要导入的多个 itemName 同属于一个 fullPackageName，可以使用：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.{itemName[, itemName]*}
     ```
 
     例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.{ArrayList, HashMap}
     ```
 
 - 还可以将 fullPackageName 包中所有 public 修饰的顶层声明或定义全部导入，语法如下：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.*
     ```
 
     例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.*
     ```

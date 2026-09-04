@@ -93,7 +93,7 @@ To build the Cangjie Runtime, please refer to [Build Cangjie Runtime](./runtime/
 
 ### Usage
 
-The standalone build outputs must be used together with the `cjc` compiler and the standard library. The complete bundle runs out-of-the-box on Linux, macOS, Windows, and OpenHarmony systems.
+The standalone build outputs must be used together with the `cjc` compiler and the standard library. The complete bundle runs out-of-the-box on Linux, macOS, Windows, OpenHarmony, iOS, and Android systems.
 For integration details, please refer to the [Cangjie SDK Integration and Build Guide](https://gitcode.com/Cangjie/cangjie_build).
 
 ## Cangjie Programming Language - Standard Library (std)
@@ -169,11 +169,12 @@ To build the Cangjie Programming Language Standard Library, please refer to [Bui
 
 ### Usage Instructions
 
-The standard library build artifacts need to be used with the cjc compiler and runtime, etc. For specific integration methods, please see the [Cangjie Programming Language Standard Library API](./stdlib/doc/libs/summary_cjnative_EN.md).
+The standard library build artifacts need to be used with the cjc compiler and runtime, etc. The complete bundle runs out-of-the-box on Linux, macOS, Windows, OpenHarmony, iOS, and Android systems. For specific integration methods, please see the [Cangjie SDK Integration and Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md).
 
 ### Platform Support Plan
 
-- Build Platform Evolution: Plan to support Cangjie applications running on the OHOS-ARM32 platform on October 20, 2025. Advanced features such as reflection, dynamic loading capabilities, and some compiler optimizations are planned to be supported in Q4 2025.
+- Build Platform Evolution: Plan to support building Cangjie runtime and standard library artifacts on Windows by the end of 2025.
+- Cangjie Application Runtime Platform Evolution: Plan to support Cangjie applications running on the OHOS-ARM32 platform on October 20, 2025. Advanced features such as reflection, dynamic loading capabilities, and some compiler optimizations are planned to be supported in Q4 2025.
 
 ## Repositories Involved
 
