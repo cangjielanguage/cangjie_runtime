@@ -41,36 +41,42 @@ Package import rules are as follows:
 
 - You can import a top-level declaration or definition from a package using the following syntax:
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.itemName
     ```
 
     Here, `fullPackageName` is the complete path of the package name, and `itemName` is the name of the declaration. For example:
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.ArrayList
     ```
 
 - If multiple `itemName`s belong to the same `fullPackageName`, you can use:
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.{itemName[, itemName]*}
     ```
 
     For example:
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.{ArrayList, HashMap}
     ```
 
 - You can also import all top-level declarations or definitions marked as `public` from the `fullPackageName` package using:
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.*
     ```
 
     For example:
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.*
     ```

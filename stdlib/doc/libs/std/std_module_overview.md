@@ -41,36 +41,42 @@
 
 - 可以导入某个包中的一个顶层声明或定义，语法如下：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.itemName
     ```
 
     其中 fullPackageName 为完整路径包名，itemName 为声明的名字，例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.ArrayList
     ```
 
 - 如果要导入的多个 itemName 同属于一个 fullPackageName，可以使用：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.{itemName[, itemName]*}
     ```
 
     例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.{ArrayList, HashMap}
     ```
 
 - 还可以将 fullPackageName 包中所有 public 修饰的顶层声明或定义全部导入，语法如下：
 
+    <!-- compile.error -->
     ```cangjie
     import fullPackageName.*
     ```
 
     例如：
 
+    <!-- compile.error -->
     ```cangjie
     import std.collection.*
     ```
