@@ -1144,7 +1144,7 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     func resize(argCap: Int64): Bool {
         var isRehash: Bool = false
         let oldBucketsSize = buckets.size
-        // LOAD_FACTOR == 0.75，桶容量为 2 的幂时 Float32 转换可精确替代为整数运算（oldBucketsSize * 3 / 4）
+        // LOAD_FACTOR == 0.75; when bucket capacity is a power of 2, this is equivalent to integer arithmetic (oldBucketsSize * 3 / 4)
         let allowedBucketSize = oldBucketsSize - (oldBucketsSize >> 2)
 
         // Except for reserve, following two if condition would not be satisfied at the same time.
