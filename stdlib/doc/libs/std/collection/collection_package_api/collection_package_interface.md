@@ -518,12 +518,12 @@ prop last: ?(K, V)
 func backward(mark: K, inclusive!: Bool): Iterator<(K, V)>
 ```
 
-功能：获取从第一个键小于等于 mark 的节点按降序遍历到 [first](./collection_package_interface.md#prop-first) 的迭代器。如果该节点的键等于 mark ，那么根据 `inclusive!` 确定是否包含该键对应的节点。
+功能：获取一个迭代器，按键从大到小的顺序遍历键小于等于 `mark` 的所有键值对；若 `inclusive!` 为 `false`，则不包含键等于 `mark` 的键值对。
 
 参数：
 
-- mark: K - 用于确定从哪里开始的键。
-- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 当 mark 是迭代器的首个元素的 key 时，指定是否包含 mark 作为起始点。
+- mark: K - 用于确定遍历范围的边界键。
+- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 指定是否包含键等于 `mark` 的键值对。当不存在键等于 `mark` 的键值对时，该参数不影响遍历结果。
 
 返回值：
 
@@ -535,12 +535,12 @@ func backward(mark: K, inclusive!: Bool): Iterator<(K, V)>
 func forward(mark: K, inclusive!: Bool): Iterator<(K, V)>
 ```
 
-功能：获取从第一个键大于等于 mark 的节点按升序遍历到 [last](./collection_package_interface.md#prop-last) 结束的一个迭代器。如果该节点的键等于 mark ，那么根据 `inclusive!` 确定是否包含该键对应的节点。
+功能：获取一个迭代器，按键从小到大的顺序遍历键大于等于 `mark` 的所有键值对；若 `inclusive!` 为 `false`，则不包含键等于 `mark` 的键值对。
 
 参数：
 
-- mark: K - 用于确定从哪里开始的键。
-- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 当 mark 是迭代器的首个元素的 key 时，指定是否包含 mark 作为起始点。
+- mark: K - 用于确定遍历范围的边界键。
+- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 指定是否包含键等于 `mark` 的键值对。当不存在键等于 `mark` 的键值对时，该参数不影响遍历结果。
 
 返回值：
 
@@ -617,12 +617,12 @@ prop last: ?T
 func backward(mark: T, inclusive!: Bool): Iterator<T>
 ```
 
-功能：获取从第一个元素小于等于 mark 的节点按降序遍历到 [first](./collection_package_interface.md#prop-first) 的迭代器。如果该节点的元素等于 mark ，那么根据 `inclusive!` 确定是否包含该元素对应的节点。
+功能：获取一个迭代器，按元素从大到小的顺序遍历所有小于等于 `mark` 的元素；若 `inclusive!` 为 `false`，则不包含等于 `mark` 的元素。
 
 参数：
 
-- mark: T - 用于确定从哪里开始的元素。
-- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 当 mark 是迭代器的首个元素时，指定是否包含 mark 作为起始点。
+- mark: T - 用于确定遍历范围的边界元素。
+- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 指定是否包含等于 `mark` 的元素。当不存在等于 `mark` 的元素时，该参数不影响遍历结果。
 
 返回值：
 
@@ -634,12 +634,12 @@ func backward(mark: T, inclusive!: Bool): Iterator<T>
 func forward(mark: T, inclusive!: Bool): Iterator<T>
 ```
 
-功能：获取从第一个元素大于等于 mark 的节点按升序遍历到 [last](./collection_package_interface.md#prop-last) 结束的一个迭代器。如果该节点的元素等于 mark ，那么根据 `inclusive!` 确定是否包含该元素对应的节点。
+功能：获取一个迭代器，按元素从小到大的顺序遍历所有大于等于 `mark` 的元素；若 `inclusive!` 为 `false`，则不包含等于 `mark` 的元素。
 
 参数：
 
-- mark: T - 用于确定从哪里开始的元素。
-- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 当 mark 是迭代器的首个元素时，指定是否包含 mark 作为起始点。
+- mark: T - 用于确定遍历范围的边界元素。
+- inclusive!: [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 指定是否包含等于 `mark` 的元素。当不存在等于 `mark` 的元素时，该参数不影响遍历结果。
 
 返回值：
 

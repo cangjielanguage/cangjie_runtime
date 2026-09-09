@@ -682,7 +682,9 @@ public class TreeMap<K, V> <: OrderedMap<K, V> where K <: Comparable<K> {
         return match (entry.replaceNode) {
             case Some(_) => BackwardIterator(TreeMapEntryView(this, entry), mark, inclusive)
             case None =>
-                if (mark > last.getOrThrow()[0]) {
+                if (this.isEmpty()) {
+                    BackwardIterator(TreeMapEntryView(this, SearchResult<K, V>(-1, None)), mark, true)
+                } else if (mark > last.getOrThrow()[0]) {
                     BackwardIterator(TreeMapEntryView(this, getLastEntry()), mark, true)
                 } else if (mark > first.getOrThrow()[0]) {
                     let view: TreeMapEntryView<K, V> = searchNearestEntryView(this.keys() |> collectArrayList, mark,
@@ -711,7 +713,9 @@ public class TreeMap<K, V> <: OrderedMap<K, V> where K <: Comparable<K> {
         return match (entry.replaceNode) {
             case Some(_) => ForwardIterator(TreeMapEntryView(this, entry), mark, inclusive)
             case None =>
-                if (mark < this.first.getOrThrow()[0]) {
+                if (this.isEmpty()) {
+                    ForwardIterator(TreeMapEntryView(this, SearchResult<K, V>(-1, None)), mark, true)
+                } else if (mark < this.first.getOrThrow()[0]) {
                     ForwardIterator(TreeMapEntryView(this, getFirstEntry()), mark, true)
                 } else if (mark <= this.last.getOrThrow()[0]) {
                     let view: TreeMapEntryView<K, V> = searchNearestEntryView(this.keys() |> collectArrayList, mark,
