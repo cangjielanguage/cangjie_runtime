@@ -551,21 +551,44 @@ void CJFileLoader::TryThrowException(Uptr fileMetaAddr)
 #endif
 }
 
+void CollectInterfaces(TypeInfo* ti, std::vector<TypeInfo*>& interfaces)
+{
+    if (ti == nullptr) {
+        return;
+    }
+    if (!ti->IsGeneric()) {
+        ti->GetInterfaces(interfaces);
+        return;
+    }
+
+    // A reflection GenericTypeInfo is not a TypeInfo. Its upper bounds are the
+    // only interface information available for an uninstantiated type parameter.
+    auto* genericTi = reinterpret_cast<GenericTypeInfo*>(ti);
+    if (!genericTi->IsGeneric()) {
+        // Generic custom descriptors carry instantiated type arguments rather
+        // than upper bounds. They must not be interpreted as TypeInfo either.
+        return;
+    }
+    for (U32 idx = 0; idx < genericTi->GetGenericConstraintNum(); ++idx) {
+        TypeInfo* constraint = genericTi->GetGenericConstraint(idx);
+        if (constraint != nullptr && constraint->IsInterface()) {
+            interfaces.emplace_back(constraint);
+        }
+    }
+}
+
 U32 CJFileLoader::GetNumOfInterface(TypeInfo* ti)
 {
-    std::vector<TypeInfo*> itfs;
-    ti->GetInterfaces(itfs);
-    return itfs.size();
+    std::vector<TypeInfo*> interfaces;
+    CollectInterfaces(ti, interfaces);
+    return interfaces.size();
 }
 
 TypeInfo* CJFileLoader::GetInterface(TypeInfo* ti, U32 idx)
 {
-    std::vector<TypeInfo*> itfs;
-    ti->GetInterfaces(itfs);
-    if (idx >= itfs.size()) {
-        return nullptr;
-    }
-    return itfs[idx];
+    std::vector<TypeInfo*> interfaces;
+    CollectInterfaces(ti, interfaces);
+    return idx < interfaces.size() ? interfaces[idx] : nullptr;
 }
 
 TypeExt* CJFileLoader::GetTypeExt(void* type)
