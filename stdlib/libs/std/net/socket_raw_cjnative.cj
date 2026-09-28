@@ -562,7 +562,7 @@ class RawSocketImpl {
             getSocketOptionInt32(this.sockFd, SOL_SOCKET, SOCK_TYPE)
         } catch (e: SocketException) {
             releaseAddrPointer(remoteHd, remotePtr)
-            throw SocketException("Failed to connect: ${e.message}.")
+            throw SocketException("Failed to connect: ${e.message}")
         }
         let (localHd, localPtr) = if (!this.isBound && isConnectionOriented(sockTypeVal)) {
             let localArr: Array<Byte>
@@ -759,7 +759,7 @@ func getSocketOptionInt32(sockFd: Int64, level: Int32, option: Int32): Int32 {
             } else {
                 "Socket option get failed with unknown error"
             }
-            throw SocketException(message)
+            throw SocketException("${message}.")
         }
         let value = sockType.read()
         LibC.free(sockType)

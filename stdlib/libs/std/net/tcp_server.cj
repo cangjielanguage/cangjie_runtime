@@ -311,7 +311,7 @@ public class TcpServerSocket <: ServerSocket {
     private static func checkAddress(address: SocketAddress, name: String): SocketAddress {
         if (!(address is IPSocketAddress)) {
             throw IllegalArgumentException(
-                "${name} should be either IPv4 or IPv6 but got ${address.family}: ${address}")
+                "Invalid argument '${name}': expected either IPv4 or IPv6 but got '${address.family}': ${address}.")
         }
         return address
     }

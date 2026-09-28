@@ -324,14 +324,14 @@ public class PackageInfo <: Equatable<PackageInfo> & Hashable & ToString {
     // Unable to look up the generic type
     public func getTypeInfo(qualifiedTypeName: String): TypeInfo {
         getByName(typeInfos, qualifiedTypeName,
-            "type info `${qualifiedTypeName}` not found from package ${qualifiedName}") {
+            "Type info '${qualifiedTypeName}' not found from package '${qualifiedName}'.") {
             typeInfo => typeInfo.qualifiedName
         }
     }
 
     // Find the global variable, return None if not found or the type does not match
     public func getVariable(name: String): GlobalVariableInfo {
-        getByName(variables, name, "variable info `${name}` not found from package `${qualifiedName}`") {
+        getByName(variables, name, "Variable info '${name}' not found from package '${qualifiedName}'.") {
             variable => variable.name
         }
     }
@@ -340,7 +340,7 @@ public class PackageInfo <: Equatable<PackageInfo> & Hashable & ToString {
     // Could not find generic function
     public func getFunction(name: String, parameterTypes: Array<TypeInfo>): GlobalFunctionInfo {
         getByNameAndParamTypes(functions, name, parameterTypes,
-            "func info `${name}` not found from package `${qualifiedName}`") {
+            "Func info '${name}' not found from package '${qualifiedName}'.") {
             function => (function.name, function.parameters)
         }
     }

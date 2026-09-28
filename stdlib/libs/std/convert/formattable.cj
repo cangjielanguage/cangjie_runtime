@@ -975,7 +975,7 @@ class FormatSpecifier {
         var res: CString = unsafe { CJ_FORMAT_Float64Formatter(a, f) }
         unsafe { LibC.free(f) }
         if (res.isNull()) {
-            throw IllegalMemoryException("malloc failed")
+            throw IllegalMemoryException("Failed to allocate memory.")
         }
         try {
             return res.toString()

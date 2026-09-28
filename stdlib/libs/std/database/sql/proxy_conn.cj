@@ -44,14 +44,14 @@ class ProxyConnection <: Connection {
 
     public func prepareStatement(sql: String): Statement {
         if (isClosed()) {
-            throw SqlException("Connection closed")
+            throw SqlException("Connection closed.")
         }
         return delegate.prepareStatement(sql)
     }
 
     public func createTransaction(): Transaction {
         if (isClosed()) {
-            throw SqlException("Connection closed")
+            throw SqlException("Connection closed.")
         }
         return delegate.createTransaction()
     }
