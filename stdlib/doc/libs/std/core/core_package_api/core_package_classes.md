@@ -3383,6 +3383,11 @@ public func append(n: UInt8): Unit
 
 功能：在 [StringBuilder](core_package_classes.md#class-stringbuilder) 末尾插入参数 `n` 的字符串表示。
 
+> **注意：**
+>
+> - 插入的是该数值的**十进制文本表示**，而非字节本身。例如 `append(0x41u8)` 追加的是 `"65"`，而不是字符 `'A'`。
+> - `Byte` 是 `UInt8` 的类型别名，对 `String` 逐字节取值（如 `s[i]`）后调用本函数同样追加十进制文本。如需追加字节本身（UTF-8 字节级拼接），请使用 [appendFromUtf8](#func-appendfromutf8arraybyte) / [appendFromUtf8Unchecked](#func-appendfromutf8uncheckedarraybyte)；如需按字符追加，请使用 `append(Rune)`。
+
 参数：
 
 - n: [UInt8](core_package_intrinsics.md#uint8) - 插入的 [UInt8](core_package_intrinsics.md#uint8) 类型的值。
@@ -3395,7 +3400,7 @@ main(): Int64 {
     // 创建一个StringBuilder实例
     var sb = StringBuilder("UInt8 value: ")
 
-    // 追加UInt8值
+    // 追加UInt8值（追加的是其十进制文本表示"123"）
     sb.append(123u8)
 
     // 验证结果
