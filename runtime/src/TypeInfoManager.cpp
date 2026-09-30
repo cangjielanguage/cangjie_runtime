@@ -315,8 +315,10 @@ TypeInfoManager::GenericTiDesc* TypeInfoManager::GenericTiDescHashMap::GetGeneri
     if (it != bucket.maps.end()) {
         for (auto descIt = it->second.begin(); descIt != it->second.end(); ++descIt) {
             if (**descIt == desc) {
+                // Copy under the lock: the vector may be reallocated after unlock (UAF).
+                GenericTiDesc* result = *descIt;
                 bucket.rwLock.UnlockRead();
-                return *descIt;
+                return result;
             }
         }
     }
@@ -334,8 +336,10 @@ TypeInfoManager::GenericTiDesc* TypeInfoManager::GenericTiDescHashMap::InsertGen
     if (it != bucket.maps.end()) {
         for (auto descIt = it->second.begin(); descIt != it->second.end(); ++descIt) {
             if (**descIt == desc) {
+                // Same as GetGenericTiDesc: copy under the lock to avoid UAF.
+                GenericTiDesc* result = *descIt;
                 bucket.rwLock.UnlockWrite();
-                return *descIt;
+                return result;
             }
         }
     }
