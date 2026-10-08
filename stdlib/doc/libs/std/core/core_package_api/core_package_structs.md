@@ -6148,6 +6148,8 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
 > **注意：**
 >
 > - `String` 类型仅支持 UTF-8 编码。
+> - `String` 的 `size`、下标访问（`[]`）、切片和迭代均基于 UTF-8 编码后的**字节**，而非字符。一个多字节字符（例如中文字符）由多个字节组成，字节下标可能落在某个字符的中间。
+> - 如需按字符（[Rune](./core_package_intrinsics.md#rune)）遍历或处理字符串，请使用 [runes](#func-runes) / [toRuneArray](#func-torunearray)。
 > - 出于 `String` 对象内存开销方面的优化，`String` 的长度被限制在 `4GB`大小，即 `String`的最大长度不超过 [UInt32 的最大值](./core_package_intrinsics.md#uint32)。
 
 父类型：
@@ -9388,7 +9390,7 @@ str[7]: 228
 public operator const func [](range: Range<Int64>): String
 ```
 
-功能：根据给定区间获取当前字符串的切片。
+功能：根据给定区间获取当前字符串的切片。区间为 UTF-8 编码后的字节下标范围，起止点必须位于字符边界上，否则将切在某个多字节字符的中间。
 
 > **注意：**
 >
@@ -9419,8 +9421,8 @@ main() {
     let str = "Hello, 世界"
 
     // 使用[]运算符根据区间获取字符串切片
-    let slice1 = str[0..5] // 获取前5个字符
-    let slice2 = str[7..] // 从索引7开始到末尾
+    let slice1 = str[0..5] // 获取前5个字节（此处恰好为前5个ASCII字符）
+    let slice2 = str[7..] // 从字节下标7开始到末尾
 
     println("String: '${str}'")
     println("str[0..5]: '${slice1}'")
