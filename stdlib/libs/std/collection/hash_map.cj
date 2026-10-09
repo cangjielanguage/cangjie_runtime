@@ -339,12 +339,6 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     private static const MAX_BUCKET_SIZE: Int64 = 4611686018427387904
 
     /*
-     * Load factor of the HashMap.
-     * Capacity expansion when the usage more than 75%
-     */
-    private static const LOAD_FACTOR: Float32 = 0.75
-
-    /*
      * default Initialized Capacity.
      * Default array initialization size is 16
      */
@@ -509,13 +503,13 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
         var bucketIndex: Int64 = getIndex(hash, buckets.size)
         var entryIndex: Int64 = buckets[bucketIndex]
         while (entryIndex >= 0) {
-            if (hash == entries[entryIndex].hash && key == entries[entryIndex].key) {
-                let oldValue: Option<V> = Some(entries[entryIndex].value)
-                entries[entryIndex] = HashMapEntry<K, V>(entries[entryIndex].hash, entries[entryIndex].next,
-                    entries[entryIndex].key, value)
+            let entry = entries[entryIndex]
+            if (hash == entry.hash && key == entry.key) {
+                let oldValue: Option<V> = Some(entry.value)
+                entries[entryIndex] = HashMapEntry<K, V>(entry.hash, entry.next, entry.key, value)
                 return oldValue
             }
-            entryIndex = entries[entryIndex].next
+            entryIndex = entry.next
         }
         if (freeSize > 0) {
             entryIndex = freeIndex
@@ -542,12 +536,12 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
         var bucketIndex: Int64 = getIndex(hash, buckets.size)
         var entryIndex: Int64 = buckets[bucketIndex]
         while (entryIndex >= 0) {
-            if (hash == entries[entryIndex].hash && key == entries[entryIndex].key) {
-                entries[entryIndex] = HashMapEntry<K, V>(entries[entryIndex].hash, entries[entryIndex].next,
-                    entries[entryIndex].key, value)
+            let entry = entries[entryIndex]
+            if (hash == entry.hash && key == entry.key) {
+                entries[entryIndex] = HashMapEntry<K, V>(entry.hash, entry.next, entry.key, value)
                 return
             }
-            entryIndex = entries[entryIndex].next
+            entryIndex = entry.next
         }
 
         entryIndex = appendIndex
@@ -609,29 +603,37 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     @Frozen
     @OverflowWrapping
     public func remove(key: K): Option<V> {
-        let NULL_KEY: K = unsafe { zeroValue<K>() }
-        let NULL_VALUE: V = unsafe { zeroValue<V>() }
         let hash: Int64 = getHash(key.hashCode())
         let index: Int64 = getIndex(hash, buckets.size)
         var bucket: Int64 = buckets[index]
         var pre: Int64 = -1
         while (bucket >= 0) {
-            if (hash == entries[bucket].hash && key == entries[bucket].key) {
-                if (pre < 0) {
-                    buckets[index] = entries[bucket].next
-                } else {
-                    let temp = entries[pre]
-                    entries[pre] = HashMapEntry<K, V>(temp.hash, entries[bucket].next, temp.key, temp.value)
-                }
-                let removeEnt: V = entries[bucket].value
-                entries[bucket] = HashMapEntry<K, V>(-1, freeIndex, NULL_KEY, NULL_VALUE)
-                freeIndex = bucket
-                freeSize++
-                modCount++
-                return Some(removeEnt)
+            // Compare hash by index first so the miss path does not copy the whole entry (K/V).
+            if (hash != entries[bucket].hash) {
+                pre = bucket
+                bucket = entries[bucket].next
+                continue
             }
-            pre = bucket
-            bucket = entries[bucket].next
+            let entry = entries[bucket]
+            if (key != entry.key) {
+                pre = bucket
+                bucket = entry.next
+                continue
+            }
+            let NULL_KEY: K = unsafe { zeroValue<K>() }
+            let NULL_VALUE: V = unsafe { zeroValue<V>() }
+            if (pre < 0) {
+                buckets[index] = entry.next
+            } else {
+                let temp = entries[pre]
+                entries[pre] = HashMapEntry<K, V>(temp.hash, entry.next, temp.key, temp.value)
+            }
+            let removeEnt: V = entry.value
+            entries[bucket] = HashMapEntry<K, V>(-1, freeIndex, NULL_KEY, NULL_VALUE)
+            freeIndex = bucket
+            freeSize++
+            modCount++
+            return Some(removeEnt)
         }
         return None
     }
@@ -776,17 +778,15 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
      */
     @Frozen
     public func contains(key: K): Bool {
-        if (appendIndex - freeSize == 0) {
-            return false
-        }
         let hash: Int64 = getHash(key.hashCode())
         let index: Int64 = getIndex(hash, buckets.size)
         var bucket: Int64 = buckets[index]
         while (bucket >= 0) {
-            if (hash == entries[bucket].hash && key == entries[bucket].key) {
+            let entry = entries[bucket]
+            if (hash == entry.hash && key == entry.key) {
                 return true
             }
-            bucket = entries[bucket].next
+            bucket = entry.next
         }
         return false
     }
@@ -1151,17 +1151,21 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     func resize(argCap: Int64): Bool {
         var isRehash: Bool = false
         let oldBucketsSize = buckets.size
-        let allowedBucketSize = Int64(Float32(oldBucketsSize) * LOAD_FACTOR)
+        // 0.75 * oldBucketsSize as integer arithmetic (oldBucketsSize * 3 / 4).
+        // Equivalent because the bucket size is always a power of 2 (DEFAULT_CAPACITY is 16 and
+        // every resize goes through tableSizeFor, which rounds up to the next power of two);
+        // keep that invariant intact when modifying the capacity logic below.
+        let allowedBucketSize = oldBucketsSize - (oldBucketsSize >> 2)
 
         // Except for reserve, following two if condition would not be satisfied at the same time.
         if (argCap >= allowedBucketSize) {
             let newCapOfBuckets = max(oldBucketsSize << 1, tableSizeFor(argCap))
             let newBuckets: Array<Int64> = Array<Int64>(newCapOfBuckets, repeat: -1)
             for (i in 0..entries.size) {
-                if (entries[i].hash >= 0) {
-                    let bucket: Int64 = getIndex(entries[i].hash, newCapOfBuckets)
-                    entries[i] = HashMapEntry<K, V>(entries[i].hash, newBuckets[bucket], entries[i].key,
-                        entries[i].value)
+                let entry = entries[i]
+                if (entry.hash >= 0) {
+                    let bucket: Int64 = getIndex(entry.hash, newCapOfBuckets)
+                    entries[i] = HashMapEntry<K, V>(entry.hash, newBuckets[bucket], entry.key, entry.value)
                     newBuckets[bucket] = i
                 }
             }
