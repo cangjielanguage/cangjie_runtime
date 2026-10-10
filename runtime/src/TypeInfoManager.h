@@ -61,7 +61,13 @@ public:
     void FillOffsets(TypeInfo* newTypeInfo, TypeTemplate* tt, U32 argSize, TypeInfo* args[]);
     void CalculateGCTib(TypeInfo* typeInfo);
 private:
+    // Bump allocator over the mmap'd arena: never freed before Fini(), no alignment done
+    // (callers round the returned address up themselves).
     uintptr_t Allocate(size_t size);
+    // Allocate and construct an MTableDesc in the same arena (see the definition) so that a real
+    // MTableDesc* never carries a HWASan/TBI top-byte tag, which would look like the compiler's
+    // inline short-bitmap marker kept in TypeInfo::mTableDesc.
+    MTableDesc* AllocateMTableDesc(ArchUInt bitmap);
     CString GetGCTibStr(TypeInfo* typeInfo);
     void AddMTable(TypeTemplate* tt, TypeInfo* newTypeInfo, U32 argSize, TypeInfo* args[]);
     // Helper methods for copying method and parameter information
