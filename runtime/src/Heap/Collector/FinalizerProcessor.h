@@ -20,6 +20,8 @@
 
 namespace MapleRuntime {
 
+class Verifier;
+
 class FinalizerProcessor {
 public:
     FinalizerProcessor();
@@ -92,6 +94,12 @@ public:
     }
 
 private:
+    friend class Verifier;
+    // STW does not stop native reclamation. HeapVerify acquires this lock
+    // before STW and releases it after scanning, before flushing its records.
+    // FeedHungryBuffers already participates in STW via ScopedObjectAccess.
+    std::mutex heapMaintenanceLock;
+
     void InitFinalizerCJThread();
     void NotifyStarted();
     void Wait(U32 timeoutMilliSeconds);

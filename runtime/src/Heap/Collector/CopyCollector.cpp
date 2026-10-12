@@ -46,7 +46,8 @@ void CopyCollector::RunGarbageCollection(uint64_t gcIndex, GCReason reason)
     gcReason = reason;
     PreGarbageCollection(true);
     ScheduleTraceEvent(TRACE_EV_GC_START, -1, nullptr, 0);
-    VLOG(REPORT, "[GC] Start %s %s gcIndex= %lu", GetCollectorName(), g_gcRequests[gcReason].name, gcIndex);
+    VLOG(REPORT, "[GC] Start %s %s gcIndex= %lu gc-cycle=%zu", GetCollectorName(),
+        g_gcRequests[gcReason].name, gcIndex, g_gcCount + 1);
     GCStats& gcStats = GetGCStats();
     gcStats.collectedBytes = 0;
     gcStats.gcStartTime = TimeUtil::NanoSeconds();

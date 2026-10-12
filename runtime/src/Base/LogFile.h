@@ -59,6 +59,7 @@ enum LogType {
     PROMOTE,
     SWEEP,
     LOCAL_REGION,
+    HEAP_VERIFY,
     LOG_TYPE_NUMBER
 };
 

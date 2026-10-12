@@ -1255,6 +1255,57 @@ public:
     }
 
 private:
+    friend class Verifier;
+
+    // Diagnostic lookup only: unlike RouteObject/FindToVersion this never
+    // prepares a route, promotes a region, or asserts on an unmarked object.
+    BaseObject* FindRecordedRouteForVerify(BaseObject* fromObj)
+    {
+        uintptr_t address = reinterpret_cast<uintptr_t>(fromObj);
+        uintptr_t start = GetRegionStart();
+        if (!IsGhostFromRegion() || address < start || address >= metadata.regionEnd0 ||
+            (address - start) % sizeof(uintptr_t) != 0) {
+            return nullptr;
+        }
+        RouteState state = GetRouteState();
+        if (state != ROUTED && state != COMPACTED && state != FORWARDED && state != PROMOTED &&
+            state != HALF_PROMOTED) {
+            return nullptr;
+        }
+        if (metadata.routeInfo.kind == RouteInfo::RouteKind::FORWARDING_TABLE) {
+            auto* table = metadata.routeInfo.GetForwardingTable();
+            return table == nullptr ? nullptr : table->GetRoute(fromObj);
+        }
+        return FindRecordedCopyRouteForVerify(address - start);
+    }
+
+    BaseObject* FindRecordedCopyRouteForVerify(size_t offset)
+    {
+        if (metadata.routeInfo.kind != RouteInfo::RouteKind::COPY_ROUTE || metadata.liveInfo0 == nullptr) {
+            return nullptr;
+        }
+        auto* live = metadata.liveInfo0;
+        if ((live->markBitmap == nullptr || !live->markBitmap->IsMarked(offset)) &&
+            (live->resurrectBitmap == nullptr || !live->resurrectBitmap->IsMarked(offset))) {
+            return nullptr;
+        }
+        uint64_t bytes = live->GetPreLiveBytes(offset, GetGhostRegionSize());
+        const auto& route = metadata.routeInfo.copyRoute;
+        uintptr_t destination = route.toRegion1StartAddress;
+        if (bytes >= route.toRegion1UsedBytes) {
+            if (route.toRegion2Idx == RouteInfo::INVALID_VALUE ||
+                route.toRegion2Idx >= UnitInfo::totalUnitCount) {
+                return nullptr;
+            }
+            destination = GetRegionInfo(route.toRegion2Idx)->GetRegionStart();
+            bytes -= route.toRegion1UsedBytes;
+        }
+        if (destination == 0 || bytes > std::numeric_limits<uintptr_t>::max() - destination) {
+            return nullptr;
+        }
+        return reinterpret_cast<BaseObject*>(destination + bytes);
+    }
+
     static constexpr int32_t MAX_RAW_POINTER_COUNT = std::numeric_limits<int32_t>::max();
     static constexpr int32_t BIT_LENGTH = 5;
     enum RegionStateBitPos : uint8_t {

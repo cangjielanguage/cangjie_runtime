@@ -33,6 +33,7 @@ extern "C" MRT_EXPORT bool MRT_CheckRuntimeFinished();
 
 class BaseObject;
 class Mutator;
+struct VerifyStackRootContext;
 
 // Releases per-mutator local object allocator data (regions, caches and
 // metadata). Defined in Mutator.cpp; no-op when the mutator never used local
@@ -353,6 +354,10 @@ public:
         VisitNativeFrameRoots(visitor);
         VisitLocalObjectAllocatorRoots(visitor);
     }
+
+    // Returns false on incomplete stack enumeration after releasing mutator guards.
+    __attribute__((visibility("hidden"))) bool VisitRootsForVerify(const RootVisitor& visitor,
+                                                                 VerifyStackRootContext& context);
 
     ObjectRef* AddNativeFrameRoot(BaseObject* obj);
     void RemoveNativeFrameRoot(ObjectRef* root);

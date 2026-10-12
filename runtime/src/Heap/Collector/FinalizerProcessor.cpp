@@ -13,6 +13,7 @@
 #include "Mutator/Mutator.h"
 #include "ObjectModel/MObject.h"
 #include "CjScheduler.h"
+#include "Heap/HeapVerifier.h"
 
 namespace MapleRuntime {
 constexpr U32 DEFAULT_FINALIZER_TIMEOUT_MS = 2000;
@@ -330,7 +331,13 @@ void FinalizerProcessor::RegisterFinalizers(ManagedList<BaseObject*>& objs)
 void FinalizerProcessor::ReclaimHeapGarbage()
 {
     ScopedEntryTrace trace("CJRT_GC_RECLAIM");
-    Heap::GetHeap().GetAllocator().ReclaimGarbageMemory(false);
+    auto& allocator = Heap::GetHeap().GetAllocator();
+    if (HeapVerifier::IsEnabled()) {
+        std::lock_guard<std::mutex> maintenance(heapMaintenanceLock);
+        allocator.ReclaimGarbageMemory(false);
+    } else {
+        allocator.ReclaimGarbageMemory(false);
+    }
     shouldReclaimHeapGarbage.store(false, std::memory_order_relaxed);
 }
 
