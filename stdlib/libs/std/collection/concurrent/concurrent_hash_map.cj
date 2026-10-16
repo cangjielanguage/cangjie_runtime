@@ -774,9 +774,9 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
     @Frozen
     public func addIfAbsent(key: K, value: V): ?V {
         let hash = key.hashCode()
-        var curHT = head.load()
-        tryResize(hash, curHT)
+        tryResize(hash)
         var ret = None<V>
+        var curHT = head.load()
         var index = hash & (curHT.buckets.size - 1)
 
         if (let Some(v) <- curHT.getValue(hash, key)) {
@@ -784,8 +784,7 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
         }
 
         while (true) {
-            let ready = curHT.tryGetBucket(index)
-            if (ready) {
+            if (curHT.tryGetBucket(index)) {
                 ret = curHT.buckets[index].copyAddIfAbsent(hash, key, value)
                 curHT.lockG.unlock(index)
                 break
@@ -952,7 +951,7 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
     private func addInternal(key: K, value: V): ?V {
         let hash = key.hashCode()
         var curHT = head.load()
-        tryResize(hash, curHT)
+        tryResizeWithTable(hash, curHT)
         var ret = None<V>
         var index = hash & (curHT.buckets.size - 1)
         while (true) {
@@ -1016,7 +1015,7 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
     func entryViewInternal(key: K, fn: (MapEntryView<K, V>) -> Unit): ?V {
         let hash = key.hashCode()
         var curHT = head.load()
-        tryResize(hash, curHT) // maybe add
+        tryResizeWithTable(hash, curHT) // maybe add
         var ret = None<V>
         var resize = None<Int64>
         var index = hash & (curHT.buckets.size - 1)
@@ -1040,11 +1039,11 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
 
     @OverflowWrapping
     private func tryResize(hash: Int64): Unit {
-        tryResize(hash, head.load())
+        tryResizeWithTable(hash, head.load())
     }
 
     @OverflowWrapping
-    private func tryResize(hash: Int64, curHT: HNode<K, V>): Unit {
+    private func tryResizeWithTable(hash: Int64, curHT: HNode<K, V>): Unit {
         let sz = curHT.buckets.size
         if ((counts[hash & (counts.size - 1)].load() << COUNT_SIZE) < sz) {
             return
