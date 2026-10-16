@@ -313,7 +313,7 @@ Function: Executes a closure in an exclusive scope, ensuring that the closure ru
 
 > **Note:**
 >
-> This function is not available on OpenHarmony.
+> This function is not available on Windows, macOS, OpenHarmony.
 
 Parameters:
 

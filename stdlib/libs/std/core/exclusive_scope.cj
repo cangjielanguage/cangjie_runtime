@@ -21,7 +21,7 @@ package std.core
  */
 @When[env != "ohos"]
 public func exclusiveScope<T>(fn: () -> T): T {
-    let caught = exclusiveScopeImpl<T>(catchResult<T>, fn)
+    let caught = exclusiveScopeImpl<T>(fn)
     if (caught.ok) {
         return match (caught.payload) {
             case v: T => v
@@ -36,7 +36,7 @@ public func exclusiveScope<T>(fn: () -> T): T {
     }
 }
 
-private struct ExclusiveScopeResult {
+struct ExclusiveScopeResult {
     let payload: Any
     let ok: Bool
 
@@ -46,7 +46,7 @@ private struct ExclusiveScopeResult {
     }
 }
 
-private func catchResult<T>(fn: () -> T): ExclusiveScopeResult {
+func catchResult<T>(fn: () -> T): ExclusiveScopeResult {
     try {
         ExclusiveScopeResult(fn(), true)
     } catch (e: Exception) {
@@ -57,10 +57,7 @@ private func catchResult<T>(fn: () -> T): ExclusiveScopeResult {
 }
 
 @Intrinsic
-private func exclusiveScopeImpl<T>(
-    wrapper: (() -> T) -> ExclusiveScopeResult,
-    fn: () -> T
-): ExclusiveScopeResult
+private func exclusiveScopeImpl<T>(fn: () -> T): ExclusiveScopeResult
 
 /**
  * Custom exception class to wrap exceptions thrown in an exclusive scope.
