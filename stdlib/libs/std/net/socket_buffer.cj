@@ -38,4 +38,6 @@ foreign {
     func CJ_SOCKET_BufferWCopy(sockBuf: CPointer<SocketBuffer>, arrBuf: CPointer<Byte>, bufLen: Int64, copyLen: Int32): Int32
 
     func CJ_SOCKET_BufferClose(sockBuf: CPointer<SocketBuffer>, handle: Int64): Int32
+
+    func CJ_SOCKET_BufferSetHandle(sockBuf: CPointer<SocketBuffer>, newHandle: Int64): Unit
 }

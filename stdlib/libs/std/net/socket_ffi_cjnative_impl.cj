@@ -711,11 +711,17 @@ class DopraOtherSocketImpl <: DopraSocketImpl<DopraOtherSocketImpl> {
     }
 
     protected override func onHandleReplaced(newHandle: Int64): Unit {
-        unsafe {
-            var buffer = socketBufferPtr.read()
-            buffer.handle = newHandle
-            socketBufferPtr.write(buffer)
-        }
+        // Replace ONLY the handle field, atomically. The previous implementation
+        // copied the whole SocketBuffer C struct (read -> set handle -> write
+        // back), which also rewrote the `count` REFCOUNT with a stale snapshot.
+        // SocketHolder allows a read{} session (receiveFrom: native
+        // CJ_SocketIncreaseRef, possibly blocked in recvfrom) to run concurrently
+        // with this write{} session (connect): an increment landing between the
+        // whole-struct read and write was silently discarded, so the reader's own
+        // CJ_SocketDecreaseRef then freed the SocketBuffer while this socket was
+        // still alive. Every subsequent operation was use-after-free and the
+        // process crashed with heap corruption (SIGSEGV/SIGABRT).
+        unsafe { CJ_SOCKET_BufferSetHandle(socketBufferPtr, newHandle) }
     }
 }
 

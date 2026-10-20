@@ -78,6 +78,27 @@ static void CJ_SocketFreeWrapperBuffer(SocketBuffer* sockBuf)
     free(sockBuf);
 }
 
+/**
+ * Atomically replaces only the socket handle inside the buffer.
+ *
+ * The previous way of updating the handle (a whole-struct copy from Cangjie:
+ * read the SocketBuffer, set handle, write it back) also rewrote the `count`
+ * refcount with a stale snapshot. SocketHolder deliberately allows a read{}
+ * session (e.g. receiveFrom, which does CJ_SocketIncreaseRef and blocks in
+ * recvfrom) to run concurrently with a write{} session (e.g. connect, which
+ * calls onHandleReplaced). An IncreaseRef landing between the whole-struct
+ * read and write was overwritten by the stale count, so the reader's own
+ * DecreaseRef reached 0 and freed the SocketBuffer while the Cangjie socket
+ * was still alive: every later operation was use-after-free and the process
+ * crashed with heap corruption (SIGSEGV/SIGABRT).
+ *
+ * Only the handle field is atomic here, so the refcount is never touched.
+ */
+extern void CJ_SOCKET_BufferSetHandle(SocketBuffer* sockBuf, long long newHandle)
+{
+    atomic_store_explicit(&sockBuf->handle, newHandle, memory_order_release);
+}
+
 static bool CJ_SocketIncreaseRef(SocketBuffer* sockBuf)
 {
     int item = atomic_fetch_add(&sockBuf->count, 1);
