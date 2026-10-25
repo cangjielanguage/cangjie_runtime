@@ -8,7 +8,17 @@ public struct FileDescriptor
 
 Function: Used to obtain file handle information.
 
+<!--Del_sink-->
+On platforms other than OpenHarmony, this structure also implements the [Copyable](../../core/core_package_api/core_package_interfaces.md#interface-copyable) interface.
+
 > **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+<!--DelEnd_sink-->
+
+> **Description:**
 >
 > A file handle (File Handle) is a data structure allocated by the operating system to track files, used to identify an instance of an opened file. The file handle contains file metadata (such as filename, path, size, modification time, etc.) and the physical location of file data on disk.
 >
@@ -24,6 +34,56 @@ Function: Obtains file handle information.
 
 Type: [IntNative](../../core/core_package_api/core_package_intrinsics.md#IntNative)
 
+<!--Del_sink-->
+### prop fileHandle
+
+```cangjie
+public prop fileHandle: IntNative @local?
+```
+
+Function: Obtains the file handle information.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [IntNative](../../core/core_package_api/core_package_intrinsics.md#intnative) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_fd_file.txt", recursive: true)
+
+    // Create a file
+    let file = File.create("./test_local_fd_file.txt")
+
+    // Obtain the file descriptor and explicitly bind the `@local?` view
+    let fd: FileDescriptor @local? = file.fileDescriptor
+
+    // The handle value is platform-dependent; here we only verify that repeated reads are consistent
+    let first = fd.fileHandle
+    let second = fd.fileHandle
+    println("Same handle on repeated reads: ${first == second}")
+
+    // Close and delete the file
+    file.close()
+    removeIfExists("./test_local_fd_file.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+Same handle on repeated reads: true
+```
+
+<!--DelEnd_sink-->
 ## struct FileInfo
 
 ```cangjie
@@ -103,6 +163,56 @@ This property is equivalent to `this.path.fileName`. For path resolution rules, 
 
 Type: [String](../../core/core_package_api/core_package_structs.md#struct-string)
 
+<!--Del_sink-->
+### prop name
+
+```cangjie
+public prop name: String @local?
+```
+
+Function: Obtains the filename or directory name corresponding to the current instance.
+
+This property is equivalent to `this.path.fileName`. For path resolution rules, refer to the [fileName](./fs_package_structs.md#prop-filename) property of the [Path](./fs_package_structs.md#struct-path) structure.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_info_name.txt", recursive: true)
+
+    // Create a file
+    let file = File.create("./test_local_info_name.txt")
+
+    // Create a FileInfo instance in the local region, explicitly bind the receiver as `@local?`,
+    // and obtain the file name
+    let path: String @local! = "./test_local_info_name.txt"
+    let info: FileInfo @local? = FileInfo(path) @local!
+    println("File name: ${String(info.name)}")
+
+    // Delete; comment out the following line if you want to keep the file
+    file.close()
+    removeIfExists("./test_local_info_name.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+File name: test_local_info_name.txt
+```
+
+<!--DelEnd_sink-->
 ### prop parentDirectory
 
 ```cangjie
@@ -123,6 +233,55 @@ Function: Obtains the current file path, returned as a [Path](fs_package_structs
 
 Type: [Path](fs_package_structs.md#struct-path)
 
+<!--Del_sink-->
+### prop path
+
+```cangjie
+public prop path: Path @local?
+```
+
+Function: Obtains the current file path, returned as a [Path](fs_package_structs.md#struct-path).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Path](fs_package_structs.md#struct-path) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_info_path.txt", recursive: true)
+
+    // Create a file
+    let file = File.create("./test_local_info_path.txt")
+
+    // Create a FileInfo instance in the local region, explicitly bind the receiver as `@local?`,
+    // and obtain the file path
+    let path: String @local! = "./test_local_info_path.txt"
+    let info: FileInfo @local? = FileInfo(path) @local!
+    let infoPath: Path @local? = info.path
+    println("File name in path: ${String(infoPath.fileName)}")
+
+    // Delete; comment out the following line if you want to keep the file
+    file.close()
+    removeIfExists("./test_local_info_path.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+File name in path: test_local_info_path.txt
+```
+
+<!--DelEnd_sink-->
 ### prop size
 
 ```cangjie
@@ -140,6 +299,61 @@ Exceptions:
 
 - [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if an error occurs in the underlying interface during the operation.
 
+<!--Del_sink-->
+### prop size
+
+```cangjie
+public prop size: Int64 @local?
+```
+
+Function: Returns the current file size.
+
+- For a file, this represents the disk space occupied by the single file.
+- For a directory, this represents the total disk space occupied by all files in the directory.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local?
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if an error occurs in the underlying interface during the operation.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_info_size.txt", recursive: true)
+
+    // Create a file and write 4 bytes
+    let writeData: Array<Byte> = [83, 105, 122, 101] // "Size"
+    File.writeTo("./test_local_info_size.txt", writeData)
+
+    // Create a FileInfo instance in the local region, explicitly bind the receiver as `@local?`,
+    // and obtain the file size
+    let path: String @local! = "./test_local_info_size.txt"
+    let info: FileInfo @local? = FileInfo(path) @local!
+    println("File size equals written bytes: ${info.size == 4}")
+
+    // Delete; comment out the following line if you want to keep the file
+    removeIfExists("./test_local_info_size.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+File size equals written bytes: true
+```
+
+<!--DelEnd_sink-->
 ### init(Path)
 
 ```cangjie
@@ -174,6 +388,118 @@ Exceptions:
 - [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the path is invalid.
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
 
+<!--Del_sink-->
+### init(this @local!, Path @local!)
+
+```cangjie
+public exclave init(this @local!, path: Path @local!)
+```
+
+Function: Creates a [FileInfo](fs_package_structs.md#struct-fileinfo) instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- path: [Path](fs_package_structs.md#struct-path) @local! - The directory path in [Path](fs_package_structs.md#struct-path) form.
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the path is invalid.
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_info_init_path.txt", recursive: true)
+
+    // Create a file
+    let file = File.create("./test_local_info_init_path.txt")
+
+    // Create a FileInfo instance from the Path instance in the local region
+    let rawPath: String @local! = "./test_local_info_init_path.txt"
+    let path: Path @local! = Path(rawPath) @local!
+    let info: FileInfo @local! = FileInfo(path) @local!
+    println("File name: ${String(info.name)}")
+
+    // Delete; comment out the following line if you want to keep the file
+    file.close()
+    removeIfExists("./test_local_info_init_path.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+File name: test_local_info_init_path.txt
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### init(this @local!, String @local!)
+
+```cangjie
+public exclave init(this @local!, path: String @local!)
+```
+
+Function: Creates a [FileInfo](fs_package_structs.md#struct-fileinfo) instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - The directory path in [String](../../core/core_package_api/core_package_structs.md#struct-string) form.
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the path is invalid.
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Delete first to avoid creation failure
+    removeIfExists("./test_local_info_init_string.txt", recursive: true)
+
+    // Create a file
+    let file = File.create("./test_local_info_init_string.txt")
+
+    // Create a FileInfo instance from the path string in the local region
+    let path: String @local! = "./test_local_info_init_string.txt"
+    let info: FileInfo @local! = FileInfo(path) @local!
+    println("File name: ${String(info.name)}")
+
+    // Delete; comment out the following line if you want to keep the file
+    file.close()
+    removeIfExists("./test_local_info_init_string.txt", recursive: true)
+}
+```
+
+Output:
+
+```text
+File name: test_local_info_init_string.txt
+```
+
+<!--DelEnd_sink-->
 ### func canExecute()
 
 ```cangjie
@@ -253,22 +579,6 @@ Exceptions:
 
 - [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if an error occurs in the underlying interface during the operation.
 
-### func isRegular()
-
-```cangjie
-public func isRegular(): Bool
-```
-
-Function: Determines whether the current file is a regular file.
-
-Returns:
-
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true indicates a file; false indicates not a file.
-
-Exceptions:
-
-- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if an error occurs in the underlying interface during the operation.
-
 ### func isHidden()
 
 ```cangjie
@@ -295,6 +605,22 @@ Function: Determines whether the current file is read-only.
 Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true indicates read-only; false indicates not read-only.
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if an error occurs in the underlying interface during the operation.
+
+### func isRegular()
+
+```cangjie
+public func isRegular(): Bool
+```
+
+Function: Determines whether the current file is a regular file.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true indicates a file; false indicates not a file.
 
 Exceptions:
 
@@ -505,6 +831,50 @@ Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the path is empty or contains a string terminator.
 
+<!--Del_sink-->
+### prop fileName
+
+```cangjie
+public prop fileName: String @local?
+```
+
+Function: Obtains the filename (including extension) part of the [Path](fs_package_structs.md#struct-path).
+
+The entire path string is divided into parent and fileName parts; see [parent](./fs_package_structs.md#prop-parent). Returns an empty string when there is no filename.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local?
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Create a Path instance in the local region, explicitly bind the receiver as `@local?`,
+    // and obtain the file name
+    let rawPath: String @local! = "./test_local_path.txt"
+    let path: Path @local? = Path(rawPath) @local!
+    println("File name: ${String(path.fileName)}")
+}
+```
+
+Output:
+
+```text
+File name: test_local_path.txt
+```
+
+<!--DelEnd_sink-->
 ### prop fileNameWithoutExtension
 
 ```cangjie
@@ -568,6 +938,52 @@ Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the path is empty or contains a string terminator.
 
+<!--Del_sink-->
+### prop parent
+
+```cangjie
+public prop parent: Path @local!
+```
+
+Function: Obtains the parent path of this [Path](fs_package_structs.md#struct-path) instance; the returned [Path](fs_package_structs.md#struct-path) instance is bound to the caller's local region.
+
+The entire path string is divided into parent and fileName, delimited by the last valid file separator (trailing separators are ignored). If parent does not exist, a Path instance constructed from an empty string is returned. Neither the parent nor the fileName part contains a trailing separator, and parent keeps the separator that represents the root directory. When there is no parent directory, an empty [Path](./fs_package_structs.md#struct-path) instance is returned.
+
+This property does not access the file system and does not eliminate special names. If needed, it can be used together with canonicalization.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Path](fs_package_structs.md#struct-path) @local!
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Create a Path instance in the local region and obtain the parent path
+    let rawPath: String @local! = "./dir/test_local_path.txt"
+    let path: Path @local! = Path(rawPath) @local!
+    let parent: Path @local! = path.parent
+    println("Parent path: ${String(parent.toString())}")
+}
+```
+
+Output:
+
+```text
+Parent path: ./dir
+```
+
+<!--DelEnd_sink-->
 ### init(String)
 
 ```cangjie
@@ -580,6 +996,46 @@ Parameters:
 
 - rawPath: [String](../../core/core_package_api/core_package_structs.md#struct-string) - The path string.
 
+<!--Del_sink-->
+### init(this @local!, String @local!)
+
+```cangjie
+public exclave init(this @local!, rawPath: String @local!)
+```
+
+Function: Creates a [Path](fs_package_structs.md#struct-path) instance; the path string is not checked for validity at creation time, and both absolute and relative paths are supported. The created instance is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- rawPath: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - The path string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Create a Path instance from the string in the local region
+    let rawPath: String @local! = "./test_local_path.txt"
+    let path: Path @local! = Path(rawPath) @local!
+    println("Path: ${String(path.toString())}")
+}
+```
+
+Output:
+
+```text
+Path: ./test_local_path.txt
+```
+
+<!--DelEnd_sink-->
 ### func hashCode()
 
 ```cangjie
@@ -608,6 +1064,53 @@ Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the path is empty or contains a string terminator.
 
+<!--Del_sink-->
+### func isAbsolute()
+
+```cangjie
+public func isAbsolute(this @local?): Bool
+```
+
+Function: Determines whether the [Path](fs_package_structs.md#struct-path) is an absolute path. In Unix, a path starting with `/` is an absolute path.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true if it is an absolute path; false if not.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the path is empty or contains a string terminator.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Create a relative path instance in the local region and check whether it is an absolute path
+    let rawPath: String @local! = "./test_local_path.txt"
+    let path: Path @local? = Path(rawPath) @local!
+    println("Is absolute path: ${path.isAbsolute()}")
+}
+```
+
+Output:
+
+```text
+Is absolute path: false
+```
+
+<!--DelEnd_sink-->
 ### func isEmpty()
 
 ```cangjie
@@ -620,6 +1123,53 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the current instance is an empty path; otherwise, false.
 
+<!--Del_sink-->
+### func isEmpty()
+
+```cangjie
+public func isEmpty(this @local?): Bool
+```
+
+Function: Determines whether the current instance is an empty path.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the current instance is an empty path, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Create empty and non-empty path instances in the local region and check whether they are empty paths
+    let rawEmpty: String @local! = ""
+    let emptyPath: Path @local? = Path(rawEmpty) @local!
+    let rawNonEmpty: String @local! = "./test_local_path.txt"
+    let nonEmptyPath: Path @local? = Path(rawNonEmpty) @local!
+    println("Empty path is empty: ${emptyPath.isEmpty()}")
+    println("Non-empty path is empty: ${nonEmptyPath.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+Empty path is empty: true
+Non-empty path is empty: false
+```
+
+<!--DelEnd_sink-->
 ### func isRelative()
 
 ```cangjie
@@ -684,6 +1234,118 @@ Exceptions:
 - [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the parameter `path` is absolute.
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the current path is empty or either path is invalid.
 
+<!--Del_sink-->
+### func join(String)
+
+```cangjie
+public func join(this @local!, path: String @local!): Path @local!
+```
+
+Function: Concatenates another path string after the current path to form a new path; the resulting [Path](fs_package_structs.md#struct-path) instance is bound to the caller's local region.
+
+- For paths "a/b" and "c", returns "a/b/c".
+- For paths "a" and "b/c", returns "a/b/c".
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - This method only performs string concatenation and does not handle path traversal components such as "..". For security verification, call [func canonicalize](./fs_package_funcs.md#func-canonicalizestring) first and check the path range.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - The string of the other path.
+
+Returns:
+
+- [Path](fs_package_structs.md#struct-path) @local! - The [Path](fs_package_structs.md#struct-path) instance of the new path.
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the parameter path is an absolute path.
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the current path is empty or the current path or the input path is invalid.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Concatenate the path string in the local region
+    let basePath: String @local! = "./dir"
+    let base: Path @local! = Path(basePath) @local!
+    let part: String @local! = "test_local_path.txt"
+    let joined: Path @local! = base.join(part)
+    println("Joined path: ${String(joined.toString())}")
+}
+```
+
+Output:
+
+```text
+Joined path: ./dir/test_local_path.txt
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func join(Path)
+
+```cangjie
+public func join(this @local!, path: Path @local!): Path @local!
+```
+
+Function: Concatenates another path string after the current path to form a new path; the resulting [Path](fs_package_structs.md#struct-path) instance is bound to the caller's local region.
+
+- For paths "a/b" and "c", returns "a/b/c".
+- For paths "a" and "b/c", returns "a/b/c".
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - This method only performs string concatenation and does not handle path traversal components such as "..". For security verification, call [func canonicalize](./fs_package_funcs.md#func-canonicalizepath) first and check the path range.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- path: [Path](fs_package_structs.md#struct-path) @local! - The other [Path](fs_package_structs.md#struct-path).
+
+Returns:
+
+- [Path](fs_package_structs.md#struct-path) @local! - The [Path](fs_package_structs.md#struct-path) instance of the new path.
+
+Exceptions:
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - Thrown if the parameter path is an absolute path.
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the current path is empty or the current path or the input path is invalid.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Concatenate the Path instances in the local region
+    let basePath: String @local! = "./dir"
+    let base: Path @local! = Path(basePath) @local!
+    let partPath: String @local! = "test_local_path.txt"
+    let part: Path @local! = Path(partPath) @local!
+    let joined: Path @local! = base.join(part)
+    println("Joined path: ${String(joined.toString())}")
+}
+```
+
+Output:
+
+```text
+Joined path: ./dir/test_local_path.txt
+```
+
+<!--DelEnd_sink-->
 ### func normalize()
 
 ```cangjie
@@ -720,6 +1382,50 @@ Returns:
 
 - [String](../../core/core_package_api/core_package_structs.md#struct-string) - The path string of the [Path](fs_package_structs.md#struct-path).
 
+<!--Del_sink-->
+### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Obtains the path string of the [Path](fs_package_structs.md#struct-path); the returned string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - The path string of the [Path](fs_package_structs.md#struct-path).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // Obtain the path string in the local region
+    let rawPath: String @local! = "./test_local_path.txt"
+    let path: Path @local? = Path(rawPath) @local!
+    let pathString: String @local! = path.toString()
+    println("Path string: ${String(pathString)}")
+}
+```
+
+Output:
+
+```text
+Path string: ./test_local_path.txt
+```
+
+<!--DelEnd_sink-->
 ### operator func ==(Path)
 
 ```cangjie
