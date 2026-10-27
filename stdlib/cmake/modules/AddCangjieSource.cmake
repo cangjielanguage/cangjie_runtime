@@ -136,6 +136,8 @@ function(add_cangjie_library target_name)
         endif()
     endif()
 
+    list(APPEND cangjie_compile_flags "--experimental" "--enable-local-mode")
+
     if (CANGJIELIB_IS_CJNATIVE_BACKEND)
         if (CANGJIE_ASAN_SUPPORT)
             list(APPEND cangjie_compile_flags "--sanitize=address")

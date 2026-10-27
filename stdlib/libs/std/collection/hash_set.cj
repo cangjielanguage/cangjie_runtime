@@ -82,6 +82,16 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         this.myMap = HashMap<T, Unit>(capacity)
     }
 
+    @Frozen
+    public exclave init(this @local!) {
+        myMap = HashMap<T, Unit>()
+    }
+
+    @Frozen
+    public exclave init(this @local!, capacity: Int64) {
+        myMap = HashMap<T, Unit>(capacity)
+    }
+
     /**
      * Constructs a hash map with an incoming size and an initial element for initialization.
      *
@@ -149,6 +159,13 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
      */
     @Frozen
     public func add(element: T): Bool {
+        return match (this.myMap.add(element, ())) {
+            case None => true
+            case _ => false
+        }
+    }
+    @Frozen
+    public exclave func add(this @local!, element: T @local!): Bool {
         return match (this.myMap.add(element, ())) {
             case None => true
             case _ => false
@@ -471,6 +488,10 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     public func iterator(): Iterator<T> {
         return this.myMap.keys().iterator()
     }
+    @Frozen
+    public exclave func iterator(this @local!): Iterator<T> @local! {
+        myMap.keys().iterator()
+    }
 
     /**
      * Returns sizes of key-value.
@@ -505,6 +526,10 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
      */
     @Frozen
     public func toArray(): Array<T> {
+        return myMap.keys().toArray()
+    }
+    @Frozen
+    public exclave func toArray(this @local!): Array<T> @local! {
         return myMap.keys().toArray()
     }
 
