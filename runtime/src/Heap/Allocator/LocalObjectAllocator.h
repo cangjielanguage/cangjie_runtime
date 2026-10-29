@@ -17,8 +17,6 @@
 namespace MapleRuntime {
 struct FrameAddress;
 class Mutator;
-class RegionInfo;
-class RegionManager;
 
 // Metadata exposed to inspection/debugging clients while a local region is
 // stopped-the-world.  The dump layer must not depend on a concrete allocator
@@ -49,7 +47,7 @@ using LocalObjectVisitor = std::function<void(Mutator&, BaseObject*, const Local
 // EndRegion must reclaim all allocations made since the matching StartRegion.
 class LocalObjectAllocator {
 public:
-    static LocalObjectAllocator* InitLocalObjectAllocator(RegionManager& regionManager);
+    static LocalObjectAllocator* InitLocalObjectAllocator();
 
     virtual ~LocalObjectAllocator() = default;
 
@@ -69,18 +67,15 @@ public:
     // allocation failure.
     virtual MAddress Allocate(Mutator& mutator, size_t size) = 0;
 
-    // Returns bytes occupied by live local objects in the tracing heap address
-    // space. Native-backed local objects return 0. This value is used only for
-    // heap-capacity/GC allocation decisions and is not part of tracing-heap live bytes.
+    // Native-backed local objects are outside the tracing heap, so this is
+    // always 0. It is not part of tracing-heap live bytes.
     virtual size_t GetHeapAllocatedBytes() const = 0;
 
     // Returns the memory accounted to active local regions across all mutators.
     // Native-backed regions report the full capacity of chunks that are no
     // longer allocation frontiers and the used [base, top) prefix of each
-    // mutator's current chunk. The heap-backed compatibility allocator reports
-    // bytes handed out to local objects. This is the value reported by the
-    // memory info API (getAllocatedLocalObjectSize) and is not part of
-    // getAllocatedHeapSize.
+    // mutator's current chunk. This is the value reported by the memory info
+    // API (getAllocatedLocalObjectSize) and is not part of getAllocatedHeapSize.
     virtual size_t GetAllocatedObjectBytes() const = 0;
 
     // Registers an object whose finalizer should run before the current local
@@ -103,10 +98,7 @@ public:
     // abnormal thread exit) are reclaimed without running finalizers, because
     // running user code during teardown can re-enter the runtime.
     virtual void OnMutatorExit(Mutator& mutator) = 0;
-    // Visits every object currently allocated in native local regions.  The
-    // default implementation deliberately does nothing for the heap-backed
-    // compatibility allocator; its concrete enumeration is reserved for a
-    // future implementation.
+    // Visits every object currently allocated in local regions.
     virtual void VisitLocalObjects(const LocalObjectVisitor& visitor) const
     {
         (void)visitor;

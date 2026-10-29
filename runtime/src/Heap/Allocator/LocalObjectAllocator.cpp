@@ -7,8 +7,6 @@
 #include "Allocator/LocalObjectAllocator.h"
 
 #include "Allocator/Allocator.h"
-#include "Allocator/RegionInfo.h"
-#include "Allocator/RegionManager.h"
 #include "Base/CString.h"
 #include "Base/Globals.h"
 #include "Base/Log.h"
@@ -21,7 +19,6 @@
 #include "ObjectModel/MObject.h"
 
 #include <algorithm>
-#include <atomic>
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
@@ -63,66 +60,6 @@ private:
     // Completed entries are removed; the order of entries is not significant.
     std::vector<FinalizerEntry> finalizers;
     std::vector<LocalRootEntry> localRoots;
-};
-
-// Heap-backed local allocator. It preserves the current local region
-// implementation while hiding RegionInfo stack manipulation behind
-// LocalObjectAllocator.
-class HeapLocalObjectAllocator final : public LocalObjectAllocator {
-public:
-    explicit HeapLocalObjectAllocator(RegionManager& regionManager) : regionManager(regionManager) {}
-    ~HeapLocalObjectAllocator() override = default;
-
-    void StartRegion(Mutator& mutator, FrameAddress* ownerFA) override;
-    void EndRegion(Mutator& mutator, FrameAddress* ownerFA) override;
-    void EndRegionsForFrame(Mutator& mutator, FrameAddress* ownerFA) override;
-    MAddress Allocate(Mutator& mutator, size_t size) override;
-    size_t GetHeapAllocatedBytes() const override
-    {
-        return heapAllocatedBytes.load(std::memory_order_relaxed);
-    }
-    size_t GetAllocatedObjectBytes() const override
-    {
-        return heapAllocatedBytes.load(std::memory_order_relaxed);
-    }
-    void AddFinalizer(Mutator& mutator, BaseObject* obj) override;
-    void RemoveFinalizer(Mutator& mutator, BaseObject* obj) override;
-    void AddLocalRoot(Mutator& mutator, BaseObject* obj, RefField<false>* field) override;
-    void VisitLocalObjectRefFields(Mutator& mutator, const RootVisitor& visitor) override;
-    void OnMutatorExit(Mutator& mutator) override;
-
-private:
-    struct LocalHeapFirstBlock;
-
-    struct LocalHeapBlock {
-        LocalHeapBlock(RegionInfo* region, LocalHeapBlock* prev, LocalHeapFirstBlock* firstBlock)
-            : region(region), prev(prev), firstBlock(firstBlock) {}
-
-        RegionInfo* region;
-        LocalHeapBlock* prev;
-        size_t allocatedBytes = 0;
-        LocalHeapFirstBlock* firstBlock;
-    };
-
-    struct LocalHeapFirstBlock final : LocalHeapBlock {
-        LocalHeapFirstBlock(RegionInfo* region, LocalHeapBlock* prev, FrameAddress* ownerFA)
-            : LocalHeapBlock(region, prev, this), ownerFA(ownerFA) {}
-
-        FrameAddress* ownerFA;
-        LocalObjectRootRegistry rootRegistry;
-    };
-
-    LocalHeapBlock* GetBlockStackTop(const Mutator& mutator) const;
-    void SetBlockStackTop(Mutator& mutator, LocalHeapBlock* block);
-    bool PushBlock(Mutator& mutator, RegionInfo* region, bool firstOfRegion, FrameAddress* ownerFA);
-    LocalHeapBlock* PopRegionBlocks(Mutator& mutator, FrameAddress* ownerFA);
-    LocalHeapBlock* FindBlockOfObject(Mutator& mutator, BaseObject* obj);
-    void RunLocalFinalizers(Mutator& mutator, FrameAddress* ownerFA);
-    void RecordAllocation(LocalHeapBlock& block, size_t size);
-    void RecordReclamation(const LocalHeapBlock& block);
-
-    RegionManager& regionManager;
-    std::atomic<size_t> heapAllocatedBytes = { 0 };
 };
 
 // Native local allocator.  The active storage is a doubly-linked chunk list and
@@ -380,9 +317,8 @@ bool LocalObjectRootRegistry::RunFinalizerAt(Mutator& mutator, size_t idx)
     return true;
 }
 
-LocalObjectAllocator* LocalObjectAllocator::InitLocalObjectAllocator(RegionManager& regionManager)
+LocalObjectAllocator* LocalObjectAllocator::InitLocalObjectAllocator()
 {
-    (void)regionManager;
     size_t regionLimit = NativeLocalObjectAllocator::DEFAULT_REGION_LIMIT;
     const char* env = std::getenv("cjLocalRegionMaxSize");
     if (env != nullptr) {
@@ -397,259 +333,6 @@ LocalObjectAllocator* LocalObjectAllocator::InitLocalObjectAllocator(RegionManag
     VLOG(LOCAL_REGION, "use native local object allocator with per-region limit %zu B", regionLimit);
     CHECK_DETAIL(localObjectAllocator != nullptr, "new local object allocator failed");
     return localObjectAllocator;
-}
-
-void HeapLocalObjectAllocator::StartRegion(Mutator& mutator, FrameAddress* ownerFA)
-{
-    RegionInfo* region = regionManager.AllocateLocalModeRegion();
-    if (region == nullptr) {
-        // todo gc or oom
-        VLOG(LOCAL_REGION, "Start local object region failed, region is null");
-        return;
-    }
-    if (!PushBlock(mutator, region, true, ownerFA)) {
-        regionManager.ReclaimLocalModeRegion(region);
-        return;
-    }
-    VLOG(LOCAL_REGION, "StartLocalRegion: mutator %p, region %p, ownerFA %p, size %zu, stackTop %p", &mutator,
-         region, ownerFA, region->GetRegionSize(), GetBlockStackTop(mutator));
-}
-
-void HeapLocalObjectAllocator::EndRegion(Mutator& mutator, FrameAddress* ownerFA)
-{
-    RunLocalFinalizers(mutator, ownerFA);
-    LocalHeapBlock* headBlock = PopRegionBlocks(mutator, ownerFA);
-    while (headBlock != nullptr) {
-        LocalHeapBlock* del = headBlock;
-        headBlock = headBlock->prev;
-        VLOG(LOCAL_REGION, "CollectLocalGarbage: region %p, ownerFA %p", del->region, del->firstBlock->ownerFA);
-        RecordReclamation(*del);
-        regionManager.ReclaimLocalModeRegion(del->region);
-        if (del->firstBlock == del) {
-            delete static_cast<LocalHeapFirstBlock*>(del);
-        } else {
-            delete del;
-        }
-    }
-}
-
-void HeapLocalObjectAllocator::EndRegionsForFrame(Mutator& mutator, FrameAddress* ownerFA)
-{
-    if (ownerFA == nullptr) {
-        return;
-    }
-    LocalHeapBlock* block = GetBlockStackTop(mutator);
-    while (block != nullptr) {
-        if (block->firstBlock->ownerFA != ownerFA) {
-            return;
-        }
-        EndRegion(mutator, ownerFA);
-        block = GetBlockStackTop(mutator);
-    }
-}
-
-void HeapLocalObjectAllocator::OnMutatorExit(Mutator& mutator)
-{
-    // Reclaim blocks still alive (abnormal exit with local regions active).
-    // Finalizers are not run here: this is called during thread teardown and
-    // running user code would risk re-entering the runtime.
-    LocalHeapBlock* block = GetBlockStackTop(mutator);
-    while (block != nullptr) {
-        LocalHeapBlock* del = block;
-        block = block->prev;
-        RecordReclamation(*del);
-        regionManager.ReclaimLocalModeRegion(del->region);
-        if (del->firstBlock == del) {
-            delete static_cast<LocalHeapFirstBlock*>(del);
-        } else {
-            delete del;
-        }
-    }
-    SetBlockStackTop(mutator, nullptr);
-}
-
-MAddress HeapLocalObjectAllocator::Allocate(Mutator& mutator, size_t size)
-{
-    MAddress addr = 0;
-    LocalHeapBlock* block = GetBlockStackTop(mutator);
-    if (UNLIKELY(block == nullptr)) {
-        LOG(RTLOG_ERROR, "alloc heap local object without local object region");
-        return 0;
-    }
-
-    addr = block->region->Alloc(size);
-    if (addr != 0) {
-        RecordAllocation(*block, size);
-        VLOG(LOCAL_REGION,
-             "AllocLocalMode in old region: mutator %p, regoin %p(isFirst %d), "
-             "ownerFA %p, size %zu, stackTop %p, obj %p, objSize %zu",
-             &mutator, block->region, block->firstBlock == block, block->firstBlock->ownerFA,
-             block->region->GetRegionSize(),
-             GetBlockStackTop(mutator), addr, size);
-        return addr;
-    }
-
-    RegionInfo* region = regionManager.AllocateLocalModeRegion(size);
-    if (region == nullptr) {
-        DLOG(REGION, "cannot take a local mode region from heap");
-        return 0;
-    }
-    if (!PushBlock(mutator, region, false, block->firstBlock->ownerFA)) {
-        regionManager.ReclaimLocalModeRegion(region);
-        return 0;
-    }
-    addr = region->Alloc(size);
-    CHECK_DETAIL(addr != 0, "alloc local object failed");
-    LocalHeapBlock* newBlock = GetBlockStackTop(mutator);
-    CHECK_DETAIL(newBlock != nullptr && newBlock->region == region, "invalid local heap block for region %p", region);
-    RecordAllocation(*newBlock, size);
-    VLOG(LOCAL_REGION,
-         "AllocLocalMode in new region: mutator %p, regoin %p(isFirst %d), "
-         "ownerFA %p, size %zu, stackTop %p, obj %p, objSize %zu",
-         &mutator, region, false, block->firstBlock->ownerFA, region->GetRegionSize(),
-         GetBlockStackTop(mutator), addr, size);
-    return addr;
-}
-
-void HeapLocalObjectAllocator::AddFinalizer(Mutator& mutator, BaseObject* obj)
-{
-    if (obj == nullptr) {
-        return;
-    }
-    LocalHeapBlock* block = GetBlockStackTop(mutator);
-    CHECK_DETAIL(block != nullptr, "add local finalizer without current local region: %p", obj);
-    block->firstBlock->rootRegistry.AddFinalizer(obj);
-    VLOG(LOCAL_REGION, "AddLocalFinalizer: mutator %p, block %p, obj %p", &mutator, block, obj);
-}
-
-void HeapLocalObjectAllocator::RemoveFinalizer(Mutator& mutator, BaseObject* obj)
-{
-    if (obj == nullptr) {
-        return;
-    }
-    LocalHeapBlock* block = FindBlockOfObject(mutator, obj);
-    if (block != nullptr && block->firstBlock->rootRegistry.RunFinalizer(mutator, obj)) {
-        VLOG(LOCAL_REGION, "RemoveLocalFinalizer: mutator %p, block %p, obj %p", &mutator, block, obj);
-    }
-}
-
-void HeapLocalObjectAllocator::AddLocalRoot(Mutator& mutator, BaseObject* obj, RefField<false>* field)
-{
-    if (obj == nullptr || field == nullptr) {
-        return;
-    }
-    LocalHeapBlock* block = FindBlockOfObject(mutator, obj);
-    CHECK_DETAIL(block != nullptr, "add local root with non-local object %p", obj);
-    block->firstBlock->rootRegistry.AddLocalRoot(obj, field);
-    VLOG(LOCAL_REGION, "AddLocalRoot: mutator %p, block %p, obj %p, field %p", &mutator, block, obj, field);
-}
-
-void HeapLocalObjectAllocator::VisitLocalObjectRefFields(Mutator& mutator, const RootVisitor& visitor)
-{
-    for (LocalHeapBlock* block = GetBlockStackTop(mutator); block != nullptr; block = block->prev) {
-        if (block->firstBlock != block) {
-            continue;
-        }
-        block->firstBlock->rootRegistry.VisitLocalObjectRefFields(visitor);
-    }
-}
-
-HeapLocalObjectAllocator::LocalHeapBlock* HeapLocalObjectAllocator::GetBlockStackTop(const Mutator& mutator) const
-{
-    return reinterpret_cast<LocalHeapBlock*>(mutator.GetLocalObjectAllocatorData());
-}
-
-void HeapLocalObjectAllocator::SetBlockStackTop(Mutator& mutator, LocalHeapBlock* block)
-{
-    mutator.SetLocalObjectAllocatorData(block);
-}
-
-bool HeapLocalObjectAllocator::PushBlock(Mutator& mutator, RegionInfo* region, bool firstOfRegion,
-                                         FrameAddress* ownerFA)
-{
-    LocalHeapBlock* prev = GetBlockStackTop(mutator);
-    CHECK_DETAIL(firstOfRegion || prev != nullptr, "push non-first local heap block without active region");
-    LocalHeapBlock* block = firstOfRegion ? static_cast<LocalHeapBlock*>(
-        new (std::nothrow) LocalHeapFirstBlock(region, prev, ownerFA))
-        : new (std::nothrow) LocalHeapBlock(region, prev, prev->firstBlock);
-    if (block == nullptr) {
-        VLOG(LOCAL_REGION, "push local heap block failed, region %p", region);
-        return false;
-    }
-    SetBlockStackTop(mutator, block);
-    return true;
-}
-
-HeapLocalObjectAllocator::LocalHeapBlock* HeapLocalObjectAllocator::PopRegionBlocks(
-    Mutator& mutator, FrameAddress* ownerFA)
-{
-    LocalHeapBlock* curr = GetBlockStackTop(mutator);
-    if (curr != nullptr && ownerFA != nullptr && curr->firstBlock->ownerFA != ownerFA) {
-        LOG(RTLOG_FATAL, "end local heap region with mismatched frame: top ownerFA %p, target ownerFA %p",
-            curr->firstBlock->ownerFA, ownerFA);
-    }
-    LocalHeapBlock* ret = curr;
-    while (curr != nullptr) {
-        LocalHeapBlock* prev = curr->prev;
-        if (ownerFA != nullptr && curr->firstBlock->ownerFA != ownerFA) {
-            LOG(RTLOG_FATAL, "local heap region crosses frame boundary: block ownerFA %p, target ownerFA %p",
-                curr->firstBlock->ownerFA, ownerFA);
-        }
-        if (curr->firstBlock == curr) {
-            SetBlockStackTop(mutator, prev);
-            curr->prev = nullptr;
-            break;
-        }
-        curr = prev;
-    }
-    return ret;
-}
-
-HeapLocalObjectAllocator::LocalHeapBlock* HeapLocalObjectAllocator::FindBlockOfObject(Mutator& mutator,
-                                                                                      BaseObject* obj)
-{
-    if (obj == nullptr || !Heap::IsHeapAddress(obj)) {
-        return nullptr;
-    }
-    RegionInfo* region = RegionInfo::GetRegionInfoAt(reinterpret_cast<MAddress>(obj));
-    if (!region->IsLocalModeRegion()) {
-        return nullptr;
-    }
-    for (LocalHeapBlock* block = GetBlockStackTop(mutator); block != nullptr; block = block->prev) {
-        if (block->region == region) {
-            return block;
-        }
-    }
-    return nullptr;
-}
-
-void HeapLocalObjectAllocator::RunLocalFinalizers(Mutator& mutator, FrameAddress* ownerFA)
-{
-    LocalHeapBlock* block = GetBlockStackTop(mutator);
-    if (block == nullptr) {
-        return;
-    }
-    if (ownerFA != nullptr && block->firstBlock->ownerFA != ownerFA) {
-        LOG(RTLOG_FATAL, "run local heap finalizers with mismatched frame: block ownerFA %p, target ownerFA %p",
-            block->firstBlock->ownerFA, ownerFA);
-    }
-    while (block->firstBlock->rootRegistry.RunPendingFinalizers(mutator)) {
-    }
-}
-
-void HeapLocalObjectAllocator::RecordAllocation(LocalHeapBlock& block, size_t size)
-{
-    CHECK_DETAIL(block.allocatedBytes <= std::numeric_limits<size_t>::max() - size,
-                 "local heap block allocated bytes overflow");
-    block.allocatedBytes += size;
-    (void)heapAllocatedBytes.fetch_add(size, std::memory_order_relaxed);
-}
-
-void HeapLocalObjectAllocator::RecordReclamation(const LocalHeapBlock& block)
-{
-    size_t oldSize = heapAllocatedBytes.fetch_sub(block.allocatedBytes, std::memory_order_relaxed);
-    CHECK_DETAIL(oldSize >= block.allocatedBytes,
-                 "local heap allocated bytes underflow: old %zu, reclaimed %zu", oldSize, block.allocatedBytes);
 }
 
 NativeLocalObjectAllocator::MutatorData* NativeLocalObjectAllocator::CreateData(Mutator& mutator)
