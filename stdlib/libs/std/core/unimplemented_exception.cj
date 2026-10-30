@@ -18,6 +18,7 @@ package std.core
  * method, the default implementation throws `UnimplementedException` so the
  * developer immediately learns which type/method/mode is missing.
  */
+@When[env != "ohos"]
 public class UnimplementedException <: Exception {
     public init() {
         super("UnimplementedException")

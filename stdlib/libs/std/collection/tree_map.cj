@@ -1199,11 +1199,13 @@ struct TreeMapEntryView<K, V> <: MapEntryView<K, V> where K <: Comparable<K> {
 
     // TreeMap is not adapted to local mode (it has no local members at all); no valid instance exists
     // in a local context, so the local form of MapEntryView is explicitly rejected.
+    @When[env != "ohos"]
     public prop key: K @local? {
         get() {
             throw UnimplementedException("TreeMapEntryView does not support local mode")
         }
     }
+    @When[env != "ohos"]
     public mut prop value: ?V @local! {
         get() {
             throw UnimplementedException("TreeMapEntryView does not support local mode")

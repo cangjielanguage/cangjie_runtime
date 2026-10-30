@@ -27,6 +27,7 @@ public enum Option<T> {
      * @throws NoneValueException if the value of Option is None
      */
     @Frozen
+    @When[env != "ohos"]
     public exclave func getOrThrow(this @local!): T @local! {
         match (this) {
             case Some(v) => v
@@ -49,6 +50,7 @@ public enum Option<T> {
      * @throws input Exception if the value of Option is None
      */
     @Frozen
+    @When[env != "ohos"]
     public exclave func getOrThrow(this @local!, exception: () -> Exception): T @local! {
         match (this) {
             case Some(v) => v
@@ -73,6 +75,7 @@ public enum Option<T> {
     }
 
     @Frozen
+    @When[env != "ohos"]
     public func isNone(this @local?): Bool {
         match (this) {
             case None => true
@@ -89,6 +92,7 @@ public enum Option<T> {
     }
 
     @Frozen
+    @When[env != "ohos"]
     public func isSome(this @local?): Bool {
         match (this) {
             case Some(_) => true
@@ -171,6 +175,7 @@ extend<T> Option<T> <: Hashable where T <: Hashable {
         }
     }
 
+    @When[env != "ohos"]
     public func hashCode(this @local?): Int64 {
         return match (this) {
             case Some(v) => v.hashCode()

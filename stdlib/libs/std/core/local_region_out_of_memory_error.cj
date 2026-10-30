@@ -8,6 +8,7 @@
 
 package std.core
 
+@When[env != "ohos"]
 public class LocalRegionOutOfMemoryError <: Error {
     init() {
         super()
