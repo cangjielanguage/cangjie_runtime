@@ -26,6 +26,13 @@ void* LoadBinaryFile(const char* libName);
 int UnloadBinaryFile(void* handler);
 void* FindSymbol(void* handler, const char* symbolName);
 int GetBinaryInfoFromAddress(const void* address, BinaryInfo* binInfo);
+#if defined(__ANDROID__)
+// If the reported path is a container (e.g. base.apk) and the mapped module can be
+// located as a unique ZIP entry by content, rewrite binInfo->filePathName to
+// "<container>!/<entry>". On any failure, leave the path unchanged.
+// Only call this from module registration; it performs file I/O.
+void CanonicalizeModulePath(const void* address, BinaryInfo* binInfo);
+#endif
 }; // namespace Loader
 }; // namespace Os
 }; // namespace MapleRuntime
