@@ -40,14 +40,21 @@ void InitParseDiagnostic(DiagnosticEngine& diag, SourceManager& sm)
     diag.EnableCheckRangeErrorCodeRatherICE();
 }
 
-/// get the compileCjd compile option from MacroCall* if not null
-bool GetCompileCjd(void* fptr)
+/// get the compile options from MacroCall*, nullptr when there is no macro call context
+const GlobalOptions* GetGlobalOptions(void* fptr)
 {
     if (!fptr) {
-        return false;
+        return nullptr;
     }
     auto mc = reinterpret_cast<MacroCall*>(fptr);
-    return mc->ci->invocation.globalOptions.compileCjd;
+    return &mc->ci->invocation.globalOptions;
+}
+
+/// Lexer does not take compile options in its constructor, set the related ones here.
+/// Local mode is enabled by default when there is no compile option context.
+void SetLexerOptions(Lexer& lex, const GlobalOptions* opts)
+{
+    lex.SetLocalModeEnabled(!opts || opts->enableLocalMode);
 }
 
 std::string ParseWithError(
@@ -66,7 +73,7 @@ std::string ParseWithError(
         diag.DisableScopeCheck();
     }
     diag.SetDisableWarning(true);
-    Parser declParser(fileID, tokenStr, diag, sm, false, GetCompileCjd(fptr));
+    Parser declParser(fileID, tokenStr, diag, sm, false, GetGlobalOptions(fptr));
     if (kind == ParseKind::PROGRAM) {
         declParser.ParseTopLevel();
     } else if (kind == ParseKind::EXPR) {
@@ -96,6 +103,7 @@ std::string LexWithError(void* fptr, const std::string code)
 
     diag.SetDisableWarning(true);
     Lexer lex(fileID, code, diag, sm, false);
+    SetLexerOptions(lex, GetGlobalOptions(fptr));
     auto tokens = lex.GetTokens();
 
     std::string outStr;
@@ -177,6 +185,7 @@ ParseRes* CJ_AST_Lex(void* fptr, const char* code, int64_t codeLen)
     diag.SetDisableWarning(true);
     std::string cangjieCode(code, static_cast<size_t>(codeLen));
     Lexer lex(cangjieCode, diag, sm, false, false);
+    SetLexerOptions(lex, GetGlobalOptions(fptr));
     std::vector<Token> tokens{};
 
     MacroCall* macCall = nullptr;
@@ -228,7 +237,7 @@ ParseRes* CJ_AST_ParseExpr(void* fptr, const uint8_t* tokensBytes, int64_t* toke
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetCompileCjd(fptr));
+    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
     auto expr = parser.ParseExprLibast();
     while (parser.Skip(TokenKind::NL) || parser.Skip(TokenKind::SEMI)) {
     }
@@ -268,7 +277,7 @@ ParseRes* CJ_AST_ParseAnnotationArguments(const uint8_t* tokensBytes)
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, false);
+    Parser parser(tokens, diag, sm, false);
     auto node = parser.ParseCustomAnnotation();
 
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
@@ -289,7 +298,7 @@ ParseRes* CJ_AST_ParsePattern(void* fptr, const uint8_t* tokensBytes, int64_t* t
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetCompileCjd(fptr));
+    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
     auto node = parser.ParsePattern();
 
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
@@ -321,7 +330,7 @@ ParseRes* CJ_AST_ParseType(void* fptr, const uint8_t* tokensBytes, int64_t* toke
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetCompileCjd(fptr));
+    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
     diag.EmitCategoryDiagnostics(DiagCategory::PARSE);
     auto node = parser.ParseType();
 
@@ -360,7 +369,7 @@ ParseRes* CJ_ParseDeclCommon(void* fptr, const uint8_t* tokensBytes, ScopeKind s
     }
     diag.SetDisableWarning(true);
     diag.EnableCheckRangeErrorCodeRatherICE();
-    Parser declParser(tokens, diag, sm, false, GetCompileCjd(fptr));
+    Parser declParser(tokens, diag, sm, false, GetGlobalOptions(fptr));
     // Using unknown_scope to differ normal parser and parser in libast. Normal parsing step has solid scope.
     auto decl = declParser.ParseDecl(scopeKind);
 
@@ -414,7 +423,7 @@ ParseRes* CJ_AST_ParseTopLevel(void* fptr, const uint8_t* tokensBytes)
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetCompileCjd(fptr));
+    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
     auto file = parser.ParseTopLevel();
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
     // result free on cangjie side
