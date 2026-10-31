@@ -1823,7 +1823,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added, removed, or modified within `predicate`.
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added or removed within `predicate`.
 
 Example:
 
@@ -5358,7 +5358,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when key-value pairs in [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) are added, removed, or modified within the `predicate`.
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when key-value pairs in [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) are added or removed within the `predicate`.
 
 Example:
 
@@ -6932,7 +6932,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added, removed, or modified within the `predicate` in the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added or removed within the `predicate` in the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
 
 Example:
 
@@ -9755,7 +9755,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when nodes are added, removed, or modified within the `predicate` function while iterating through the [LinkedList](./collection_package_class.md#class-linkedlistt).
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when nodes are added or removed within the `predicate` function while iterating through the [LinkedList](./collection_package_class.md#class-linkedlistt).
 
 Example:
 
@@ -12289,7 +12289,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when `predicate` modifies (adds/removes/changes) key-value pairs within the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when `predicate` adds or removes key-value pairs within the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
 
 Example:
 
@@ -14028,7 +14028,7 @@ Parameters:
 
 Exceptions:
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added, removed, or modified within the `predicate` while iterating the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added or removed within the `predicate` while iterating the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
 
 Example:
 
