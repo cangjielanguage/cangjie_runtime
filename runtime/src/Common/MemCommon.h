@@ -27,7 +27,7 @@ constexpr size_t MAX_BYTES = 256 * 1024;
 constexpr size_t NFREELIST = 208;
 constexpr int MIN_ALIGN_NUM = 8;
 
-enum AlignNmu { ALIGN_8 = 8, ALIGN_16 = 16, ALIGN_128 = 128, ALIGN_1024 = 1024, ALIGN_8192 = 8 * 1028 };
+enum AlignNmu { ALIGN_8 = 8, ALIGN_16 = 16, ALIGN_128 = 128, ALIGN_1024 = 1024, ALIGN_8192 = 8 * 1024 };
 
 enum MemberSize {
     ALING_8_BYTE = 128,
