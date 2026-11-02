@@ -35,6 +35,10 @@ public interface InputStream {
      * @return number of bytes read and copied to the buffer (never zero) or 0 when end of stream reached
      */
     func read(buffer: Array<Byte>): Int64
+    @When[env != "ohos"]
+    func read(this @local!, buffer: Array<Byte> @local!): Int64 {
+        throw Exception()
+    }
 }
 
 /**
@@ -47,6 +51,10 @@ public interface OutputStream {
      * @params buffer - Will write to the OutputStream from the buffer.
      */
     func write(buffer: Array<Byte>): Unit
+    @When[env != "ohos"]
+    func write(this @local!, buffer: Array<Byte> @local!): Unit {
+        throw Exception()
+    }
 
     /**
      * Flush the OutputStream.
@@ -71,6 +79,10 @@ public interface Seekable {
      * @return the number of bytes in the stream from the beginning of the data to the cursor position.
      */
     func seek(sp: SeekPosition): Int64
+    @When[env != "ohos"]
+    func seek(this @local!, sp: SeekPosition): Int64 {
+        throw Exception()
+    }
 
     /**
      * @return the position of the current cursor in the stream.
@@ -78,6 +90,12 @@ public interface Seekable {
     prop position: Int64 {
         get() {
             seek(Current(0))
+        }
+    }
+    @When[env != "ohos"]
+    prop position: Int64 @local! {
+        get() {
+            exclave {seek(Current(0))}
         }
     }
 
@@ -95,6 +113,20 @@ public interface Seekable {
             length - oldPos
         }
     }
+    @When[env != "ohos"]
+    prop remainLength: Int64 @local! {
+        get() {
+            exclave {
+                let oldPos = this.seek(Current(0))
+                let length = this.seek(End(0))
+                if (length != oldPos) {
+                    this.seek(Begin(oldPos))
+                }
+
+                length - oldPos
+            }
+        }
+    }
 
     /**
      * @return the number of bytes from the file header to the file trailer.
@@ -108,6 +140,20 @@ public interface Seekable {
             }
 
             length
+        }
+    }
+    @When[env != "ohos"]
+    prop length: Int64 @local! {
+        get() {
+            exclave {
+                let oldPos = this.seek(Current(0))
+                let length = this.seek(End(0))
+                if (length != oldPos) {
+                    this.seek(Begin(oldPos))
+                }
+
+                length
+            }
         }
     }
 }

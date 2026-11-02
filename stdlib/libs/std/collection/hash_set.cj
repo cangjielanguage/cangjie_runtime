@@ -118,6 +118,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return myMap.contains(element)
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func contains(this @local!, element: T @local!): Bool {
+        return myMap.contains(element)
+    }
+
     /**
      * Check whether the set is a subset of other.
      *
@@ -199,6 +205,17 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     public func add(all!: Collection<T>): Unit {
         for (i in all) {
             this.myMap.add(i, ())
+        }
+    }
+
+    /**
+     * Add all elements from another local HashSet.
+     */
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func add(this @local!, all!: HashSet<T> @local!): Unit {
+        for ((k, _) in all.myMap) {
+            this.myMap.add(k, ())
         }
     }
 
@@ -516,6 +533,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
      */
     @Frozen
     public func isEmpty(): Bool {
+        return myMap.isEmpty()
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    public func isEmpty(this @local?): Bool {
         return myMap.isEmpty()
     }
 
