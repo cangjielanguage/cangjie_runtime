@@ -2147,7 +2147,7 @@ public func removeIf(predicate: (T) -> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [ArrayList](collection_package_class.md#class-arraylistt) 内元素时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [ArrayList](collection_package_class.md#class-arraylistt) 内元素时，抛出异常。
 
 示例：
 
@@ -5940,7 +5940,7 @@ public func removeIf(predicate: (K, V) -> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) 内键值对时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) 内键值对时，抛出异常。
 
 示例：
 
@@ -7846,7 +7846,7 @@ public func removeIf(predicate: (T) -> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) 内元素时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) 内元素时，抛出异常。
 
 示例：
 
@@ -10156,7 +10156,7 @@ public func removeIf(predicate: (T)-> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [LinkedList](./collection_package_class.md#class-linkedlistt) 内节点时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [LinkedList](./collection_package_class.md#class-linkedlistt) 内节点时，抛出异常。
 
 示例：
 
@@ -12832,7 +12832,7 @@ public func removeIf(predicate: (K, V) -> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) 内键值对时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) 内键值对时，抛出异常。
 
 示例：
 
@@ -14685,7 +14685,7 @@ public func removeIf(predicate: (T) -> Bool): Unit
 
 异常：
 
-- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删或者修改 [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) 内元素时，抛出异常。
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - 当 `predicate` 中增删 [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) 内元素时，抛出异常。
 
 示例：
 
