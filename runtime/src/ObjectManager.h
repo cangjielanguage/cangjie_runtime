@@ -27,6 +27,7 @@ public:
     void Fini() const {};
 
     static inline ObjRef NewObject(const TypeInfo* ti, MSize size, AllocType allocType = AllocType::MOVEABLE_OBJECT);
+    static inline ObjRef NewLocalObject(const TypeInfo* ti, MSize size);
     static inline ObjRef NewWeakRefObject(const TypeInfo* ti, MSize size,
                                           AllocType allocType = AllocType::MOVEABLE_OBJECT);
     static inline ObjRef NewPinnedObject(const TypeInfo* ti, MSize size, bool isFinalizer);
@@ -37,13 +38,17 @@ public:
     // general (slow) interface for array creation
     static inline ArrayRef NewArray(MIndex nElems, const TypeInfo* arrayTi,
                                     AllocType allocType = AllocType::MOVEABLE_OBJECT);
+    static inline ArrayRef NewLocalArray(MIndex nElems, const TypeInfo* arrayTi);
 
     // create object array: it needs special care.
     static inline ArrayRef NewObjArray(MIndex nElems, const TypeInfo* arrayTi,
                                        AllocType allocType = AllocType::MOVEABLE_OBJECT);
+    static inline ArrayRef NewLocalObjArray(MIndex nElems, const TypeInfo* arrayTi);
 
     static inline ArrayRef NewKnownWidthArray(MIndex nElems, const TypeInfo* arrayTi, ArrayElemBits elemBits,
                                               AllocType allocType = AllocType::MOVEABLE_OBJECT);
+    static inline ArrayRef NewLocalKnownWidthArray(
+        MIndex nElems, const TypeInfo* arrayTi, ArrayElemBits elemBits);
 };
 } // namespace MapleRuntime
 

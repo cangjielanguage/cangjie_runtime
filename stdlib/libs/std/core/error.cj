@@ -10,16 +10,20 @@ package std.core
 
 public open class Error <: ToString {
     private var detailMessage: String = String.empty
-    var pcArray: RawArray<UInt64> = RawArray<UInt64>(1, repeat: 0)
+    var pcArray: RawArray<UInt64> = rawArrayAllocate<UInt64>(0)
     var traceElementArray: Array<StackTraceElement> = []
 
     init() {
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     init(message: String) {
         detailMessage = message
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     protected open func getClassName(): String {

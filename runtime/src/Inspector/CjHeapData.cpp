@@ -20,25 +20,30 @@
 #include "Common/StackType.h"
 #include "Concurrency/ConcurrencyModel.h"
 #include "Heap/Heap.h"
+#include "Heap/Allocator/RegionSpace.h"
 #include "ObjectModel/RefField.h"
 #include "Sync/Sync.h"
 #include "UnwindStack/PrintStackInfo.h"
 #include "UnwindStack/StackInfo.h"
 #include "UnwindStack/StackMetadataHelper.h"
 #include <Mutator/MutatorManager.h>
+#include "Heap/Allocator/LocalObjectUtil.h"
 
 namespace MapleRuntime {
 static bool g_oomIsTrigged = false;
+// Enable only after the heap-dump parser supports local-object records (1.0.3).
+static bool g_enableLocalObjectDump = false;
 
-void CjHeapData::SerializedIdWrapper::Init(size_t maxCapacity, MAddress startAddr)
+void CjHeapData::SerializedIdWrapper::Init(size_t maxCapacity, MAddress startAddr, bool force4Byte)
 {
 #if SIZE_MAX <= UINT32_MAX
     (void)maxCapacity;
+    (void)force4Byte;
     use4ByteId = true;
 #else
-    use4ByteId = (maxCapacity <= static_cast<size_t>(CjHeapData::HEAP_SIZE_THRESHOLD_4GB));
+    use4ByteId = force4Byte || (maxCapacity <= static_cast<size_t>(CjHeapData::HEAP_SIZE_THRESHOLD_4GB));
 #endif
-    heapStartAddr = use4ByteId ? startAddr : 0;
+    heapStartAddr = (use4ByteId && !force4Byte) ? startAddr : 0;
 }
 
 void CjHeapData::SerializedIdWrapper::WriteId(CjHeapData& heapData, u8 value) const
@@ -69,8 +74,9 @@ void CjHeapData::WriteHeap()
     WriteHeapDump();
 }
 
-void CjHeapData::ProcessHeap()
+    void CjHeapData::ProcessHeap()
 {
+    enableLocalObjectDump = g_enableLocalObjectDump;
     ProcessRootGlobal();
     ProcessRootLocal();
     ProcessRootConcurrencyModel();
@@ -82,12 +88,33 @@ void CjHeapData::ProcessHeap()
     auto dumpVisitor = [this](BaseObject* obj) { ProcessHeapObject(obj); };
     bool ret = Heap::GetHeap().ForEachObj(dumpVisitor, false);
     CHECK_E(UNLIKELY(!ret), "theAllocator.ForEachObj() in DumpHeap() return false.");
+    if (!enableLocalObjectDump) {
+        return;
+    }
+    RegionSpace& space = reinterpret_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
+    space.GetLocalObjectAllocator().VisitLocalObjects(
+        [this](Mutator& mutator, BaseObject* obj, const LocalObjectInfo& info) {
+            hasLocalObjects = true;
+            ProcessLocalObject(mutator, obj, info);
+        });
 }
 
 void CjHeapData::InitSerializedIdWrapper()
 {
     Heap& heap = Heap::GetHeap();
-    serializedIdWrapper.Init(heap.GetMaxCapacity(), heap.GetStartAddress());
+    RegionSpace& space = reinterpret_cast<RegionSpace&>(heap.GetAllocator());
+    enableLocalObjectDump = g_enableLocalObjectDump;
+    bool force4Byte = enableLocalObjectDump && space.GetLocalObjectAllocator().HasLocalObjects();
+    // Decide the ID domain before processing any record.  A local region may
+    // contain an object that is not reachable from a root, so relying on the
+    // later object visitor to flip this flag would make the first heap IDs use
+    // the wrong (heap-offset) encoding.
+    hasLocalObjects = force4Byte;
+    serializedIdWrapper.Init(heap.GetMaxCapacity(), heap.GetStartAddress(), force4Byte);
+    if (force4Byte) {
+        // GetObjectId advances this seed before assigning the first ID.
+        objectIdSeed = 0;
+    }
 }
 
 void CjHeapData::DumpHeap(bool needStopTheWorld)
@@ -126,10 +153,10 @@ void CjHeapData::DumpHeap(bool needStopTheWorld)
         LOG(RTLOG_ERROR, "Failed to open heap dump file, stop dumping heap info, %s", strerror(errno));
         return;
     }
-    InitSerializedIdWrapper();
     // step2 - write file
     if (needStopTheWorld) {
         ScopedStopTheWorld scopedStopTheWorld("dump heap to file");
+        InitSerializedIdWrapper();
         size_t allocatedSize = Heap::GetHeap().GetAllocatedSize();
         // 40: Statistical ratio of heap size to object count, used to estimate container capacity
         const size_t estimateSize = 40;
@@ -137,6 +164,7 @@ void CjHeapData::DumpHeap(bool needStopTheWorld)
         ProcessHeap();
         WriteHeap();
     } else {
+        InitSerializedIdWrapper();
         size_t allocatedSize = Heap::GetHeap().GetAllocatedSize();
         // 40: Statistical ratio of heap size to object count, used to estimate container capacity
         const size_t estimateSize = 40;
@@ -176,9 +204,9 @@ bool CjHeapData::DumpHeap(int fd, bool needStopTheWorld)
         return false;
     }
 
-    InitSerializedIdWrapper();
     if (needStopTheWorld) {
         ScopedStopTheWorld scopedStopTheWorld("dump heap to fd");
+        InitSerializedIdWrapper();
         size_t allocatedSize = Heap::GetHeap().GetAllocatedSize();
         // 40: Statistical ratio of heap size to object count, used to estimate container capacity
         const size_t estimateSize = 40;
@@ -186,6 +214,7 @@ bool CjHeapData::DumpHeap(int fd, bool needStopTheWorld)
         ProcessHeap();
         WriteHeap();
     } else {
+        InitSerializedIdWrapper();
         size_t allocatedSize = Heap::GetHeap().GetAllocatedSize();
         // 40: Statistical ratio of heap size to object count, used to estimate container capacity
         const size_t estimateSize = 40;
@@ -270,6 +299,39 @@ void CjHeapData::ProcessHeapObject(BaseObject* obj)
     ProcessRootClass(obj->GetTypeInfo());
 }
 
+void CjHeapData::ProcessLocalObject(Mutator& mutator, BaseObject* obj, const LocalObjectInfo& info)
+{
+    (void)mutator;
+    if (obj == nullptr || obj->GetTypeInfo() == nullptr || !obj->GetTypeInfo()->IsVaildType()) {
+        return;
+    }
+    DumpObject dumpObject { obj, TAG_INSTANCE_DUMP, 0, 0 };
+    if (obj->IsRawArray()) {
+        TypeInfo* componentTypeInfo = obj->GetTypeInfo()->GetComponentTypeInfo();
+        if (componentTypeInfo == nullptr) {
+            return;
+        }
+        if (componentTypeInfo->IsPrimitiveType()) {
+            dumpObject.tag = info.isLargeRegion ? TAG_LARGE_PRIMITIVE_ARRAY_DUMP : TAG_PRIMITIVE_ARRAY_DUMP;
+        } else if (componentTypeInfo->IsStructType()) {
+            dumpObject.tag = info.isLargeRegion ? TAG_LARGE_STRUCT_ARRAY_DUMP : TAG_STRUCT_ARRAY_DUMP;
+            dumpObjects.push_back(dumpObject);
+            ProcessStructClass(obj->GetTypeInfo());
+            return;
+        } else if (componentTypeInfo->IsObjectType() || componentTypeInfo->IsArrayType() ||
+                   componentTypeInfo->IsInterface()) {
+            dumpObject.tag = info.isLargeRegion ? TAG_LARGE_OBJECT_ARRAY_DUMP : TAG_OBJECT_ARRAY_DUMP;
+        } else {
+            LOG(RTLOG_ERROR, "local array object %p has wrong component type", obj);
+            return;
+        }
+    } else {
+        dumpObject.tag = info.isLargeRegion ? TAG_LARGE_INSTANCE_DUMP : TAG_INSTANCE_DUMP;
+    }
+    dumpObjects.push_back(dumpObject);
+    ProcessRootClass(obj->GetTypeInfo());
+}
+
 void CjHeapData::ProcessRootClass(TypeInfo* klass)
 {
     if (dumpClassMap.find(klass) == dumpClassMap.end()) {
@@ -317,7 +379,8 @@ void CjHeapData::ProcessStacktrace(RecordStackInfo* recordStackInfo)
 
 void CjHeapData::ProcessRootLocal()
 {
-    MutatorManager::Instance().VisitAllMutatorsExceptFinalizer([this](Mutator &mutator) {
+    const bool localObjectDumpEnabled = enableLocalObjectDump;
+    MutatorManager::Instance().VisitAllMutatorsExceptFinalizer([this, localObjectDumpEnabled](Mutator &mutator) {
         if (!mutator.IsVaildCJThread()) {
             return;
         }
@@ -331,9 +394,10 @@ void CjHeapData::ProcessRootLocal()
         recordStackInfo->FillInStackTrace();
 
         ProcessStacktrace(recordStackInfo);
-        RootVisitor rootVisitor = [this, recordStackInfo](ObjectRef &objRef) {
+        RootVisitor rootVisitor = [this, recordStackInfo, localObjectDumpEnabled](ObjectRef &objRef) {
             BaseObject* obj = objRef.object;
-            if (obj == nullptr || !Heap::IsHeapAddress(obj)) {
+            if (obj == nullptr || (!Heap::IsHeapAddress(obj) &&
+                (!localObjectDumpEnabled || !IsLocalObject(obj)))) {
                 return;
             }
             FrameInfo* currentFrame = recordStackInfo->GetCurrentFramePtr();
@@ -348,6 +412,19 @@ void CjHeapData::ProcessRootLocal()
         };
         recordStackInfo->VisitStackRoots(rootVisitor, mutator);
     });
+    if (!localObjectDumpEnabled) {
+        return;
+    }
+    RegionSpace& space = reinterpret_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
+    space.GetLocalObjectAllocator().VisitLocalRoots(
+        [this](Mutator& owner, BaseObject* obj, const LocalObjectInfo& info) {
+            if (obj == nullptr) {
+                return;
+            }
+            const u1 tag = info.rootKind == LocalObjectInfo::RootKind::FINALIZER
+                ? TAG_LOCAL_FINALIZER : TAG_ROOT_LOCAL_OBJECT;
+            dumpObjects.push_back({ obj, tag, static_cast<u4>(owner.GetCJThreadId()), 0, info.finalizerState });
+        });
 }
 
 void CjHeapData::ProcessRootGlobal()
@@ -446,6 +523,13 @@ void CjHeapData::WriteAllObjects()
             case TAG_ROOT_LOCAL:
                 WriteLocalRoot(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum);
                 break;
+            case TAG_ROOT_LOCAL_OBJECT:
+                WriteLocalObjectRoot(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum);
+                break;
+            case TAG_LOCAL_FINALIZER:
+                WriteLocalFinalizer(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum,
+                                    objectInfo.finalizerState);
+                break;
             case TAG_ROOT_GLOBAL:
                 WriteGlobalRoot(objectInfo.obj, objectInfo.tag);
                 break;
@@ -513,6 +597,39 @@ void CjHeapData::WriteLocalRoot(BaseObject*& obj, const u1 tag, const u4 tid, co
     AddID(GetObjectId(obj));
     AddU4(tid);
     AddU4(depth);
+}
+
+/*
+ * Local allocator scan source:
+ *     u1 tag;     // TAG_ROOT_LOCAL_OBJECT
+ *     ID objId;
+ *     u4 threadIdx;
+ *     u4 frame;
+ */
+void CjHeapData::WriteLocalObjectRoot(BaseObject*& obj, const u1 tag, const u4 tid, const u4 depth)
+{
+    AddU1(tag);
+    AddID(GetObjectId(obj));
+    AddU4(tid);
+    AddU4(depth);
+}
+
+/*
+ * Local finalizer root:
+ *     u1 tag;     // TAG_LOCAL_FINALIZER
+ *     ID objId;
+ *     u4 threadIdx;
+ *     u4 frame;
+ *     u1 state;   // PENDING=0, RUNNING=1
+ */
+void CjHeapData::WriteLocalFinalizer(BaseObject*& obj, const u1 tag, const u4 tid, const u4 depth,
+                                     const u1 state)
+{
+    AddU1(tag);
+    AddID(GetObjectId(obj));
+    AddU4(tid);
+    AddU4(depth);
+    AddU1(state);
 }
 
 /*
@@ -923,6 +1040,24 @@ CjHeapData::u8 CjHeapData::GetObjectId(BaseObject* obj) const
     if (obj == nullptr) {
         return CjHeapData::NULL_OBJECT_ID;  // Special ID for null object references
     }
+    if (hasLocalObjects) {
+        auto existing = objectIds.find(obj);
+        if (existing != objectIds.end()) {
+            return existing->second;
+        }
+        // A deterministic sequence and collision checks keep IDs unique across
+        // heap and local objects.
+        uint32_t candidate = objectIdSeed;
+        do {
+            candidate = candidate * 1664525U + 1013904223U;
+            if (candidate == 0xFFFFFFFFU) {
+                continue;
+            }
+        } while (!allocatedObjectIds.insert(candidate).second);
+        objectIdSeed = candidate;
+        objectIds.emplace(obj, candidate);
+        return candidate;
+    }
     if (serializedIdWrapper.Use4ByteId()) {
         MAddress objAddr = reinterpret_cast<MAddress>(obj);
         return static_cast<CjHeapData::u4>(objAddr - serializedIdWrapper.GetHeapStartAddr());
@@ -960,8 +1095,13 @@ void CjHeapData::EndRecord()
 
 void CjHeapData::WriteFixedHeader()
 {
-    const char ident[] = "CANGJIE PROFILE 1.0.2";
-    AddU1List(reinterpret_cast<const uint8_t*>(ident), sizeof(ident));
+    if (hasLocalObjects) {
+        const char localIdent[] = "CANGJIE PROFILE 1.0.3";
+        AddU1List(reinterpret_cast<const uint8_t*>(localIdent), sizeof(localIdent));
+    } else {
+        const char legacyIdent[] = "CANGJIE PROFILE 1.0.2";
+        AddU1List(reinterpret_cast<const uint8_t*>(legacyIdent), sizeof(legacyIdent));
+    }
     const u4 idSize = serializedIdWrapper.Use4ByteId() ? sizeof(u4) : sizeof(u8);
     AddU4(idSize);
     struct timeval timeNow {};

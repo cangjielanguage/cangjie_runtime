@@ -108,6 +108,15 @@ void ExceptionManager::OutOfMemory()
     }
     eWrapper.SetThrowingOOME(false);
 }
+
+void ExceptionManager::LocalRegionOutOfMemory()
+{
+    ExceptionWrapper& eWrapper = Mutator::GetMutator()->GetExceptionWrapper();
+    eWrapper.SetFatalException(false);
+    eWrapper.SetExceptionType(ExceptionWrapper::ExceptionType::LOCAL_REGION_OUT_OF_MEMORY);
+    ThrowImplicitException(LOCAL_REGION_OOM);
+}
+
 MRT_OPTIONAL_DISABLE_TAIL_CALL
 void ExceptionManager::StackOverflow(uint32_t adjustedSize __attribute__((unused)), void* ip)
 {
@@ -359,8 +368,6 @@ void ExceptionManager::ThrowException(const ExceptionRef& exception)
     DLOG(EXCEPTION, "  fatalException\t:\t%d", mExceptionWrapper.IsFatalException());
     DLOG(EXCEPTION, "  ExceptionType\t:\t%s", mExceptionWrapper.GetExceptionTypeName());
 #endif
-    mExceptionWrapper.Reset();
-
     if (mExceptionWrapper.GetExceptionRef() != nullptr) {
 #ifndef _WIN64
         // Because the throwing of exceptions has already modified the rbp and pc of some frames,
@@ -370,6 +377,8 @@ void ExceptionManager::ThrowException(const ExceptionRef& exception)
         LOG(RTLOG_FATAL, "ThrowException fail, abort.");
     }
 
+    // Keep an in-flight unwind intact until the conflicting throw has been rejected.
+    mExceptionWrapper.Reset();
     mExceptionWrapper.SetExceptionRef(exception);
     ExceptionHandling eh(mExceptionWrapper, nullptr);
 }

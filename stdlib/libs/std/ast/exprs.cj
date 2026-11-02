@@ -1235,6 +1235,7 @@ public class CallExpr <: Expr {
                     this.lParen_ = v.lParen_
                     this.args_ = v.args_
                     this.rParen_ = v.rParen_
+                    this.modal_ = v.modal_
                 case None => throw ASTException("Cannot construct the 'CallExpr' node.")
             }
         } catch (e: ParseASTException) {
@@ -1248,6 +1249,11 @@ public class CallExpr <: Expr {
     private var lParen_: Token = Token(TokenKind.LPAREN)
     private var args_: ArrayList<Argument> = ArrayList<Argument>()
     private var rParen_: Token = Token(TokenKind.RPAREN)
+    private var modal_: ModalInfo = ModalInfo()
+    public mut prop modal: ModalInfo {
+        get() { modal_ }
+        set(v) { modal_ = v }
+    }
     public mut prop callFunc: Expr {
         get() {
             postfixExpr_
@@ -1299,6 +1305,7 @@ public class CallExpr <: Expr {
         ret.append(lParen_)
         ret.append(arguments.toTokens())
         ret.append(rParen_)
+        ret.append(modal_.toTokens())
     }
 
     public func traverse(v: Visitor): Unit {
@@ -1311,6 +1318,7 @@ public class CallExpr <: Expr {
         for (arg in args_) {
             arg.traverse(v)
         }
+        modal_.traverse(v)
         return
     }
 
@@ -1326,6 +1334,7 @@ public class CallExpr <: Expr {
             ret += getIndent(currentIndent) + "-arguments: ${i}, "
             ret += args_[i].dump(currentIndent)
         }
+        ret += modal_.dump(currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
     }
@@ -2840,6 +2849,7 @@ public class PrimitiveTypeExpr <: Expr {
         keyword_ = kind
     }
     private var keyword_: Token = Token()
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -2849,13 +2859,18 @@ public class PrimitiveTypeExpr <: Expr {
             keyword_ = v
         }
     }
+    public mut prop modal: ModalInfo {
+        get() { modal_ }
+        set(v) { modal_ = v }
+    }
     public func toTokens(): Tokens {
-        Tokens().append(keyword_)
+        Tokens().append(keyword_).append(modal_.toTokens())
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        modal_.traverse(v)
         return
     }
 
@@ -2866,6 +2881,78 @@ public class PrimitiveTypeExpr <: Expr {
             currentIndent++
         }
         ret += getTokenIndent("-keyword", keyword_, currentIndent)
+        ret += modal_.dump(currentIndent)
+        ret += getIndent(indent) + "}\n"
+        ret
+    }
+}
+
+public class ExclaveExpr <: Expr {
+    init(`exclave`: Token, block: Block) {
+        this.exclave_ = `exclave`
+        this.block_ = block
+    }
+    public init(inputs: Tokens) {
+        try {
+            match (parseExpr(inputs) as ExclaveExpr) {
+                case Some(v) =>
+                    this.begin_ = v.beginPos
+                    this.end_ = v.endPos
+                    this.exclave_ = v.exclave_
+                    this.block_ = v.block_
+                case None => throw ASTException("Cannot construct the 'ExclaveExpr' node.")
+            }
+        } catch (_: ParseASTException) {
+            throw ASTException("Cannot construct the 'ExclaveExpr' node.")
+        }
+    }
+    public init() {
+        super()
+    }
+    private var exclave_: Token = Token(TokenKind.EXCLAVE)
+    private var block_: Block = Block()
+    public mut prop keyword: Token {
+        get() {
+            exclave_
+        }
+        set(v) {
+            checkTokenType(v, EXCLAVE)
+            exclave_ = v
+        }
+    }
+    /** The executable Block enclosed by exclave, distinct from a declaration Body. */
+    public mut prop block: Block {
+        get() {
+            block_
+        }
+        set(v) {
+            block_ = v
+        }
+    }
+    public func toTokens(): Tokens {
+        var ret = Tokens().append(exclave_).append(block_)
+        ret
+    }
+
+    public func traverse(v: Visitor): Unit {
+        v.visit(this)
+        super.traverse(v)
+        if (v.needBreakTraverse()) {
+            return
+        }
+        block_.traverse(v)
+        return
+    }
+
+    protected func dump(indent: UInt16): String {
+        var ret: String = "ExclaveExpr {\n"
+        currentIndent = indent
+        if (indent != 0 || beginNode) {
+            currentIndent++
+        }
+        ret += getTokenIndent("-exclave", exclave_, currentIndent)
+        ret += getIndent(currentIndent) + "-block: "
+        ret += block_.dump(currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
     }

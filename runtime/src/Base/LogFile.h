@@ -58,6 +58,7 @@ enum LogType {
 #endif
     PROMOTE,
     SWEEP,
+    LOCAL_REGION,
     LOG_TYPE_NUMBER
 };
 

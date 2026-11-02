@@ -279,6 +279,13 @@ void CjHeapDataForIDE::SerializeAllObjects()
             case TAG_ROOT_LOCAL:
                 SerializeLocalRoot(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum);
                 break;
+            case TAG_ROOT_LOCAL_OBJECT:
+                SerializeLocalObjectRoot(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum);
+                break;
+            case TAG_LOCAL_FINALIZER:
+                SerializeLocalFinalizer(objectInfo.obj, objectInfo.tag, objectInfo.threadId, objectInfo.frameNum,
+                                        objectInfo.finalizerState);
+                break;
             case TAG_ROOT_GLOBAL:
                 SerializeGlobalRoot(objectInfo.obj, objectInfo.tag);
                 break;
@@ -326,7 +333,7 @@ void CjHeapDataForIDE::SerializeGlobalRoot(BaseObject*& obj, const u1 tag)
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
     CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     CString name = obj->GetTypeInfo()->GetName();
     writer->WriteNumber(id);
     writer->WriteChar(']');
@@ -345,7 +352,7 @@ void CjHeapDataForIDE::SerializeUnknownRoot(BaseObject*& obj, const u1 tag)
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
     CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(']');
 }
@@ -365,12 +372,35 @@ void CjHeapDataForIDE::SerializeLocalRoot(BaseObject*& obj, const u1 tag, const 
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
     CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     writer->WriteNumber(tid);
     writer->WriteChar(',');
     writer->WriteNumber(depth);
+    writer->WriteChar(']');
+}
+
+void CjHeapDataForIDE::SerializeLocalObjectRoot(BaseObject*& obj, const u1 tag, const u4 tid, const u4 depth)
+{
+    SerializeLocalRoot(obj, tag, tid, depth);
+}
+
+void CjHeapDataForIDE::SerializeLocalFinalizer(BaseObject*& obj, const u1 tag, const u4 tid, const u4 depth,
+                                               const u1 state)
+{
+    writer->WriteChar('[');
+    writer->WriteNumber(tag);
+    writer->WriteChar(',');
+    writer->WriteNumber(GetObjType(obj));
+    writer->WriteChar(',');
+    writer->WriteNumber(GetObjectId(obj));
+    writer->WriteChar(',');
+    writer->WriteNumber(tid);
+    writer->WriteChar(',');
+    writer->WriteNumber(depth);
+    writer->WriteChar(',');
+    writer->WriteNumber(state);
     writer->WriteChar(']');
 }
 
@@ -390,7 +420,7 @@ void CjHeapDataForIDE::SerializeThreadObjectRoot(BaseObject*& obj, const u1 tag,
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
     CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     writer->WriteNumber(tid);
@@ -441,13 +471,13 @@ void CjHeapDataForIDE::SerializeObjectArray(BaseObject*& obj, const u1 tag)
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
     CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     u4 num = 0;
     std::stack<u4> VAL;
     RefFieldVisitor visitor = [&VAL, &num, this](RefField<>& arrayContent) {
-        VAL.push(GetId(reinterpret_cast<CjHeapDataID>(arrayContent.GetTargetObject())));
+        VAL.push(GetObjectId(arrayContent.GetTargetObject()));
         num++;
     };
     // take array length and content.
@@ -496,14 +526,13 @@ void CjHeapDataForIDE::SerializeStructArray(BaseObject*& obj, const u1 tag)
     writer->WriteChar(',');
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
-    CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     u4 num = 0;
     std::stack<u4> VAL;
     RefFieldVisitor visitor = [&VAL, &num, this](RefField<>& arrayContent) {
-        VAL.push(GetId(reinterpret_cast<CjHeapDataID>(arrayContent.GetTargetObject())));
+        VAL.push(GetObjectId(arrayContent.GetTargetObject()));
         num++;
     };
     // take array length and content.
@@ -556,8 +585,7 @@ void CjHeapDataForIDE::SerializePrimitiveArray(BaseObject*& obj, const u1 tag)
     writer->WriteChar(',');
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
-    CjHeapDataID objAddr = (reinterpret_cast<CjHeapDataID>(obj));
-    u4 id = GetId(objAddr);
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     MArray* mArray = reinterpret_cast<MArray*>(obj);
@@ -622,7 +650,7 @@ void CjHeapDataForIDE::SerializeInstance(BaseObject*& obj, const u1 tag)
     writer->WriteChar(',');
     writer->WriteNumber(GetObjType(obj));
     writer->WriteChar(',');
-    u4 id = GetId(reinterpret_cast<CjHeapDataID>(obj));
+    u4 id = GetObjectId(obj);
     writer->WriteNumber(id);
     writer->WriteChar(',');
     writer->WriteNumber(GetId(reinterpret_cast<CjHeapDataID>(obj->GetTypeInfo())));
@@ -630,7 +658,7 @@ void CjHeapDataForIDE::SerializeInstance(BaseObject*& obj, const u1 tag)
     u4 num = 0;
     std::stack<u4> VAL;
     RefFieldVisitor visitor = [&VAL, &num, this](RefField<>& fieldAddr) {
-        VAL.push(GetId(reinterpret_cast<CjHeapDataID>(fieldAddr.GetTargetObject())));
+        VAL.push(GetObjectId(fieldAddr.GetTargetObject()));
         num++;
     };
     TypeInfo* currentClass = obj->GetTypeInfo();
@@ -663,6 +691,27 @@ CjHeapData::u4 CjHeapDataForIDE::GetId(CjHeapDataStringId klassId)
         stringIdxMap[klassId] = ++stringIdx;
     }
     return stringIdxMap[klassId];
+}
+
+CjHeapData::u4 CjHeapDataForIDE::GetObjectId(BaseObject* obj)
+{
+    if (!enableLocalObjectDump) {
+        return GetId(reinterpret_cast<CjHeapDataID>(obj));
+    }
+    if (obj == nullptr) {
+        return static_cast<u4>(CjHeapData::NULL_OBJECT_ID);
+    }
+    auto it = objectIdxMap.find(obj);
+    if (it != objectIdxMap.end()) {
+        return it->second;
+    }
+    // Keep object IDs separate from string IDs and reserve zero for null.
+    u4 id = ++objectIdx;
+    if (id == 0 || id == static_cast<u4>(CjHeapData::NULL_OBJECT_ID)) {
+        id = ++objectIdx;
+    }
+    objectIdxMap.emplace(obj, id);
+    return id;
 }
 
 I8 CjHeapDataForIDE::GetObjType(BaseObject* obj)

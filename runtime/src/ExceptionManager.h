@@ -30,7 +30,8 @@ public:
         SOF = 1,       // StackOverflowError
         OOMR = 2,      // OutOfMemoryRecursionError
         INCOMP = 3,    // IncompatiblePackageExpection
-        MAX_COUNT = 4, // implicit exception count
+        LOCAL_REGION_OOM = 4, // LocalRegionOutOfMemoryError
+        MAX_COUNT = 5, // implicit exception count
     };
 
     enum HiSysEventType : size_t {
@@ -64,6 +65,7 @@ public:
     void Fini() const {};
 
     static void OutOfMemory(); // should it be no-return
+    static void LocalRegionOutOfMemory();
     static void StackOverflow(uint32_t adjustedSize, void* ip);
     static void IncompatiblePackageExpection(CString msg); // should it be no-return
 

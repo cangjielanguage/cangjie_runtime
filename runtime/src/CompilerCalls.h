@@ -37,6 +37,14 @@ extern "C" void MCC_WriteStructField(const ObjectPtr obj, MAddress dst, size_t d
                                      GCTib gctib);
 extern "C" void MCC_WriteStaticRef(const ObjectPtr ref, RefField<false>* field);
 extern "C" void MCC_WriteStaticStruct(MAddress dst, size_t dstLen, MAddress src, size_t srcLen, const GCTib gcTib);
+extern "C" MRT_EXPORT void MCC_MaybeLocalWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                                  RefField<false>* field);
+extern "C" MRT_EXPORT void MCC_MaybeLocalWriteStruct(const ObjectPtr obj, MAddress dst, size_t dstLen,
+                                                     MAddress src, size_t srcLen, GCTib gctib);
+extern "C" MRT_EXPORT void MCC_MaybeLocalWriteGeneric(const ObjectPtr obj, void* fieldPtr,
+                                                       const ObjectPtr src, size_t size);
+extern "C" MRT_EXPORT void MCC_DemodeWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                               RefField<false>* field);
 extern "C" void MCC_AtomicWriteReference(const ObjectPtr ref, const ObjectPtr obj, RefField<true>* field,
                                          MemoryOrder order);
 extern "C" ObjectPtr MCC_AtomicReadReference(const ObjectPtr obj, RefField<true>* field, MemoryOrder order);
@@ -56,6 +64,7 @@ extern "C" void MCC_InvokeGCImpl(bool sync);
 
 extern "C" ssize_t MCC_GetRealHeapSize();
 extern "C" size_t MCC_GetAllocatedHeapSize();
+extern "C" size_t MCC_GetAllocatedLocalObjectSize();
 extern "C" size_t MCC_GetMaxHeapSize();
 extern "C" bool MCC_DumpCJHeapData(int fd);
 
@@ -162,6 +171,7 @@ extern "C" MRT_EXPORT bool CJ_MCC_IsSubType(TypeInfo* typeInfo, TypeInfo* superT
 extern "C" MRT_EXPORT bool CJ_MCC_IsTupleTypeOf(ObjectPtr obj, TypeInfo* typeInfo, TypeInfo* targetTypeInfo);
 extern "C" MRT_EXPORT void CJ_MCC_WriteGeneric(const ObjectPtr obj, void* fieldPtr, const ObjectPtr src, size_t size);
 extern "C" MRT_EXPORT void CJ_MCC_AssignGeneric(ObjectPtr dst, ObjectPtr src, TypeInfo* typeInfo);
+extern "C" MRT_EXPORT void CJ_MCC_AssignLocalGeneric(ObjectPtr dst, ObjectPtr src, TypeInfo* typeInfo);
 extern "C" MRT_EXPORT void CJ_MCC_WriteGenericPayload(ObjectPtr dst, MAddress srcField, size_t srcSize);
 extern "C" MRT_EXPORT void CJ_MCC_ReadGeneric(const ObjectPtr dstPtr, ObjectPtr obj, void* fieldPtr, size_t size);
 extern "C" MRT_EXPORT FuncPtr* CJ_MCC_GetMTable(TypeInfo* ti, TypeInfo* itf);
@@ -183,6 +193,32 @@ extern "C" MRT_EXPORT void CJ_MRT_RolveCycleRef();
 extern "C" void* CJ_MRT_ARKTS_CreateEngine();
 extern "C" void CJ_MRT_RegisterExceptionCallback(void(*callback)());
 #endif
+
+// local region
+// start region when enter a cj func
+extern "C" MRT_EXPORT void MCC_StartLocalRegion(FrameAddress* ownerFA);
+// end region when finish a cj func or exclave
+extern "C" MRT_EXPORT void MCC_EndLocalRegion(FrameAddress* ownerFA);
+// Compiler contract: Add registers exactly once in the object's owning currentFrame.
+// Pair Remove with Add in that same currentFrame, before the frame is closed.
+// Runtime Remove also locates the owning active frame if an inner region is active.
+extern "C" MRT_EXPORT void MCC_AddLocalFinalizer(ObjectPtr obj);
+extern "C" MRT_EXPORT void MCC_RemoveLocalFinalizer(ObjectPtr obj);
+// alloc local region object
+extern "C" ObjRef MCC_NewLocalObject(const TypeInfo* classInfo, MSize size);
+extern "C" ObjRef MCC_NewLocalFinalizer(const TypeInfo* classInfo, MSize size);
+
+extern "C" ArrayRef MCC_NewLocalArray(const TypeInfo* arrayInfo, MIndex nElems);
+extern "C" ArrayRef MCC_NewLocalObjArray(const TypeInfo* arrayInfo, MIndex nElems);
+extern "C" ArrayRef MCC_NewLocalArray8(const TypeInfo* classInfo, MIndex nElems);
+extern "C" ArrayRef MCC_NewLocalArray16(const TypeInfo* classInfo, MIndex nElems);
+extern "C" ArrayRef MCC_NewLocalArray32(const TypeInfo* classInfo, MIndex nElems);
+extern "C" ArrayRef MCC_NewLocalArray64(const TypeInfo* classInfo, MIndex nElems);
+
+extern "C" ObjRef MCC_NewLocalGenericObject(const TypeInfo* klass, MSize size);
+extern "C" ArrayRef MCC_NewLocalGenericArray(const TypeInfo* arrayInfo, MIndex nElems);
+
+extern "C" ObjRef MCC_NewLocalWeakRefObject(const TypeInfo* klass, MSize size);
 
 #ifdef __APPLE__
 #include "MacAlias.h"

@@ -23,6 +23,9 @@ func getMaxCjHeapSize(): UIntNative
 @Intrinsic
 func getAllocatedCjHeapSize(): UIntNative
 
+@When[backend == "cjnative"]
+foreign func CJ_MCC_GetAllocatedLocalObjectSize(): UIntNative
+
 @Intrinsic
 func getRealHeapSize(): UIntNative
 
@@ -86,6 +89,17 @@ public func getMaxHeapSize(): Int64 {
 
 public func getAllocatedHeapSize(): Int64 {
     return Int64(getAllocatedCjHeapSize())
+}
+
+/**
+ * Get memory accounted to active local regions, in bytes. With the native
+ * local allocator this is the capacity of active backing chunks, including
+ * unused chunk tails. Local objects live outside the Cangjie heap and are
+ * therefore not part of getAllocatedHeapSize.
+ */
+@When[backend == "cjnative" && env != "ohos"]
+public func getAllocatedLocalObjectSize(): Int64 {
+    return Int64(unsafe { CJ_MCC_GetAllocatedLocalObjectSize() })
 }
 
 public func getUsedHeapSize(): Int64 {

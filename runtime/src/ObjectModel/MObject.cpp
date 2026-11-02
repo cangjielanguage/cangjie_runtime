@@ -25,6 +25,22 @@ MObject* MObject::NewObject(TypeInfo* ti, MSize size, AllocType allocType)
     return Cast<MObject>(addr);
 }
 
+MObject* MObject::NewLocalObject(TypeInfo* ti, MSize size)
+{
+    auto addr = HeapManager::AllocateLocal(size);
+    if (LIKELY(addr != NULL_ADDRESS)) {
+        (void)SetLocalClassInfo(addr, ti);
+    } else {
+        return nullptr;
+    }
+#if defined(__OHOS__) && (__OHOS__ == 1)
+    if (CjAllocData::GetCjAllocData()->IsRecording()) {
+        CjAllocData::GetCjAllocData()->RecordAllocNodes(ti, size);
+    }
+#endif
+    return Cast<MObject>(addr);
+}
+
 MObject* MObject::NewPinnedObject(TypeInfo* ti, MSize size)
 {
     CHECK_DETAIL(ti->IsObjectType() == true, "must be object class.");

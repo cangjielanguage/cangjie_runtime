@@ -122,7 +122,7 @@ extend DerivingTarget {
     prop primaryConstructor: ?PrimaryCtorDecl {
         get() {
             let body = this.body ?? return None
-            body.declsUnwrapped() |> filterMap { decl => decl as PrimaryCtorDecl } |> first
+            first(filterMap<Decl, PrimaryCtorDecl>({ decl => decl as PrimaryCtorDecl })(body.declsUnwrapped()))
         }
     }
 

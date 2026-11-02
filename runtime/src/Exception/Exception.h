@@ -44,7 +44,8 @@ public:
         OUT_OF_MEMORY = 1,
         STACK_OVERFLOW = 2,
         ARITHMETIC = 3,
-        INCOMPATIBILE_PACKAGE = 4
+        INCOMPATIBILE_PACKAGE = 4,
+        LOCAL_REGION_OUT_OF_MEMORY = 5,
     };
 
     ExceptionWrapper()
@@ -159,6 +160,7 @@ public:
             "StackOverflowError",
             "ArithmeticException",
             "IncompatiblePackageException",
+            "LocalRegionOutOfMemoryError",
         };
         return nameTable[static_cast<uint8_t>(exceptionType)];
     }

@@ -41,6 +41,14 @@ public class StringBuilder <: ToString {
         this.endIndex = 0
     }
 
+    // The buffer data stays heap-allocated: a plain field cannot hold an @local! array (type mismatch),
+    // and the instance may outlive the region, so a local buffer would dangle.
+    @When[env != "ohos"]
+    public exclave init(this @local!) {
+        this.data = Array<UInt8>(defaultCapacity, repeat: 0)
+        this.endIndex = 0
+    }
+
     @Frozen
     public init(str: String) {
         let capacity = str.size + defaultCapacity
@@ -87,6 +95,15 @@ public class StringBuilder <: ToString {
         this.endIndex = 0
     }
 
+    @When[env != "ohos"]
+    public exclave init(this @local!, capacity: Int64) {
+        if (capacity <= 0) {
+            throw IllegalArgumentException("The capacity should be positive.")
+        }
+        this.data = Array<UInt8>(capacity, repeat: 0)
+        this.endIndex = 0
+    }
+
     /**
      * Get UTF-8 code unit size.
      */
@@ -115,6 +132,20 @@ public class StringBuilder <: ToString {
     @Frozen
     public func toString(): String {
         return String(this.data[0..this.endIndex])
+    }
+
+    @When[env != "ohos"]
+    public exclave func toString(this @local?): String @local! {
+        let itemData: Array<UInt8> @local! = Array<UInt8>(this.endIndex, repeat: 0)
+        this.data.copyTo(itemData, 0, 0, this.endIndex)
+        String(itemData)
+    }
+
+    @When[env != "ohos"]
+    internal exclave func toStringLocal(this @local!): String @local! {
+        let itemData: Array<UInt8> @local! = Array<UInt8>(this.endIndex, repeat: 0)
+        this.data.copyTo(itemData, 0, 0, this.endIndex)
+        String(itemData)
     }
 
     /**
@@ -150,6 +181,58 @@ public class StringBuilder <: ToString {
         this.endIndex += itemLen
     }
 
+    // Note: do not implement it by delegating to a same-named plain method — under an @local! receiver a same-named call resolves recursively to itself.
+    @When[env != "ohos"]
+    internal exclave func growLocal(this @local!, minCapacity: Int64): Unit {
+        if (this.data.size - this.endIndex >= minCapacity) {
+            return
+        }
+        let oldCapacity = this.data.size
+        var newCapacity = oldCapacity + (oldCapacity >> 1)
+        if (newCapacity < this.endIndex + minCapacity) {
+            newCapacity = this.endIndex + minCapacity + (oldCapacity >> 1)
+        }
+        let itemData: Array<UInt8> @local! = Array<UInt8>(newCapacity, repeat: 0) @local!
+        this.data.copyTo(itemData, 0, 0, this.endIndex)
+        this.data = itemData
+    }
+
+    @OverflowWrapping
+    @When[env != "ohos"]
+    internal exclave func appendRune(this @local!, r: Rune): Unit {
+        let byte = UInt32(r)
+        if (byte <= UTF8_1_MAX) {
+            this.growLocal(1)
+            data[endIndex] = UInt8(byte)
+            this.endIndex++
+            return
+        }
+        let itemLen = Rune.utf8Size(r)
+        this.growLocal(itemLen)
+        var _ = Rune.intoUtf8Array(r, this.data, this.endIndex)
+        this.endIndex += itemLen
+    }
+
+    @OverflowWrapping
+    @When[env != "ohos"]
+    internal exclave func appendString(this @local!, str: String @local?): Unit {
+        if (str.isEmpty()) {
+            return
+        }
+        let strData = unsafe { str.rawData() }
+        let itemLen = strData.size
+        this.growLocal(itemLen)
+        strData.copyTo(this.data, 0, this.endIndex, itemLen)
+        this.endIndex += itemLen
+    }
+
+    // Do not assign a local array to the plain field data (it confuses field metadata during GC scanning; SIGSEGV observed);
+    // uniformly follow the "format into a String @local! -> appendString copies the bytes" template.
+    @When[env != "ohos"]
+    internal exclave func appendValue<T>(this @local!, v: T @local?): Unit where T <: ToString {
+        this.appendString(v.toString())
+    }
+
     @OverflowWrapping
     @Frozen
     public func append(str: String): Unit {
@@ -161,6 +244,26 @@ public class StringBuilder <: ToString {
         this.grow(itemLen)
         strData.copyTo(this.data, 0, this.endIndex, itemLen)
         this.endIndex += itemLen
+    }
+
+    @OverflowWrapping
+    @Frozen
+    @When[env != "ohos"]
+    public func append(str: String @local?): Unit {
+        if (str.isEmpty()) {
+            return
+        }
+        let strData = unsafe { str.rawData() }
+        let itemLen = strData.size
+        this.grow(itemLen)
+        strData.copyTo(this.data, 0, this.endIndex, itemLen)
+        this.endIndex += itemLen
+    }
+
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func append(this @local!, str: String @local?): Unit {
+        this.appendString(str)
     }
 
     @OverflowWrapping
@@ -245,6 +348,11 @@ public class StringBuilder <: ToString {
             case b: Bool => this.append(b)
             case _ => this.append(v.toString())
         }
+    }
+
+    @When[env != "ohos"]
+    public exclave func append<T>(this @local!, v: T @local?): Unit where T <: ToString {
+        this.appendValue<T>(v)
     }
 
     @Frozen
@@ -421,6 +529,30 @@ func calcNumLen(num: UInt64): Int64 {
 
 @OverflowWrapping
 func numberToString(number: UInt64, endIndex: Int64, buffer: Array<Byte>): Unit {
+    //make sure endindex is smaller then buffer.size
+    var next = endIndex - 1
+    var value = number
+    var i = 0
+    while (value >= 100) {
+        let remain = value / 100
+        i = Int64((value - 100 * remain) * 2)
+        value = remain
+        buffer[next] = digits100[i + 1]
+        buffer[next - 1] = digits100[i]
+        next = next - 2
+    }
+    if (value < 10) {
+        buffer[next] = b'0' + UInt8(value)
+    } else {
+        i = Int64(value * 2)
+        buffer[next] = digits100[i + 1]
+        buffer[next - 1] = digits100[i]
+    }
+}
+
+@OverflowWrapping
+@When[env != "ohos"]
+exclave func numberToString(number: UInt64, endIndex: Int64, buffer: Array<Byte> @local!): Unit {
     //make sure endindex is smaller then buffer.size
     var next = endIndex - 1
     var value = number
