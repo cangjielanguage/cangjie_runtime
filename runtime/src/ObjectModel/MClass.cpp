@@ -123,9 +123,9 @@ void TypeInfo::TryInitMTable()
         std::lock_guard<std::recursive_mutex> lock(manager.tiMutex);
         if (IsMTableDescUnInitialized()) {
             U64 bitmap = GetResolveBitmapFromMTableDesc();
-            MTableDesc* desc = new (std::nothrow) MTableDesc(bitmap);
+            // Built in the TypeInfoManager arena, so the pointer stays untagged (see AllocateMTableDesc).
+            MTableDesc* desc = manager.AllocateMTableDesc(bitmap);
             SetMTableDesc(desc);
-            CHECK_DETAIL(desc != nullptr, "fail to allocate MTableDesc");
             manager.RecordMTableDesc(mTableDesc);
         }
     }
@@ -135,9 +135,9 @@ void TypeInfo::TryInitMTableNoLock()
 {
     if (IsMTableDescUnInitialized()) {
         U64 bitmap = GetResolveBitmapFromMTableDesc();
-        MTableDesc* desc = new (std::nothrow) MTableDesc(bitmap);
+        // Built in the TypeInfoManager arena, so the pointer stays untagged (see AllocateMTableDesc).
+        MTableDesc* desc = TypeInfoManager::GetTypeInfoManager().AllocateMTableDesc(bitmap);
         SetMTableDesc(desc);
-        CHECK_DETAIL(desc != nullptr, "fail to allocate MTableDesc");
         TypeInfoManager::GetTypeInfoManager().RecordMTableDesc(mTableDesc);
     }
 }

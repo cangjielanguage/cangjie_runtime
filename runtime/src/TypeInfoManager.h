@@ -50,7 +50,13 @@ public:
     TypeInfo* GetAnyTypeInfo() { return anyTi; }
     TypeInfo* GetObjectTypeInfo() { return objectTi; }
 private:
+    // Bump allocator over the mmap'd arena: never freed before Fini(), no alignment done
+    // (callers round the returned address up themselves).
     uintptr_t Allocate(size_t size);
+    // Allocate and construct an MTableDesc in the same arena (see the definition) so that a real
+    // MTableDesc* never carries a HWASan/TBI top-byte tag, which would look like the compiler's
+    // inline bitmap marker kept in TypeInfo::mTableDesc.
+    MTableDesc* AllocateMTableDesc(BIT_TYPE bitmap);
     void CalculateGCTib(TypeInfo* typeInfo);
     CString GetGCTibStr(TypeInfo* typeInfo);
     void FillOffsets(TypeInfo* newTypeInfo, TypeTemplate* tt, U32 argSize, TypeInfo* args[]);
