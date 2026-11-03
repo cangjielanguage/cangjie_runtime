@@ -52,6 +52,12 @@ class KVList<K, V> where K <: Equatable<K> {
         mySize = blist.mySize
     }
 
+    /* Private constructor with pre-built storage, to avoid double allocation on copy-on-write. */
+    init(data: Array<KeyValue<K, V>>, size: Int64) {
+        myData = data
+        mySize = size
+    }
+
     @Frozen
     @OverflowWrapping
     func contains(hash: Int64, key: K): Int64 {
@@ -80,13 +86,21 @@ class KVList<K, V> where K <: Equatable<K> {
 
     @OverflowWrapping
     func copyInsert(hash: Int64, key: K, value: V): KVList<K, V> {
-        let copyList = KVList<K, V>(this)
-        if (mySize == myData.size) {
-            copyList.grow()
+        let newSize = mySize + 1
+        let oldCap = myData.size
+        var newCap = oldCap
+        if (newSize > oldCap) {
+            // same growth policy as grow(): old + old>>1, at least newSize
+            newCap = oldCap + (oldCap >> 1)
+            if (newCap < newSize) {
+                newCap = newSize
+            }
         }
-        copyList.myData[mySize] = (hash, key, value)
-        copyList.mySize++
-        return copyList
+        let zero: KeyValue<K, V> = unsafe { zeroValue<KeyValue<K, V>>() }
+        let newArr = Array<KeyValue<K, V>>(newCap, repeat: zero)
+        myData.copyTo(newArr, 0, 0, mySize)
+        newArr[mySize] = (hash, key, value)
+        return KVList<K, V>(newArr, newSize)
     }
 
     func copyPut(hash: Int64, key: K, value: V): (KVList<K, V>, ?V) {
@@ -101,8 +115,13 @@ class KVList<K, V> where K <: Equatable<K> {
     }
 
     func copyRemove(hash: Int64, key: K, predicate: (V) -> Bool): (KVList<K, V>, ?V) {
-        let i = contains(hash, key, predicate)
+        // scan for the key without invoking the predicate per element,
+        // then apply the predicate once on the found element (keys are unique)
+        let i = contains(hash, key)
         if (i == -1) {
+            return (this, None)
+        }
+        if (!predicate(myData[i][2])) {
             return (this, None)
         }
 
@@ -111,25 +130,32 @@ class KVList<K, V> where K <: Equatable<K> {
     }
 
     func copyRemoveUnChecked(idx: Int64): KVList<K, V> {
-        let copyList = KVList<K, V>(this)
-        var i = idx
-        while (i + 1 < copyList.mySize) {
-            copyList.myData[i] = copyList.myData[i + 1]
-            i++
-        }
-        copyList.mySize--
-        return copyList
+        let newSize = mySize - 1
+        let zero: KeyValue<K, V> = unsafe { zeroValue<KeyValue<K, V>>() }
+        let newArr = Array<KeyValue<K, V>>(myData.size, repeat: zero)
+        // batch copy the two segments around the removed element instead of shifting one by one
+        myData.copyTo(newArr, 0, 0, idx)
+        myData.copyTo(newArr, idx + 1, idx, mySize - idx - 1)
+        return KVList<K, V>(newArr, newSize)
     }
 
     func copyReplace(hash: Int64, key: K, predicate: (V) -> Bool, eval: (V) -> V): (KVList<K, V>, ?V) {
-        let i = contains(hash, key, predicate)
+        // scan for the key without invoking the predicate per element,
+        // then apply the predicate once on the found element (keys are unique)
+        let i = contains(hash, key)
         if (i == -1) {
             return (this, None)
         }
+        if (!predicate(myData[i][2])) {
+            return (this, None)
+        }
 
-        let copyList = KVList<K, V>(this)
-        copyList.myData[i] = (hash, key, eval(copyList.myData[i][2]))
-        return (copyList, myData[i][2])
+        // single-allocation copy instead of clone-then-write
+        let zero: KeyValue<K, V> = unsafe { zeroValue<KeyValue<K, V>>() }
+        let newArr = Array<KeyValue<K, V>>(myData.size, repeat: zero)
+        myData.copyTo(newArr, 0, 0, mySize)
+        newArr[i] = (hash, key, eval(myData[i][2]))
+        return (KVList<K, V>(newArr, mySize), myData[i][2])
     }
 
     func copyEntryView(hash: Int64, key: K, fn: (entryView: MapEntryView<K, V>) -> Unit): (KVList<K, V>, ?V, ?Int64) {
@@ -286,10 +312,56 @@ struct Bucket<K, V> where K <: Equatable<K> {
         return ret
     }
 
+    /**
+     * Like copyPut, but takes the bucket list loaded by tryGetBucket,
+     * avoiding a second atomic read of the bucket reference.
+     */
+    func copyPutWith(hash: Int64, key: K, value: V, entries: ?KVList<K, V>): ?V {
+        if (let Some(es) <- entries) {
+            let (copyEntries, ret) = es.copyPut(hash, key, value)
+            atomic_ref_entries.store(copyEntries)
+            return ret
+        }
+        let copyEntries = KVList<K, V>()
+        copyEntries.appendUncheck((hash, key, value))
+        atomic_ref_entries.store(copyEntries)
+        return None
+    }
+
     func copyRemove(hash: Int64, key: K, predicate: (V) -> Bool): ?V {
         if (let Some(entries) <- refList()) {
             let (copyEntries, ret) = entries.copyRemove(hash, key, predicate)
             atomic_ref_entries.store(copyEntries)
+            return ret
+        }
+        return None
+    }
+
+    /**
+     * Like copyRemove, but takes the bucket list loaded by tryGetBucket,
+     * avoiding a second atomic read of the bucket reference.
+     *
+     * @p allowDrop: when true and the bucket becomes empty, the list is dropped
+     * (stored as None) to avoid an allocation. This is only safe when the table
+     * has no previous table to fall back to; otherwise a None bucket would make
+     * readers look up the stale previous table.
+     */
+    func copyRemoveWith(hash: Int64, key: K, predicate: (V) -> Bool, entries: ?KVList<K, V>, allowDrop: Bool): ?V {
+        if (let Some(es) <- entries) {
+            if (allowDrop && es.size == 1) {
+                let i = es.contains(hash, key)
+                if (i == 0 && predicate(es[i][2])) {
+                    atomic_ref_entries.store(None)
+                    return es[i][2]
+                }
+                return None
+            }
+            let (copyEntries, ret) = es.copyRemove(hash, key, predicate)
+            if (allowDrop && copyEntries.size == 0) {
+                atomic_ref_entries.store(None)
+            } else {
+                atomic_ref_entries.store(copyEntries)
+            }
             return ret
         }
         return None
@@ -400,25 +472,20 @@ class HNode<K, V> where K <: Hashable & Equatable<K> {
         let index = hash & (buckets.size - 1)
 
         /*
-         * Finds the key-value, where key = @p key, from the current hash table firstly, where
-         * - FIND(v): the value associated with @p key is r'v'
-         * - NotFind: @p key does not exist in the current hash table
-         * - NotMigrate: the elements of the bucket have not been migrated from the previous hash table.
-         *
-         * For NotMigrate condition, we search @p key from the previous hash table, if it exists.
+         * Looks up the bucket of the current hash table firstly; when the bucket is
+         * None it means its elements have not been migrated from the previous table,
+         * so fall back to the previous table.
          */
-        match (buckets[index].find(hash, key)) {
-            case FIND(v) => return Some(v)
-            case NotFind => return None<V>
-            case NotMigrate =>
-                if (let Some(preHT) <- pre.load()) {
-                    return match (preHT.buckets[hash & (preHT.buckets.size - 1)].find(hash, key)) {
-                        case FIND(v) => Some(v)
-                        case _ => None<V>
-                    }
-                }
-                return None<V>
+        if (let Some(entries) <- buckets[index].refList()) {
+            return entries.find(hash, key)
         }
+        if (let Some(preHT) <- pre.load()) {
+            return match (preHT.buckets[hash & (preHT.buckets.size - 1)].find(hash, key)) {
+                case FIND(v) => Some(v)
+                case _ => None<V>
+            }
+        }
+        return None<V>
     }
 
     /**
@@ -458,6 +525,35 @@ class HNode<K, V> where K <: Hashable & Equatable<K> {
         }
 
         return true
+    }
+
+    /**
+     * Prepares the bucket for updating and returns the loaded bucket list.
+     * Returns (entries, ready):
+     * - ready == false: the bucket is frozen, caller should reload head and retry;
+     * - ready == true: the bucket is ready; entries are the bucket list
+     *   (None means the bucket is currently empty). The bucket lock is held
+     *   until the caller calls unlock.
+     */
+    @OverflowWrapping
+    func tryGetBucketWithEntries(index: Int64): (?KVList<K, V>, Bool) {
+        lockG.lock(index)
+        if (freezeFlags[index]) {
+            lockG.unlock(index)
+            return (None, false)
+        }
+
+        if (let Some(entries) <- buckets[index].refList()) {
+            return (Some(entries), true)
+        }
+
+        if (let Some(preHT) <- pre.load()) {
+            let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
+            preHT.freeze(preIndex)
+            buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
+        }
+
+        return (buckets[index].refList(), true)
     }
 }
 
@@ -854,13 +950,14 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
     @OverflowWrapping
     private func addInternal(key: K, value: V): ?V {
         let hash = key.hashCode()
-        tryResize(hash)
-        var ret = None<V>
         var curHT = head.load()
+        tryResizeWithTable(hash, curHT)
+        var ret = None<V>
         var index = hash & (curHT.buckets.size - 1)
         while (true) {
-            if (curHT.tryGetBucket(index)) {
-                ret = curHT.buckets[index].copyPut(hash, key, value)
+            let (entries, ready) = curHT.tryGetBucketWithEntries(index)
+            if (ready) {
+                ret = curHT.buckets[index].copyPutWith(hash, key, value, entries)
                 curHT.lockG.unlock(index)
                 break
             }
@@ -878,7 +975,8 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
         var curHT = head.load()
         var index = hash & (curHT.buckets.size - 1)
         while (true) {
-            if (curHT.tryGetBucket(index)) {
+            let ready = curHT.tryGetBucket(index)
+            if (ready) {
                 ret = curHT.buckets[index].copyReplace(hash, key, predicate, eval)
                 curHT.lockG.unlock(index)
                 break
@@ -896,8 +994,12 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
         var curHT = head.load()
         var index = hash & (curHT.buckets.size - 1)
         while (true) {
-            if (curHT.tryGetBucket(index)) {
-                ret = curHT.buckets[index].copyRemove(hash, key, predicate)
+            let (entries, ready) = curHT.tryGetBucketWithEntries(index)
+            if (ready) {
+                // dropping an emptied bucket to None is only safe when the table has
+                // no previous table to fall back to (see copyRemoveWith)
+                let allowDrop = curHT.pre.load().isNone()
+                ret = curHT.buckets[index].copyRemoveWith(hash, key, predicate, entries, allowDrop)
                 curHT.lockG.unlock(index)
                 break
             }
@@ -912,14 +1014,15 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
 
     func entryViewInternal(key: K, fn: (MapEntryView<K, V>) -> Unit): ?V {
         let hash = key.hashCode()
-        tryResize(hash) // maybe add
+        var curHT = head.load()
+        tryResizeWithTable(hash, curHT) // maybe add
         var ret = None<V>
         var resize = None<Int64>
-        var curHT = head.load()
         var index = hash & (curHT.buckets.size - 1)
 
         while (true) {
-            if (curHT.tryGetBucket(index)) {
+            let ready = curHT.tryGetBucket(index)
+            if (ready) {
                 (ret, resize) = curHT.buckets[index].copyEntryView(hash, key, fn)
                 curHT.lockG.unlock(index)
                 break
@@ -936,7 +1039,11 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
 
     @OverflowWrapping
     private func tryResize(hash: Int64): Unit {
-        let curHT = head.load()
+        tryResizeWithTable(hash, head.load())
+    }
+
+    @OverflowWrapping
+    private func tryResizeWithTable(hash: Int64, curHT: HNode<K, V>): Unit {
         let sz = curHT.buckets.size
         if ((counts[hash & (counts.size - 1)].load() << COUNT_SIZE) < sz) {
             return
