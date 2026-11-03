@@ -586,6 +586,7 @@ public class LinkedList<T> <: Collection<T> {
         _tail = tmp
     }
 
+    @Frozen
     public func isEmpty(): Bool {
         return _size == 0
     }
@@ -595,6 +596,7 @@ public class LinkedList<T> <: Collection<T> {
         return LinkedListIterator<T>(this, _head, false)
     }
 
+    @Frozen
     public func removeFirst(): ?T {
         if (let Some(v) <- _head) {
             _version++
@@ -605,6 +607,7 @@ public class LinkedList<T> <: Collection<T> {
         return None
     }
 
+    @Frozen
     public func removeLast(): ?T {
         if (let Some(v) <- _tail) {
             _version++

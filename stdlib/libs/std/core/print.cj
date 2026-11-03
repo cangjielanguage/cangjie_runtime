@@ -21,6 +21,7 @@ public func print(str: String, flush!: Bool = false): Unit {
 }
 
 @Frozen
+@When[env != "ohos"]
 public func print(str: String @local?, flush!: Bool = false): Unit {
     unsafe {
         var cp = acquireArrayRawData(str.rawData())
@@ -52,6 +53,7 @@ public func println(str: String): Unit {
 }
 
 @Frozen
+@When[env != "ohos"]
 public func println(str: String @local?): Unit {
     unsafe {
         var cp = acquireArrayRawData(str.rawData())

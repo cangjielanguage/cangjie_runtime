@@ -279,21 +279,25 @@ class StringIteratorData {
         this.nextPos = 0
     }
 
+    @When[env != "ohos"]
     exclave init(this @local!, data: Array<UInt8> @local!) {
         myData = data
         end = myData.size
         nextPos = 0
     }
+    @When[env != "ohos"]
     exclave init(this @local!, data: RawArray<UInt8> @local!) {
         this.myData = toArray(data)
         this.end = myData.size
         this.nextPos = 0
     }
+    @When[env != "ohos"]
     exclave init(this @local?, data: Array<UInt8> @local?) {
         myData = data
         end = myData.size
         nextPos = 0
     }
+    @When[env != "ohos"]
     exclave init(this @local?, data: RawArray<UInt8> @local?) {
         this.myData = toArray(data)
         this.end = myData.size
@@ -306,10 +310,12 @@ class StringRuneIterator <: Iterator<Rune> {
     @Frozen
     StringRuneIterator(let iteratorData: StringIteratorData) {}
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -328,6 +334,7 @@ class StringRuneIterator <: Iterator<Rune> {
         iteratorData.nextPos += num
         return Some<Rune>(rune)
     }
+    @When[env != "ohos"]
     @OverflowWrapping
     @Frozen
     public exclave func next(this @local!): Option<Rune> @local! {
@@ -338,6 +345,7 @@ class StringRuneIterator <: Iterator<Rune> {
         iteratorData.nextPos += num
         return Some<Rune>(rune)
     }
+    @When[env != "ohos"]
     @OverflowWrapping
     @Frozen
     public exclave func next(this @local?): Option<Rune> @local? {
@@ -355,10 +363,12 @@ class StringByteIterator <: Iterator<Byte> {
     @Frozen
     StringByteIterator(let iteratorData: StringIteratorData) {}
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -377,6 +387,7 @@ class StringByteIterator <: Iterator<Byte> {
         iteratorData.nextPos = iteratorData.nextPos + 1
         return byte
     }
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local!): Option<Byte> @local! {
@@ -387,6 +398,7 @@ class StringByteIterator <: Iterator<Byte> {
         iteratorData.nextPos = iteratorData.nextPos + 1
         return byte
     }
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local?): Option<Byte> @local? {
@@ -405,10 +417,12 @@ class StringLineIterator <: Iterator<String> {
     @Frozen
     StringLineIterator(let iteratorData: StringIteratorData) {}
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
+    @When[env != "ohos"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -453,6 +467,7 @@ class StringLineIterator <: Iterator<String> {
         return Some(str)
     }
 
+@When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local!): Option<String> @local! {
@@ -493,6 +508,7 @@ class StringLineIterator <: Iterator<String> {
         Some<String>(str)
     }
 
+@When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local?): Option<String> @local? {
@@ -550,6 +566,43 @@ class StringLazySplitIterator <: Iterator<String> {
     /**
      * @throws OutOfMemoryError if failed to call CJ_CORE_CountAndIndexString.
      */
+    init(orgStrData: Array<UInt8>, orgStrSize: Int64, str: String, maxSplits: Int64, removeEmpty: Bool) {
+        this.orgData = orgStrData
+        this.separatorLen = str.size
+        this.maxSplits = maxSplits
+        this.removeEmpty = removeEmpty
+        this.itemArr = EMPTY_INT64_ARRAY
+        if (this.separatorLen == 0) {
+            if (0 < maxSplits && maxSplits < orgStrSize) {
+                this.resLen = maxSplits
+            } else {
+                this.resLen = orgStrSize
+            }
+        } else {
+            unsafe {
+                let org: CPointerHandle<UInt8> = acquireArrayRawData<UInt8>(this.orgData)
+                let pat: CPointerHandle<UInt8> = acquireArrayRawData<UInt8>(str.rawData())
+                var res: CPointer<Int64> = CJ_CORE_CountAndIndexString(
+                    org.pointer,
+                    pat.pointer,
+                    this.orgData.size,
+                    this.separatorLen
+                )
+                releaseArrayRawData(org)
+                releaseArrayRawData(pat)
+                if (res.isNull()) {
+                    throw OutOfMemoryError("Failed to allocate memory in C code.")
+                }
+                try {
+                    convertCPointer2Array(res, maxSplits, removeEmpty)
+                } finally {
+                    LibC.free(res)
+                }
+            }
+        }
+    }
+
+    @When[env != "ohos"]
     init(orgStrData: Array<UInt8>, orgStrSize: Int64, str: String @local?, maxSplits: Int64, removeEmpty: Bool) {
         this.orgData = orgStrData
         this.separatorLen = str.size

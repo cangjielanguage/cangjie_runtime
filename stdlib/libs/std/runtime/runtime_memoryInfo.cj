@@ -97,7 +97,7 @@ public func getAllocatedHeapSize(): Int64 {
  * unused chunk tails. Local objects live outside the Cangjie heap and are
  * therefore not part of getAllocatedHeapSize.
  */
-@When[backend == "cjnative"]
+@When[backend == "cjnative" && env != "ohos"]
 public func getAllocatedLocalObjectSize(): Int64 {
     return Int64(unsafe { CJ_MCC_GetAllocatedLocalObjectSize() })
 }
