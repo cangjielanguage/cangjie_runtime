@@ -101,6 +101,10 @@ constexpr uint32_t kZipEndOfCentralDirectorySignature = 0x06054b50;
 constexpr uint32_t kZip64EndOfCentralDirectoryLocatorSignature = 0x07064b50;
 constexpr uint32_t kZip64EndOfCentralDirectorySignature = 0x06064b50;
 constexpr size_t kZipLocalHeaderSize = 30;
+constexpr uint16_t kZip64ExtraFieldId = 0x0001;
+constexpr uint16_t kZip16Sentinel = 0xffff;          // field value means "see Zip64"
+constexpr uint32_t kZip32Sentinel = 0xffffffff;      // field value means "see Zip64"
+constexpr uint64_t kZipCentralDirectoryHeaderSize = 46;
 
 struct ModuleImage {
     const uint8_t* start = nullptr;
@@ -234,9 +238,14 @@ bool IsSafeEntryName(const CString& name)
     return true;
 }
 
-bool HasSoSuffix(const CString& name)
+bool ReadZip64Field(const uint8_t* extra, size_t end, size_t* cur, size_t width, uint64_t* out)
 {
-    return name.Length() >= 3 && strcmp(name.Str() + name.Length() - 3, ".so") == 0;
+    if (*cur > end || width > end - *cur) {
+        return false;
+    }
+    *out = (width == 8) ? ReadLe64(extra + *cur) : ReadLe32(extra + *cur);
+    *cur += width;
+    return true;
 }
 
 bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompressed, bool needCompressed,
@@ -251,49 +260,40 @@ bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompresse
         if (pos + fieldSize > extraLen) {
             return false;
         }
-        if (fieldId == 0x0001) {
-            size_t cur = pos;
-            size_t end = pos + fieldSize;
-            if (needUncompressed) {
-                if (cur + 8 > end) {
-                    return false;
-                }
-                *uncompressed = ReadLe64(extra + cur);
-                cur += 8;
-            }
-            if (needCompressed) {
-                if (cur + 8 > end) {
-                    return false;
-                }
-                *compressed = ReadLe64(extra + cur);
-                cur += 8;
-            }
-            if (needOffset) {
-                if (cur + 8 > end) {
-                    return false;
-                }
-                *localOffset = ReadLe64(extra + cur);
-                cur += 8;
-            }
-            if (needDisk) {
-                if (cur + 4 > end) {
-                    return false;
-                }
-                *diskStart = ReadLe32(extra + cur);
-                cur += 4;
-            }
-            return true;
+        if (fieldId != kZip64ExtraFieldId) {
+            pos += fieldSize;
+            continue;
         }
-        pos += fieldSize;
+        size_t cur = pos;
+        size_t end = pos + fieldSize;
+        if (needUncompressed && !ReadZip64Field(extra, end, &cur, 8, uncompressed)) {
+            return false;
+        }
+        if (needCompressed && !ReadZip64Field(extra, end, &cur, 8, compressed)) {
+            return false;
+        }
+        if (needOffset && !ReadZip64Field(extra, end, &cur, 8, localOffset)) {
+            return false;
+        }
+        if (needDisk) {
+            uint64_t disk = 0;
+            if (!ReadZip64Field(extra, end, &cur, 4, &disk)) {
+                return false;
+            }
+            *diskStart = static_cast<uint32_t>(disk);
+        }
+        return true;
     }
     return false;
 }
 
-bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>* entries)
+bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, uint64_t* cdSize,
+    uint64_t* cdOffset)
 {
-    if (entries == nullptr || fileSize < 22) {
+    if (entryCount == nullptr || cdSize == nullptr || cdOffset == nullptr || fileSize < 22) {
         return false;
     }
+    // EOCD is at least 22 bytes; its trailing comment is at most 0xffff bytes.
     const uint64_t kTailMax = 22 + 65535;
     uint64_t tailSize64 = std::min(fileSize, kTailMax);
     size_t tailSize = static_cast<size_t>(tailSize64);
@@ -316,14 +316,17 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
         return false;
     }
     uint64_t eocdOffset = fileSize - tailSize64 + static_cast<uint64_t>(eocdRel);
+    // EOCD fixed fields: entries-on-this-disk(2 @8), entries-total(2 @10),
+    // central-directory-size(4 @12), central-directory-offset(4 @16), comment-len(2 @20).
     uint16_t entryCount16 = ReadLe16(tail.data() + static_cast<size_t>(eocdRel) + 10);
     uint32_t cdSize32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + 12);
     uint32_t cdOffset32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + 16);
-    uint64_t entryCount = entryCount16;
-    uint64_t cdSize = cdSize32;
-    uint64_t cdOffset = cdOffset32;
+    *entryCount = entryCount16;
+    *cdSize = cdSize32;
+    *cdOffset = cdOffset32;
 
-    if (entryCount16 == 0xffff || cdSize32 == 0xffffffff || cdOffset32 == 0xffffffff) {
+    // Sentinel values mean the real value lives in the Zip64 record.
+    if (entryCount16 == kZip16Sentinel || cdSize32 == kZip32Sentinel || cdOffset32 == kZip32Sentinel) {
         if (eocdOffset < 20) {
             return false;
         }
@@ -332,6 +335,7 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
             ReadLe32(locator) != kZip64EndOfCentralDirectoryLocatorSignature) {
             return false;
         }
+        // Zip64 locator: sig(4) disk-with-zip64-eocd(4) zip64-eocd-offset(8 @8) total-disks(4 @16).
         uint64_t zip64Offset = ReadLe64(locator + 8);
         uint8_t record[56];
         if (zip64Offset > fileSize || fileSize - zip64Offset < sizeof(record) ||
@@ -339,26 +343,28 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
             ReadLe32(record) != kZip64EndOfCentralDirectorySignature) {
             return false;
         }
-        entryCount = ReadLe64(record + 32);
-        cdSize = ReadLe64(record + 40);
-        cdOffset = ReadLe64(record + 48);
+        // Zip64 EOCD: entries-on-disk(8 @24), entries-total(8 @32), cd-size(8 @40), cd-offset(8 @48).
+        *entryCount = ReadLe64(record + 32);
+        *cdSize = ReadLe64(record + 40);
+        *cdOffset = ReadLe64(record + 48);
     }
+    return true;
+}
 
-    if (entryCount == 0 || entryCount > kMaxCentralDirectoryEntries || cdSize == 0 ||
-        cdSize > kMaxCentralDirectorySize || cdOffset > fileSize || cdSize > fileSize - cdOffset) {
+bool ParseCentralDirectory(const uint8_t* cd, size_t cdSize, uint64_t entryCount,
+    std::vector<ContainerEntry>* entries)
+{
+    if (cd == nullptr || entries == nullptr) {
         return false;
     }
-    std::vector<uint8_t> cd(static_cast<size_t>(cdSize));
-    if (!PreadExact(fd, cd.data(), cd.size(), cdOffset)) {
-        return false;
-    }
-
-    entries->clear();
-    entries->reserve(static_cast<size_t>(std::min<uint64_t>(entryCount, 4096)));
     size_t pos = 0;
     uint64_t parsed = 0;
-    while (pos + 46 <= cd.size() && parsed < entryCount) {
-        const uint8_t* p = cd.data() + pos;
+    while (pos + kZipCentralDirectoryHeaderSize <= cdSize && parsed < entryCount) {
+        // Central directory header is 46 bytes fixed:
+        // sig(4) verMade(2) verNeed(2) flags(2 @8) method(2 @10) mtime(2 @12) mdate(2 @14)
+        // crc(4 @16) compressedSize(4 @20) uncompressedSize(4 @24) nameLen(2 @28) extraLen(2 @30)
+        // commentLen(2 @32) diskStart(2 @34) intAttr(2 @36) extAttr(4 @38) localOffset(4 @42).
+        const uint8_t* p = cd + pos;
         if (ReadLe32(p) != kZipCentralDirectorySignature) {
             return false;
         }
@@ -371,19 +377,19 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
         uint16_t commentLen = ReadLe16(p + 32);
         uint16_t disk16 = ReadLe16(p + 34);
         uint64_t localOffset = ReadLe32(p + 42);
-        uint64_t total = 46ull + nameLen + extraLen + commentLen;
-        if (total > static_cast<uint64_t>(cd.size() - pos)) {
+        uint64_t total = kZipCentralDirectoryHeaderSize + nameLen + extraLen + commentLen;
+        if (total > static_cast<uint64_t>(cdSize - pos)) {
             return false;
         }
 
-        bool needUncompressed = uncompressed == 0xffffffff;
-        bool needCompressed = compressed == 0xffffffff;
-        bool needOffset = localOffset == 0xffffffff;
-        bool needDisk = disk16 == 0xffff;
+        bool needUncompressed = uncompressed == kZip32Sentinel;
+        bool needCompressed = compressed == kZip32Sentinel;
+        bool needOffset = localOffset == kZip32Sentinel;
+        bool needDisk = disk16 == kZip16Sentinel;
         if (needUncompressed || needCompressed || needOffset || needDisk) {
             uint32_t disk32 = disk16;
-            if (!ParseZip64Extra(p + 46 + nameLen, extraLen, needUncompressed, needCompressed, needOffset,
-                needDisk, &uncompressed, &compressed, &localOffset, &disk32)) {
+            if (!ParseZip64Extra(p + kZipCentralDirectoryHeaderSize + nameLen, extraLen, needUncompressed,
+                needCompressed, needOffset, needDisk, &uncompressed, &compressed, &localOffset, &disk32)) {
                 pos += static_cast<size_t>(total);
                 ++parsed;
                 continue;
@@ -403,11 +409,14 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
         if ((flags & kZipEncryptedFlag) == 0 && method == 0 && nameLen > 0 && uncompressed > 0) {
             CString name;
             name.EnsureSpace(nameLen);
-            name.Append(reinterpret_cast<const char*>(p + 46), nameLen);
-            // Cangjie modules are packaged as *.so; use the suffix as a cheap
-            // index-time filter. ELF magic + content (checked later) remain the
-            // actual identity decision.
-            if (IsSafeEntryName(name) && HasSoSuffix(name)) {
+            name.Append(reinterpret_cast<const char*>(p + kZipCentralDirectoryHeaderSize), nameLen);
+            // Deliberately no extension/name filter: the mapped entry may have any
+            // name (Android maps stored, page-aligned entries via "container!/entry"
+            // regardless of suffix), and filtering here could drop the real entry or
+            // shrink a genuine duplicate match into a false unique one. The checks
+            // above plus the later ELF magic and content comparison decide identity;
+            // uniqueness is judged over every entry that passes them.
+            if (IsSafeEntryName(name)) {
                 ContainerEntry entry;
                 entry.name = name;
                 entry.localHeaderOffset = localOffset;
@@ -419,6 +428,30 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
         ++parsed;
     }
     return parsed == entryCount;
+}
+
+bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>* entries)
+{
+    if (entries == nullptr) {
+        return false;
+    }
+    uint64_t entryCount = 0;
+    uint64_t cdSize = 0;
+    uint64_t cdOffset = 0;
+    if (!ReadCentralDirectoryInfo(fd, fileSize, &entryCount, &cdSize, &cdOffset)) {
+        return false;
+    }
+    if (entryCount == 0 || entryCount > kMaxCentralDirectoryEntries || cdSize == 0 ||
+        cdSize > kMaxCentralDirectorySize || cdOffset > fileSize || cdSize > fileSize - cdOffset) {
+        return false;
+    }
+    std::vector<uint8_t> cd(static_cast<size_t>(cdSize));
+    if (!PreadExact(fd, cd.data(), cd.size(), cdOffset)) {
+        return false;
+    }
+    entries->clear();
+    entries->reserve(static_cast<size_t>(std::min<uint64_t>(entryCount, 4096)));  // cap upfront memory
+    return ParseCentralDirectory(cd.data(), cd.size(), entryCount, entries);
 }
 
 bool GetContainerIndex(const char* path, int fd, const struct stat& st,
@@ -495,6 +528,35 @@ bool FilePrefixMatchesImage(const char* path, const ModuleImage& image, size_t p
     return same;
 }
 
+bool EntryDataMatches(int fd, uint64_t fileSize, const ContainerEntry& entry, const ModuleImage& image,
+    size_t probeLen, uint8_t* buffer)
+{
+    uint8_t localHeader[kZipLocalHeaderSize];
+    const uint64_t kLocalHeaderSize = static_cast<uint64_t>(kZipLocalHeaderSize);
+    if (entry.localHeaderOffset > fileSize || kLocalHeaderSize > fileSize - entry.localHeaderOffset) {
+        return false;
+    }
+    if (!PreadExact(fd, localHeader, kZipLocalHeaderSize, entry.localHeaderOffset) ||
+        ReadLe32(localHeader) != kZipLocalHeaderSignature) {
+        return false;
+    }
+    // Local file header is 30 bytes fixed; nameLen @26, extraLen @28, data starts after 30 + name + extra.
+    uint16_t localNameLen = ReadLe16(localHeader + 26);
+    uint16_t localExtraLen = ReadLe16(localHeader + 28);
+    uint64_t afterHeader = entry.localHeaderOffset + kLocalHeaderSize;
+    if (static_cast<uint64_t>(localNameLen) + static_cast<uint64_t>(localExtraLen) > fileSize - afterHeader) {
+        return false;
+    }
+    uint64_t dataOffset = afterHeader + static_cast<uint64_t>(localNameLen) + static_cast<uint64_t>(localExtraLen);
+    if (dataOffset > fileSize || static_cast<uint64_t>(probeLen) > fileSize - dataOffset) {
+        return false;
+    }
+    if (!PreadExact(fd, buffer, probeLen, dataOffset)) {
+        return false;
+    }
+    return memcmp(buffer, ELFMAG, SELFMAG) == 0 && memcmp(buffer, image.start, probeLen) == 0;
+}
+
 bool FindContainerEntry(const char* path, const ModuleImage& image, size_t probeLen, CString* entryName)
 {
     if (path == nullptr || entryName == nullptr || probeLen == 0 || probeLen > kModuleProbeSize) {
@@ -505,62 +567,45 @@ bool FindContainerEntry(const char* path, const ModuleImage& image, size_t probe
         return false;
     }
     struct stat st;
-    bool found = false;
-    if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode) && st.st_size >= 0) {
-        std::shared_ptr<const ContainerIndex> index;
-        if (GetContainerIndex(path, fd, st, &index)) {
-            CString match;
-            bool multiple = false;
-            uint8_t buffer[kModuleProbeSize];
-            uint64_t fileSize = static_cast<uint64_t>(st.st_size);
-            const uint64_t kLocalHeaderSize = static_cast<uint64_t>(kZipLocalHeaderSize);
-            for (size_t i = 0; i < index->entries.size(); ++i) {
-                const ContainerEntry& entry = index->entries[i];
-                if (entry.uncompressedSize < probeLen) {
-                    continue;
-                }
-                uint8_t localHeader[kZipLocalHeaderSize];
-                if (entry.localHeaderOffset > fileSize || kLocalHeaderSize > fileSize - entry.localHeaderOffset) {
-                    continue;
-                }
-                if (!PreadExact(fd, localHeader, static_cast<size_t>(kLocalHeaderSize), entry.localHeaderOffset) ||
-                    ReadLe32(localHeader) != kZipLocalHeaderSignature) {
-                    continue;
-                }
-                uint16_t localNameLen = ReadLe16(localHeader + 26);
-                uint16_t localExtraLen = ReadLe16(localHeader + 28);
-                uint64_t afterHeader = entry.localHeaderOffset + kLocalHeaderSize;
-                if (static_cast<uint64_t>(localNameLen) + static_cast<uint64_t>(localExtraLen) >
-                    fileSize - afterHeader) {
-                    continue;
-                }
-                uint64_t dataOffset =
-                    afterHeader + static_cast<uint64_t>(localNameLen) + static_cast<uint64_t>(localExtraLen);
-                if (dataOffset > fileSize || static_cast<uint64_t>(probeLen) > fileSize - dataOffset) {
-                    continue;
-                }
-                if (!PreadExact(fd, buffer, probeLen, dataOffset)) {
-                    continue;
-                }
-                if (memcmp(buffer, ELFMAG, SELFMAG) != 0 || memcmp(buffer, image.start, probeLen) != 0) {
-                    continue;
-                }
-                if (!match.IsEmpty()) {
-                    multiple = true;  // more than one entry matches: fail open, no need to keep probing
-                    break;
-                }
-                match = entry.name;
-            }
-            if (multiple) {
-                LOG(RTLOG_WARNING, "resolve module path ambiguous: path=%s", path);
-            } else if (!match.IsEmpty()) {
-                *entryName = match;
-                found = true;
-            }
+    if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode) || st.st_size < 0) {
+        close(fd);
+        return false;
+    }
+    std::shared_ptr<const ContainerIndex> index;
+    if (!GetContainerIndex(path, fd, st, &index)) {
+        close(fd);
+        return false;
+    }
+
+    uint64_t fileSize = static_cast<uint64_t>(st.st_size);
+    uint8_t buffer[kModuleProbeSize];
+    CString match;
+    bool multiple = false;
+    for (size_t i = 0; i < index->entries.size(); ++i) {
+        const ContainerEntry& entry = index->entries[i];
+        if (entry.uncompressedSize < probeLen) {
+            continue;
         }
+        if (!EntryDataMatches(fd, fileSize, entry, image, probeLen, buffer)) {
+            continue;
+        }
+        if (!match.IsEmpty()) {
+            multiple = true;  // more than one entry matches: fail open, stop probing
+            break;
+        }
+        match = entry.name;
     }
     close(fd);
-    return found;
+
+    if (multiple) {
+        LOG(RTLOG_WARNING, "resolve module path ambiguous: path=%s", path);
+        return false;
+    }
+    if (match.IsEmpty()) {
+        return false;
+    }
+    *entryName = match;
+    return true;
 }
 } // namespace
 
