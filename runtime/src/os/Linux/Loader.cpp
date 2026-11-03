@@ -287,6 +287,51 @@ bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompresse
     return false;
 }
 
+// Scans the file tail backwards for the last EOCD whose comment still fits
+// inside the tail. Returns its offset relative to the tail start, or -1.
+int64_t FindEocdInTail(const uint8_t* tail, size_t tailSize)
+{
+    for (int64_t i = static_cast<int64_t>(tailSize) - 22; i >= 0; --i) {
+        if (ReadLe32(tail + static_cast<size_t>(i)) != kZipEndOfCentralDirectorySignature) {
+            continue;
+        }
+        uint16_t commentLen = ReadLe16(tail + static_cast<size_t>(i) + 20);
+        if (static_cast<uint64_t>(i) + 22 + commentLen <= tailSize) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Resolves EOCD sentinel fields from the Zip64 locator and Zip64 EOCD record.
+// Any read/bounds/signature failure fails the whole lookup: no fallback to the
+// 32-bit values.
+bool ReadZip64EndOfCentralDirectory(int fd, uint64_t eocdOffset, uint64_t fileSize, uint64_t* entryCount,
+    uint64_t* cdSize, uint64_t* cdOffset)
+{
+    if (eocdOffset < 20) {
+        return false;
+    }
+    uint8_t locator[20];
+    if (!PreadExact(fd, locator, sizeof(locator), eocdOffset - 20) ||
+        ReadLe32(locator) != kZip64EndOfCentralDirectoryLocatorSignature) {
+        return false;
+    }
+    // Zip64 locator: sig(4) disk-with-zip64-eocd(4) zip64-eocd-offset(8 @8) total-disks(4 @16).
+    uint64_t zip64Offset = ReadLe64(locator + 8);
+    uint8_t record[56];
+    if (zip64Offset > fileSize || fileSize - zip64Offset < sizeof(record) ||
+        !PreadExact(fd, record, sizeof(record), zip64Offset) ||
+        ReadLe32(record) != kZip64EndOfCentralDirectorySignature) {
+        return false;
+    }
+    // Zip64 EOCD: entries-on-disk(8 @24), entries-total(8 @32), cd-size(8 @40), cd-offset(8 @48).
+    *entryCount = ReadLe64(record + 32);
+    *cdSize = ReadLe64(record + 40);
+    *cdOffset = ReadLe64(record + 48);
+    return true;
+}
+
 bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, uint64_t* cdSize,
     uint64_t* cdOffset)
 {
@@ -301,21 +346,10 @@ bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, u
     if (!PreadExact(fd, tail.data(), tailSize, fileSize - tailSize64)) {
         return false;
     }
-    int64_t eocdRel = -1;
-    for (int64_t i = static_cast<int64_t>(tailSize) - 22; i >= 0; --i) {
-        if (ReadLe32(tail.data() + static_cast<size_t>(i)) != kZipEndOfCentralDirectorySignature) {
-            continue;
-        }
-        uint16_t commentLen = ReadLe16(tail.data() + static_cast<size_t>(i) + 20);
-        if (static_cast<uint64_t>(i) + 22 + commentLen <= tailSize64) {
-            eocdRel = i;
-            break;
-        }
-    }
+    int64_t eocdRel = FindEocdInTail(tail.data(), tailSize);
     if (eocdRel < 0) {
         return false;
     }
-    uint64_t eocdOffset = fileSize - tailSize64 + static_cast<uint64_t>(eocdRel);
     // EOCD fixed fields: entries-on-this-disk(2 @8), entries-total(2 @10),
     // central-directory-size(4 @12), central-directory-offset(4 @16), comment-len(2 @20).
     uint16_t entryCount16 = ReadLe16(tail.data() + static_cast<size_t>(eocdRel) + 10);
@@ -327,28 +361,90 @@ bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, u
 
     // Sentinel values mean the real value lives in the Zip64 record.
     if (entryCount16 == kZip16Sentinel || cdSize32 == kZip32Sentinel || cdOffset32 == kZip32Sentinel) {
-        if (eocdOffset < 20) {
-            return false;
-        }
-        uint8_t locator[20];
-        if (!PreadExact(fd, locator, sizeof(locator), eocdOffset - 20) ||
-            ReadLe32(locator) != kZip64EndOfCentralDirectoryLocatorSignature) {
-            return false;
-        }
-        // Zip64 locator: sig(4) disk-with-zip64-eocd(4) zip64-eocd-offset(8 @8) total-disks(4 @16).
-        uint64_t zip64Offset = ReadLe64(locator + 8);
-        uint8_t record[56];
-        if (zip64Offset > fileSize || fileSize - zip64Offset < sizeof(record) ||
-            !PreadExact(fd, record, sizeof(record), zip64Offset) ||
-            ReadLe32(record) != kZip64EndOfCentralDirectorySignature) {
-            return false;
-        }
-        // Zip64 EOCD: entries-on-disk(8 @24), entries-total(8 @32), cd-size(8 @40), cd-offset(8 @48).
-        *entryCount = ReadLe64(record + 32);
-        *cdSize = ReadLe64(record + 40);
-        *cdOffset = ReadLe64(record + 48);
+        uint64_t eocdOffset = fileSize - tailSize64 + static_cast<uint64_t>(eocdRel);
+        return ReadZip64EndOfCentralDirectory(fd, eocdOffset, fileSize, entryCount, cdSize, cdOffset);
     }
     return true;
+}
+
+// Central directory header is 46 bytes fixed:
+// sig(4) verMade(2) verNeed(2) flags(2 @8) method(2 @10) mtime(2 @12) mdate(2 @14)
+// crc(4 @16) compressedSize(4 @20) uncompressedSize(4 @24) nameLen(2 @28) extraLen(2 @30)
+// commentLen(2 @32) diskStart(2 @34) intAttr(2 @36) extAttr(4 @38) localOffset(4 @42).
+struct CentralDirectoryHeader {
+    uint16_t flags;
+    uint16_t method;
+    uint64_t compressed;
+    uint64_t uncompressed;
+    uint16_t nameLen;
+    uint16_t extraLen;
+    uint16_t commentLen;
+    uint16_t diskStart;
+    uint64_t localOffset;
+};
+
+void ReadCentralDirectoryHeader(const uint8_t* p, CentralDirectoryHeader* h)
+{
+    h->flags = ReadLe16(p + 8);
+    h->method = ReadLe16(p + 10);
+    h->compressed = ReadLe32(p + 20);
+    h->uncompressed = ReadLe32(p + 24);
+    h->nameLen = ReadLe16(p + 28);
+    h->extraLen = ReadLe16(p + 30);
+    h->commentLen = ReadLe16(p + 32);
+    h->diskStart = ReadLe16(p + 34);
+    h->localOffset = ReadLe32(p + 42);
+}
+
+// Resolves the header's ZIP64 sentinel fields in place and decides whether the
+// entry is usable. Returns false to skip this entry (not the whole archive): a
+// malformed ZIP64 extra, or the entry starts on a nonzero disk.
+bool EntryIsUsable(const uint8_t* p, CentralDirectoryHeader* h)
+{
+    bool needUncompressed = h->uncompressed == kZip32Sentinel;
+    bool needCompressed = h->compressed == kZip32Sentinel;
+    bool needOffset = h->localOffset == kZip32Sentinel;
+    bool needDisk = h->diskStart == kZip16Sentinel;
+    if (needUncompressed || needCompressed || needOffset || needDisk) {
+        uint32_t disk32 = h->diskStart;
+        if (!ParseZip64Extra(p + kZipCentralDirectoryHeaderSize + h->nameLen, h->extraLen, needUncompressed,
+            needCompressed, needOffset, needDisk, &h->uncompressed, &h->compressed, &h->localOffset, &disk32)) {
+            return false;  // malformed ZIP64 extra: skip the entry, not the archive
+        }
+        if (needDisk && disk32 != 0) {
+            return false;  // entry starts on another disk of a multi-part archive
+        }
+    }
+    if (!needDisk && h->diskStart != 0) {
+        return false;  // entry starts on another disk of a multi-part archive
+    }
+    return true;
+}
+
+// Collects the entry when it is a structurally valid load candidate: not
+// encrypted, stored, with a non-empty safe name and payload.
+void MaybeCollectEntry(const uint8_t* p, const CentralDirectoryHeader& h, std::vector<ContainerEntry>* entries)
+{
+    if ((h.flags & kZipEncryptedFlag) != 0 || h.method != 0 || h.nameLen == 0 || h.uncompressed == 0) {
+        return;
+    }
+    CString name;
+    name.EnsureSpace(h.nameLen);
+    name.Append(reinterpret_cast<const char*>(p + kZipCentralDirectoryHeaderSize), h.nameLen);
+    // Deliberately no extension/name filter: the mapped entry may have any
+    // name (Android maps stored, page-aligned entries via "container!/entry"
+    // regardless of suffix), and filtering here could drop the real entry or
+    // shrink a genuine duplicate match into a false unique one. The checks
+    // above plus the later ELF magic and content comparison decide identity;
+    // uniqueness is judged over every entry that passes them.
+    if (!IsSafeEntryName(name)) {
+        return;
+    }
+    ContainerEntry entry;
+    entry.name = name;
+    entry.localHeaderOffset = h.localOffset;
+    entry.uncompressedSize = h.uncompressed;
+    entries->push_back(entry);
 }
 
 bool ParseCentralDirectory(const uint8_t* cd, size_t cdSize, uint64_t entryCount,
@@ -360,70 +456,22 @@ bool ParseCentralDirectory(const uint8_t* cd, size_t cdSize, uint64_t entryCount
     size_t pos = 0;
     uint64_t parsed = 0;
     while (pos + kZipCentralDirectoryHeaderSize <= cdSize && parsed < entryCount) {
-        // Central directory header is 46 bytes fixed:
-        // sig(4) verMade(2) verNeed(2) flags(2 @8) method(2 @10) mtime(2 @12) mdate(2 @14)
-        // crc(4 @16) compressedSize(4 @20) uncompressedSize(4 @24) nameLen(2 @28) extraLen(2 @30)
-        // commentLen(2 @32) diskStart(2 @34) intAttr(2 @36) extAttr(4 @38) localOffset(4 @42).
         const uint8_t* p = cd + pos;
         if (ReadLe32(p) != kZipCentralDirectorySignature) {
             return false;
         }
-        uint16_t flags = ReadLe16(p + 8);
-        uint16_t method = ReadLe16(p + 10);
-        uint64_t compressed = ReadLe32(p + 20);
-        uint64_t uncompressed = ReadLe32(p + 24);
-        uint16_t nameLen = ReadLe16(p + 28);
-        uint16_t extraLen = ReadLe16(p + 30);
-        uint16_t commentLen = ReadLe16(p + 32);
-        uint16_t disk16 = ReadLe16(p + 34);
-        uint64_t localOffset = ReadLe32(p + 42);
-        uint64_t total = kZipCentralDirectoryHeaderSize + nameLen + extraLen + commentLen;
+        CentralDirectoryHeader h;
+        ReadCentralDirectoryHeader(p, &h);
+        uint64_t total = kZipCentralDirectoryHeaderSize + h.nameLen + h.extraLen + h.commentLen;
         if (total > static_cast<uint64_t>(cdSize - pos)) {
             return false;
         }
-
-        bool needUncompressed = uncompressed == kZip32Sentinel;
-        bool needCompressed = compressed == kZip32Sentinel;
-        bool needOffset = localOffset == kZip32Sentinel;
-        bool needDisk = disk16 == kZip16Sentinel;
-        if (needUncompressed || needCompressed || needOffset || needDisk) {
-            uint32_t disk32 = disk16;
-            if (!ParseZip64Extra(p + kZipCentralDirectoryHeaderSize + nameLen, extraLen, needUncompressed,
-                needCompressed, needOffset, needDisk, &uncompressed, &compressed, &localOffset, &disk32)) {
-                pos += static_cast<size_t>(total);
-                ++parsed;
-                continue;
-            }
-            if (needDisk && disk32 != 0) {
-                pos += static_cast<size_t>(total);
-                ++parsed;
-                continue;
-            }
-        }
-        if (!needDisk && disk16 != 0) {
+        if (!EntryIsUsable(p, &h)) {
             pos += static_cast<size_t>(total);
             ++parsed;
             continue;
         }
-
-        if ((flags & kZipEncryptedFlag) == 0 && method == 0 && nameLen > 0 && uncompressed > 0) {
-            CString name;
-            name.EnsureSpace(nameLen);
-            name.Append(reinterpret_cast<const char*>(p + kZipCentralDirectoryHeaderSize), nameLen);
-            // Deliberately no extension/name filter: the mapped entry may have any
-            // name (Android maps stored, page-aligned entries via "container!/entry"
-            // regardless of suffix), and filtering here could drop the real entry or
-            // shrink a genuine duplicate match into a false unique one. The checks
-            // above plus the later ELF magic and content comparison decide identity;
-            // uniqueness is judged over every entry that passes them.
-            if (IsSafeEntryName(name)) {
-                ContainerEntry entry;
-                entry.name = name;
-                entry.localHeaderOffset = localOffset;
-                entry.uncompressedSize = uncompressed;
-                entries->push_back(entry);
-            }
-        }
+        MaybeCollectEntry(p, h, entries);
         pos += static_cast<size_t>(total);
         ++parsed;
     }
