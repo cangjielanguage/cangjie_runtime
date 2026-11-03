@@ -5,6 +5,8 @@
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 
+#include <cinttypes>
+
 #include "Base/Log.h"
 #include "Heap/Heap.h"
 #include "ObjectManager.inline.h"
@@ -12,6 +14,12 @@
 #include "Mutator/Mutator.h"
 
 namespace MapleRuntime {
+static bool IsValidArrayView(const CJArray* view, const CJRawArray* rawArray)
+{
+    // Subtract after checking start so a forged start + length cannot wrap around.
+    return rawArray != nullptr && view->start <= rawArray->len && view->length <= rawArray->len - view->start;
+}
+
 ScopedAllocBuffer::~ScopedAllocBuffer()
 {
     if (mutator != nullptr) {
@@ -222,6 +230,9 @@ bool MethodInfo::CheckMethodActualArgs(void* genericArgsArray, void* actualArgsA
     RefField<false>* actualRawPtrField = reinterpret_cast<RefField<false>*>(&(actualArgs->rawPtr));
     CJRawArray* cjRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *actualRawPtrField));
+    if (!IsValidArrayView(actualArgs, cjRawArray)) {
+        return false;
+    }
     U64 actualArgCnt = actualArgs->length;
     if (actualArgCnt != GetNumOfActualParameterInfos()) {
         return false;
@@ -300,6 +311,10 @@ TypeInfo* MethodInfo::GetActualTypeFromGenericType(GenericTypeInfo* genericTi, v
                 RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(&(genericArray->rawPtr));
                 CJRawArray* genericRawArray = reinterpret_cast<CJRawArray*>(
                     Heap::GetBarrier().ReadReference(nullptr, *genericRawPtrField));
+                CHECK_DETAIL(IsValidArrayView(genericArray, genericRawArray),
+                             "GetActualTypeFromGenericType: invalid generic argument view");
+                CHECK_DETAIL(idx < genericArray->length,
+                             "GetActualTypeFromGenericType: generic argument index out of bounds");
                 Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data)) + genericArray->start * TYPEINFO_PTR_SIZE;
                 TypeInfo* ti = *reinterpret_cast<TypeInfo**>(base + idx * TYPEINFO_PTR_SIZE);
                 return ti;
@@ -457,6 +472,7 @@ void MethodInfo::PrepareCJMethodActualArgs(ArgValue* argValues, void* actualArgs
     RefField<false>* rawPtrField = reinterpret_cast<RefField<false>*>(&(actualArgs->rawPtr));
     CJRawArray* cjRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *rawPtrField));
+    CHECK_DETAIL(IsValidArrayView(actualArgs, cjRawArray), "PrepareCJMethodActualArgs: invalid argument view");
     // Array slices share raw storage; only the view's range contains actual arguments.
     U64 actualArgCnt = actualArgs->length;
     ObjRef rawArray = reinterpret_cast<ObjRef>(cjRawArray);
@@ -483,6 +499,7 @@ void MethodInfo::PrepareCJMethodGenericArgs(ArgValue* argValues, void* genericAr
     RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(&(genericArgs->rawPtr));
     CJRawArray* genericRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *genericRawPtrField));
+    CHECK_DETAIL(IsValidArrayView(genericArgs, genericRawArray), "PrepareCJMethodGenericArgs: invalid argument view");
     Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data)) + genericArgs->start * TYPEINFO_PTR_SIZE;
     U64 genericArgCnt = genericArgs->length;
     for (U64 idx = 0; idx < genericArgCnt; ++idx) {
@@ -769,12 +786,14 @@ void* DynamicMethodInfo::ApplyCangjieMethod(void* argsArray)
     if (!Heap::IsHeapAddress(argsArray)) {
         cjRawArray = args->rawPtr;
     } else {
-        RefField<false> oldField(reinterpret_cast<MAddress>(argsArray));
-        cjRawArray = reinterpret_cast<CJRawArray*>(Heap::GetBarrier().ReadReference(nullptr, oldField));
+        RefField<false>* rawPtrField = reinterpret_cast<RefField<false>*>(&(args->rawPtr));
+        cjRawArray = reinterpret_cast<CJRawArray*>(Heap::GetBarrier().ReadReference(nullptr, *rawPtrField));
     }
+    CHECK_DETAIL(IsValidArrayView(args, cjRawArray), "ApplyCangjieMethod: invalid argument view");
     U64 actualArgCount = args->length;
     if (actualArgCount != parameterCount) {
-        LOG(RTLOG_FATAL, "DynamicMethodInfo: actualArgCount %d != parameterCount %d", actualArgCount, parameterCount);
+        LOG(RTLOG_FATAL, "DynamicMethodInfo: actualArgCount %" PRIu64 " != parameterCount %u",
+            actualArgCount, parameterCount);
     }
 
     size_t retObjSize = MRT_ALIGN(returnType->GetInstanceSize() + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
