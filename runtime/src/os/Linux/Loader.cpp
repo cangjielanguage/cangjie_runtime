@@ -36,7 +36,7 @@
 
 #include "Base/Log.h"
 #if defined(__ANDROID__)
-static_assert(sizeof(off_t) >= 8,
+static_assert(sizeof(off_t) >= sizeof(uint64_t),
     "_FILE_OFFSET_BITS=64 must yield a 64-bit off_t on this target");
 #endif
 namespace MapleRuntime {
@@ -106,6 +106,11 @@ constexpr uint16_t kZip16Sentinel = 0xffff;          // field value means "see Z
 constexpr uint32_t kZip32Sentinel = 0xffffffff;      // field value means "see Zip64"
 constexpr uint64_t kZipCentralDirectoryHeaderSize = 46;
 
+// Structural constants shared by more than one function of the ZIP lookup below.
+// Offsets with a single user are defined next to that user instead.
+constexpr size_t kEocdSize = 22;                    // EOCD fixed part; its comment follows
+constexpr size_t kZip64ValueFieldWidth = 8;         // 64-bit values inside the Zip64 extra
+
 struct ModuleImage {
     const uint8_t* start = nullptr;
     size_t fileBytes = 0;
@@ -133,20 +138,31 @@ struct ContainerIndex {
 std::mutex gContainerCacheMutex;
 std::vector<std::pair<CString, std::shared_ptr<ContainerIndex>>> gContainerCache;
 
+// Composes `width` little-endian bytes into one value; the sized wrappers below
+// are its only callers and keep the read sites' types explicit.
+uint64_t ReadLe(const uint8_t* bytes, size_t width)
+{
+    constexpr size_t kBitsPerByte = 8;
+    uint64_t value = 0;
+    for (size_t i = 0; i < width; ++i) {
+        value |= static_cast<uint64_t>(bytes[i]) << (kBitsPerByte * i);
+    }
+    return value;
+}
+
 uint16_t ReadLe16(const uint8_t* p)
 {
-    return static_cast<uint16_t>(static_cast<uint16_t>(p[0]) | (static_cast<uint16_t>(p[1]) << 8));
+    return static_cast<uint16_t>(ReadLe(p, sizeof(uint16_t)));
 }
 
 uint32_t ReadLe32(const uint8_t* p)
 {
-    return static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8) |
-        (static_cast<uint32_t>(p[2]) << 16) | (static_cast<uint32_t>(p[3]) << 24);
+    return static_cast<uint32_t>(ReadLe(p, sizeof(uint32_t)));
 }
 
 uint64_t ReadLe64(const uint8_t* p)
 {
-    return static_cast<uint64_t>(ReadLe32(p)) | (static_cast<uint64_t>(ReadLe32(p + 4)) << 32);
+    return ReadLe(p, sizeof(uint64_t));
 }
 
 bool PreadExact(int fd, void* buffer, size_t length, uint64_t offset)
@@ -243,7 +259,7 @@ bool ReadZip64Field(const uint8_t* extra, size_t end, size_t* cur, size_t width,
     if (*cur > end || width > end - *cur) {
         return false;
     }
-    *out = (width == 8) ? ReadLe64(extra + *cur) : ReadLe32(extra + *cur);
+    *out = (width == kZip64ValueFieldWidth) ? ReadLe64(extra + *cur) : ReadLe32(extra + *cur);
     *cur += width;
     return true;
 }
@@ -252,11 +268,14 @@ bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompresse
     bool needOffset, bool needDisk, uint64_t* uncompressed, uint64_t* compressed, uint64_t* localOffset,
     uint32_t* diskStart)
 {
+    // Zip64 extra header: field id(2) + size(2); disk-start is the only 32-bit field.
+    constexpr size_t kZip64ExtraHeaderSize = 4;
+    constexpr size_t kZip64DiskFieldWidth = 4;
     size_t pos = 0;
-    while (pos + 4 <= extraLen) {
+    while (pos + kZip64ExtraHeaderSize <= extraLen) {
         uint16_t fieldId = ReadLe16(extra + pos);
-        uint16_t fieldSize = ReadLe16(extra + pos + 2);
-        pos += 4;
+        uint16_t fieldSize = ReadLe16(extra + pos + sizeof(uint16_t));
+        pos += kZip64ExtraHeaderSize;
         if (pos + fieldSize > extraLen) {
             return false;
         }
@@ -266,18 +285,18 @@ bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompresse
         }
         size_t cur = pos;
         size_t end = pos + fieldSize;
-        if (needUncompressed && !ReadZip64Field(extra, end, &cur, 8, uncompressed)) {
+        if (needUncompressed && !ReadZip64Field(extra, end, &cur, kZip64ValueFieldWidth, uncompressed)) {
             return false;
         }
-        if (needCompressed && !ReadZip64Field(extra, end, &cur, 8, compressed)) {
+        if (needCompressed && !ReadZip64Field(extra, end, &cur, kZip64ValueFieldWidth, compressed)) {
             return false;
         }
-        if (needOffset && !ReadZip64Field(extra, end, &cur, 8, localOffset)) {
+        if (needOffset && !ReadZip64Field(extra, end, &cur, kZip64ValueFieldWidth, localOffset)) {
             return false;
         }
         if (needDisk) {
             uint64_t disk = 0;
-            if (!ReadZip64Field(extra, end, &cur, 4, &disk)) {
+            if (!ReadZip64Field(extra, end, &cur, kZip64DiskFieldWidth, &disk)) {
                 return false;
             }
             *diskStart = static_cast<uint32_t>(disk);
@@ -291,12 +310,13 @@ bool ParseZip64Extra(const uint8_t* extra, size_t extraLen, bool needUncompresse
 // inside the tail. Returns its offset relative to the tail start, or -1.
 int64_t FindEocdInTail(const uint8_t* tail, size_t tailSize)
 {
-    for (int64_t i = static_cast<int64_t>(tailSize) - 22; i >= 0; --i) {
+    constexpr size_t kEocdCommentLenOffset = 20;  // comment length field inside the EOCD
+    for (int64_t i = static_cast<int64_t>(tailSize - kEocdSize); i >= 0; --i) {
         if (ReadLe32(tail + static_cast<size_t>(i)) != kZipEndOfCentralDirectorySignature) {
             continue;
         }
-        uint16_t commentLen = ReadLe16(tail + static_cast<size_t>(i) + 20);
-        if (static_cast<uint64_t>(i) + 22 + commentLen <= tailSize) {
+        uint16_t commentLen = ReadLe16(tail + static_cast<size_t>(i) + kEocdCommentLenOffset);
+        if (static_cast<uint64_t>(i) + kEocdSize + commentLen <= tailSize) {
             return i;
         }
     }
@@ -309,37 +329,50 @@ int64_t FindEocdInTail(const uint8_t* tail, size_t tailSize)
 bool ReadZip64EndOfCentralDirectory(int fd, uint64_t eocdOffset, uint64_t fileSize, uint64_t* entryCount,
     uint64_t* cdSize, uint64_t* cdOffset)
 {
-    if (eocdOffset < 20) {
+    // Structural constants of the Zip64 locator and EOCD record (offsets are
+    // relative to the start of the owning record).
+    constexpr size_t kZip64LocatorSize = 20;
+    constexpr size_t kZip64LocatorEocdOffset = 8;
+    constexpr size_t kZip64RecordSize = 56;
+    constexpr size_t kZip64EntryCountOffset = 32;
+    constexpr size_t kZip64CdSizeOffset = 40;
+    constexpr size_t kZip64CdStartOffset = 48;
+    if (eocdOffset < kZip64LocatorSize) {
         return false;
     }
-    uint8_t locator[20];
-    if (!PreadExact(fd, locator, sizeof(locator), eocdOffset - 20) ||
+    uint8_t locator[kZip64LocatorSize];
+    if (!PreadExact(fd, locator, sizeof(locator), eocdOffset - kZip64LocatorSize) ||
         ReadLe32(locator) != kZip64EndOfCentralDirectoryLocatorSignature) {
         return false;
     }
     // Zip64 locator: sig(4) disk-with-zip64-eocd(4) zip64-eocd-offset(8 @8) total-disks(4 @16).
-    uint64_t zip64Offset = ReadLe64(locator + 8);
-    uint8_t record[56];
+    uint64_t zip64Offset = ReadLe64(locator + kZip64LocatorEocdOffset);
+    uint8_t record[kZip64RecordSize];
     if (zip64Offset > fileSize || fileSize - zip64Offset < sizeof(record) ||
         !PreadExact(fd, record, sizeof(record), zip64Offset) ||
         ReadLe32(record) != kZip64EndOfCentralDirectorySignature) {
         return false;
     }
     // Zip64 EOCD: entries-on-disk(8 @24), entries-total(8 @32), cd-size(8 @40), cd-offset(8 @48).
-    *entryCount = ReadLe64(record + 32);
-    *cdSize = ReadLe64(record + 40);
-    *cdOffset = ReadLe64(record + 48);
+    *entryCount = ReadLe64(record + kZip64EntryCountOffset);
+    *cdSize = ReadLe64(record + kZip64CdSizeOffset);
+    *cdOffset = ReadLe64(record + kZip64CdStartOffset);
     return true;
 }
 
 bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, uint64_t* cdSize,
     uint64_t* cdOffset)
 {
-    if (entryCount == nullptr || cdSize == nullptr || cdOffset == nullptr || fileSize < 22) {
+    // EOCD field offsets used only here; kEocdSize itself is shared with the tail scan.
+    constexpr uint16_t kEocdMaxCommentLen = 65535;
+    constexpr size_t kEocdEntryCountOffset = 10;  // entries-total field inside the EOCD
+    constexpr size_t kEocdCdSizeOffset = 12;      // central-directory size field inside the EOCD
+    constexpr size_t kEocdCdStartOffset = 16;     // central-directory offset field inside the EOCD
+    if (entryCount == nullptr || cdSize == nullptr || cdOffset == nullptr || fileSize < kEocdSize) {
         return false;
     }
     // EOCD is at least 22 bytes; its trailing comment is at most 0xffff bytes.
-    const uint64_t kTailMax = 22 + 65535;
+    const uint64_t kTailMax = kEocdSize + kEocdMaxCommentLen;
     uint64_t tailSize64 = std::min(fileSize, kTailMax);
     size_t tailSize = static_cast<size_t>(tailSize64);
     std::vector<uint8_t> tail(tailSize);
@@ -352,9 +385,9 @@ bool ReadCentralDirectoryInfo(int fd, uint64_t fileSize, uint64_t* entryCount, u
     }
     // EOCD fixed fields: entries-on-this-disk(2 @8), entries-total(2 @10),
     // central-directory-size(4 @12), central-directory-offset(4 @16), comment-len(2 @20).
-    uint16_t entryCount16 = ReadLe16(tail.data() + static_cast<size_t>(eocdRel) + 10);
-    uint32_t cdSize32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + 12);
-    uint32_t cdOffset32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + 16);
+    uint16_t entryCount16 = ReadLe16(tail.data() + static_cast<size_t>(eocdRel) + kEocdEntryCountOffset);
+    uint32_t cdSize32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + kEocdCdSizeOffset);
+    uint32_t cdOffset32 = ReadLe32(tail.data() + static_cast<size_t>(eocdRel) + kEocdCdStartOffset);
     *entryCount = entryCount16;
     *cdSize = cdSize32;
     *cdOffset = cdOffset32;
@@ -385,15 +418,25 @@ struct CentralDirectoryHeader {
 
 void ReadCentralDirectoryHeader(const uint8_t* p, CentralDirectoryHeader* h)
 {
-    h->flags = ReadLe16(p + 8);
-    h->method = ReadLe16(p + 10);
-    h->compressed = ReadLe32(p + 20);
-    h->uncompressed = ReadLe32(p + 24);
-    h->nameLen = ReadLe16(p + 28);
-    h->extraLen = ReadLe16(p + 30);
-    h->commentLen = ReadLe16(p + 32);
-    h->diskStart = ReadLe16(p + 34);
-    h->localOffset = ReadLe32(p + 42);
+    // Central directory header field offsets, relative to the header start.
+    constexpr size_t kCdFlagsOffset = 8;
+    constexpr size_t kCdMethodOffset = 10;
+    constexpr size_t kCdCompressedSizeOffset = 20;
+    constexpr size_t kCdUncompressedSizeOffset = 24;
+    constexpr size_t kCdNameLenOffset = 28;
+    constexpr size_t kCdExtraLenOffset = 30;
+    constexpr size_t kCdCommentLenOffset = 32;
+    constexpr size_t kCdDiskStartOffset = 34;
+    constexpr size_t kCdLocalHeaderOffset = 42;
+    h->flags = ReadLe16(p + kCdFlagsOffset);
+    h->method = ReadLe16(p + kCdMethodOffset);
+    h->compressed = ReadLe32(p + kCdCompressedSizeOffset);
+    h->uncompressed = ReadLe32(p + kCdUncompressedSizeOffset);
+    h->nameLen = ReadLe16(p + kCdNameLenOffset);
+    h->extraLen = ReadLe16(p + kCdExtraLenOffset);
+    h->commentLen = ReadLe16(p + kCdCommentLenOffset);
+    h->diskStart = ReadLe16(p + kCdDiskStartOffset);
+    h->localOffset = ReadLe32(p + kCdLocalHeaderOffset);
 }
 
 // Resolves the header's ZIP64 sentinel fields in place and decides whether the
@@ -498,7 +541,8 @@ bool LoadCentralDirectory(int fd, uint64_t fileSize, std::vector<ContainerEntry>
         return false;
     }
     entries->clear();
-    entries->reserve(static_cast<size_t>(std::min<uint64_t>(entryCount, 4096)));  // cap upfront memory
+    constexpr size_t kMaxReserveEntries = 4096;  // cap the entry vector's upfront allocation
+    entries->reserve(static_cast<size_t>(std::min<uint64_t>(entryCount, kMaxReserveEntries)));
     return ParseCentralDirectory(cd.data(), cd.size(), entryCount, entries);
 }
 
@@ -579,6 +623,9 @@ bool FilePrefixMatchesImage(const char* path, const ModuleImage& image, size_t p
 bool EntryDataMatches(int fd, uint64_t fileSize, const ContainerEntry& entry, const ModuleImage& image,
     size_t probeLen, uint8_t* buffer)
 {
+    // Local file header field offsets, relative to the header start.
+    constexpr size_t kLocalHeaderNameLenOffset = 26;
+    constexpr size_t kLocalHeaderExtraLenOffset = 28;
     uint8_t localHeader[kZipLocalHeaderSize];
     const uint64_t kLocalHeaderSize = static_cast<uint64_t>(kZipLocalHeaderSize);
     if (entry.localHeaderOffset > fileSize || kLocalHeaderSize > fileSize - entry.localHeaderOffset) {
@@ -589,8 +636,8 @@ bool EntryDataMatches(int fd, uint64_t fileSize, const ContainerEntry& entry, co
         return false;
     }
     // Local file header is 30 bytes fixed; nameLen @26, extraLen @28, data starts after 30 + name + extra.
-    uint16_t localNameLen = ReadLe16(localHeader + 26);
-    uint16_t localExtraLen = ReadLe16(localHeader + 28);
+    uint16_t localNameLen = ReadLe16(localHeader + kLocalHeaderNameLenOffset);
+    uint16_t localExtraLen = ReadLe16(localHeader + kLocalHeaderExtraLenOffset);
     uint64_t afterHeader = entry.localHeaderOffset + kLocalHeaderSize;
     if (static_cast<uint64_t>(localNameLen) + static_cast<uint64_t>(localExtraLen) > fileSize - afterHeader) {
         return false;
@@ -697,14 +744,15 @@ void Loader::CanonicalizeModulePath(const void* address, BinaryInfo* binInfo)
         return;
     }
 
+    constexpr size_t kContainerEntrySeparatorLen = 2;  // "!/" between container path and entry name
     size_t reportedLen = reportedPath.Length();
     if (reportedLen > kMaxModulePathLen || entryName.Length() > kMaxModulePathLen ||
-        reportedLen + 2 + entryName.Length() >= kMaxModulePathLen) {
+        reportedLen + kContainerEntrySeparatorLen + entryName.Length() >= kMaxModulePathLen) {
         fail("too_long");
         return;
     }
     CString canonical;
-    canonical.EnsureSpace(reportedLen + 2 + entryName.Length());
+    canonical.EnsureSpace(reportedLen + kContainerEntrySeparatorLen + entryName.Length());
     canonical.Append(reportedPath);
     canonical.Append("!/");
     canonical.Append(entryName);
