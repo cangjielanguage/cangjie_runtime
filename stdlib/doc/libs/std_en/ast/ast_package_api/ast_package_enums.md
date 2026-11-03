@@ -1615,7 +1615,7 @@ Function: Constructs an enumeration instance representing `with`.
 public operator func !=(right: TokenKind): Bool
 ```
 
-Function: Overloads the inequality operator to compare two [TokenKind](ast_package_enums.md#enum-tokenkind) instances for equality.
+Function: Overloads the inequality operator to compare two [TokenKind](ast_package_enums.md#enum-tokenkind) instances for inequality.
 
 Parameters:
 
