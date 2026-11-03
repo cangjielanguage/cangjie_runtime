@@ -195,7 +195,7 @@ enum ConvertResult<T> {
     Success(T) | Failure(String)
 }
 
-func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte>): (UInt64, UInt64, UInt64) {
+func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte> @local?): (UInt64, UInt64, UInt64) {
     var baseInfos = match (typeBase) {
         case I8 => baseInfosInt8
         case I16 => baseInfosInt16
