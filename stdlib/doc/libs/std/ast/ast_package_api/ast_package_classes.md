@@ -1562,7 +1562,7 @@ public class CallExpr <: Expr {
 }
 ```
 
-功能：表示函数调用节点节点。
+功能：表示函数调用节点。
 
 一个 [CallExpr](ast_package_classes.md#class-callexpr) 节点包括一个表达式后面紧跟参数列表，例如 `foo(100)`。
 

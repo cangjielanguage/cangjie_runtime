@@ -246,7 +246,7 @@ Exceptions:
 ### func addPosition(UInt32, Int32, Int32)
 
 ```cangjie
-public func addPosition(fileID: UInt32, line: Int32, colum: Int32): Token
+public func addPosition(fileID: UInt32, line: Int32, column: Int32): Token
 ```
 
 Function: Supplements the position information of the lexical token.
@@ -255,7 +255,7 @@ Parameters:
 
 - fileID: [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) - The file ID where the [Token](ast_package_structs.md#struct-token) is located.
 - line: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - The line number where the [Token](ast_package_structs.md#struct-token) is located.
-- colum: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - The column number where the [Token](ast_package_structs.md#struct-token) is located.
+- column: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - The column number where the [Token](ast_package_structs.md#struct-token) is located.
 
 Returns:
 

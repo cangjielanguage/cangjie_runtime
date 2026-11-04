@@ -1668,7 +1668,7 @@ WITH
 public operator func !=(right: TokenKind): Bool
 ```
 
-功能：重载不等号操作符，用于比较两个 [TokenKind](ast_package_enums.md#enum-tokenkind) 是否相等。
+功能：重载不等号操作符，用于比较两个 [TokenKind](ast_package_enums.md#enum-tokenkind) 是否不相等。
 
 参数：
 
