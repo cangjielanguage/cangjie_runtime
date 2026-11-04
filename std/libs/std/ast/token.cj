@@ -60,8 +60,8 @@ public struct Token <: ToBytes {
         pos = Position(f, l, c)
     }
 
-    public func addPosition(fileID: UInt32, line: Int32, colum: Int32): Token {
-        return Token(this.kind, this.value, fileID, line, colum)
+    public func addPosition(fileID: UInt32, line: Int32, column: Int32): Token {
+        return Token(this.kind, this.value, fileID, line, column)
     }
 
     func addPosition(position: NodeFormat_Position) {
