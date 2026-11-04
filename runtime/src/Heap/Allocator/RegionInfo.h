@@ -752,7 +752,8 @@ public:
         MemorySet(reinterpret_cast<uintptr_t>(unitAddress), size, 0, size);
         void* ret = mmap(unitAddress, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
         if (ret == MAP_FAILED) {
-            LOG(RTLOG_ERROR, "region mmmap fixed failed");
+            int error = errno;
+            LOG(RTLOG_ERROR, "region mmap fixed failed, address: %p, size: %zu, errno: %d", unitAddress, size, error);
         } else if (ret != reinterpret_cast<void*>(unitAddress)) {
             LOG(RTLOG_ERROR, "mmap fixed at wrong addr %p->%p", unitAddress, ret);
         }
@@ -1076,7 +1077,7 @@ public:
     int32_t IncRawPointerObjectCount()
     {
         int32_t oldCount = __atomic_fetch_add(&metadata.rawPointerObjectCount, 1, __ATOMIC_SEQ_CST);
-        CHECK_DETAIL(oldCount >= 0, "region %p has wrong raw pointer count %d", this);
+        CHECK_DETAIL(oldCount >= 0, "region %p has wrong raw pointer count %d", this, oldCount);
         CHECK_DETAIL(oldCount < MAX_RAW_POINTER_COUNT, "inc raw-pointer-count overflow");
         return oldCount;
     }
