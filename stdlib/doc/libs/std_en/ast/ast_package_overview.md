@@ -160,7 +160,7 @@ The Cangjie ast package provides `Macro With Context` related functions for obta
 
 | Enumeration Name | Functionality |
 | --------------------------------- | ---------------------------------- |
-| [DiagReportLevel](./ast_package_api/ast_package_enums.md#enum-diagreportlevel) | Indicates the information level of error reporting interface, supporting `ERROR` and `WARNING` formats. |
+| [DiagReportLevel](./ast_package_api/ast_package_enums.md#enum-diagreportlevel) | Indicates the information level of error reporting interface, supporting `ERROR` and `WARNING` levels. |
 | [ImportKind](./ast_package_api/ast_package_enums.md#enum-importkind) | Represents the type of import statements, including single import, alias import, full import, and multiple imports. |
 | [TokenKind](./ast_package_api/ast_package_enums.md#enum-tokenkind) | Represents all lexical structures in Cangjie compilation, including symbols, keywords, identifiers, line breaks, etc. |
 

@@ -467,7 +467,7 @@ description: identifier, token_id: 137, token_literal_value: hello, fileID: 1, l
 ### func addPosition(UInt32, Int32, Int32)
 
 ```cangjie
-public func addPosition(fileID: UInt32, line: Int32, colum: Int32): Token
+public func addPosition(fileID: UInt32, line: Int32, column: Int32): Token
 ```
 
 功能：补充词法单元的位置信息。
@@ -476,7 +476,7 @@ public func addPosition(fileID: UInt32, line: Int32, colum: Int32): Token
 
 - fileID: [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) - [Token](ast_package_structs.md#struct-token) 所在的 fileID。
 - line: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - [Token](ast_package_structs.md#struct-token) 所在的行号。
-- colum: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - [Token](ast_package_structs.md#struct-token) 所在的列号。
+- column: [Int32](../../core/core_package_api/core_package_intrinsics.md#int32) - [Token](ast_package_structs.md#struct-token) 所在的列号。
 
 返回值：
 
