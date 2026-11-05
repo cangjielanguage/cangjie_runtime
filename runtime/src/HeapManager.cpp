@@ -26,21 +26,15 @@ MAddress HeapManager::Allocate(size_t allocSize, AllocType allocType)
 
 MAddress HeapManager::AllocateLocal(size_t allocSize)
 {
-    CHECK_DETAIL(regionSpace != nullptr && localObjectAllocator != nullptr,
-                 "local object allocator is not initialized");
     Mutator* mutator = Mutator::GetMutator();
-    if (UNLIKELY(mutator == nullptr)) {
-        LOG(RTLOG_ERROR, "alloc local object failed because mutator is null");
-        return 0;
-    }
+    CHECK_DETAIL(regionSpace != nullptr && localObjectAllocator != nullptr && mutator != nullptr,
+                 "cannot allocate local object: regionSpace %p, localObjectAllocator %p, mutator %p",
+                 regionSpace, localObjectAllocator, mutator);
 
     size_t size = RegionSpace::ToAllocSize(allocSize);
     MAddress internalAddr = localObjectAllocator->Allocate(*mutator, size);
-    if (UNLIKELY(internalAddr == 0)) {
-        if (ExceptionManager::HasPendingException()) {
-            return 0;
-        }
-        return regionSpace->Allocate(allocSize, AllocType::LOCAL_OBJECT);
+    if (UNLIKELY(internalAddr == 0) && !ExceptionManager::HasPendingException()) {
+        ExceptionManager::OutOfMemory();
     }
     return internalAddr;
 }

@@ -199,6 +199,9 @@ extern "C" void CJ_MRT_RegisterExceptionCallback(void(*callback)());
 extern "C" MRT_EXPORT void MCC_StartLocalRegion(FrameAddress* ownerFA);
 // end region when finish a cj func or exclave
 extern "C" MRT_EXPORT void MCC_EndLocalRegion(FrameAddress* ownerFA);
+// Compiler contract: Add registers exactly once in the object's owning currentFrame.
+// Pair Remove with Add in that same currentFrame, before the frame is closed.
+// Runtime Remove also locates the owning active frame if an inner region is active.
 extern "C" MRT_EXPORT void MCC_AddLocalFinalizer(ObjectPtr obj);
 extern "C" MRT_EXPORT void MCC_RemoveLocalFinalizer(ObjectPtr obj);
 // alloc local region object

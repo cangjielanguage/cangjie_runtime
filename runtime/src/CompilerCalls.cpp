@@ -1822,11 +1822,9 @@ static bool IsTupleTypeOf(ObjectPtr obj, TypeInfo* typeInfo, TypeInfo* targetTyp
             if (!fieldTypeInfo->IsClass() && !fieldTypeInfo->IsInterface()) {
                 return false;
             }
-            if (IsManagedObject(obj)) {
-                curObj = Heap::GetBarrier().ReadReference(obj, obj->GetRefField(offset));
-            } else {
-                curObj = obj->GetRefField(offset).GetTargetObject();
-            }
+            // obj may point to unboxed or nested tuple data, without an object
+            // header. Read the reference slot without treating obj as its owner.
+            curObj = Heap::GetBarrier().ReadReference(nullptr, obj->GetRefField(offset));
             TypeInfo* curti = curObj->GetTypeInfo();
             if (!curti->IsSubType(fieldTargetTI)) {
                 return false;

@@ -31,12 +31,8 @@
 
 namespace MapleRuntime {
 static bool g_oomIsTrigged = false;
-
-bool CjHeapData::IsLocalObjectDumpEnabled()
-{
-    const char* enabled = std::getenv("cjEnableLocalObjectDump");
-    return enabled != nullptr && CString::ParseFlagFromEnv(enabled);
-}
+// Enable only after the heap-dump parser supports local-object records (1.0.3).
+static bool g_enableLocalObjectDump = false;
 
 void CjHeapData::SerializedIdWrapper::Init(size_t maxCapacity, MAddress startAddr, bool force4Byte)
 {
@@ -80,7 +76,7 @@ void CjHeapData::WriteHeap()
 
     void CjHeapData::ProcessHeap()
 {
-    enableLocalObjectDump = IsLocalObjectDumpEnabled();
+    enableLocalObjectDump = g_enableLocalObjectDump;
     ProcessRootGlobal();
     ProcessRootLocal();
     ProcessRootConcurrencyModel();
@@ -107,7 +103,7 @@ void CjHeapData::InitSerializedIdWrapper()
 {
     Heap& heap = Heap::GetHeap();
     RegionSpace& space = reinterpret_cast<RegionSpace&>(heap.GetAllocator());
-    enableLocalObjectDump = IsLocalObjectDumpEnabled();
+    enableLocalObjectDump = g_enableLocalObjectDump;
     bool force4Byte = enableLocalObjectDump && space.GetLocalObjectAllocator().HasLocalObjects();
     // Decide the ID domain before processing any record.  A local region may
     // contain an object that is not reachable from a root, so relying on the

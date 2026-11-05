@@ -73,7 +73,11 @@ void ExceptionWrapper::RestoreContext(CalleeSavedRegisterContext& context)
             break;
         }
 
-        Mutator::GetMutator()->EndLocalObjectRegionsForFrame(framePtr->GetFA());
+        Mutator* mutator = Mutator::GetMutator();
+        // Skip local cleanup when this mutator has never used local allocation.
+        if (UNLIKELY(mutator->GetLocalObjectAllocatorData() != nullptr)) {
+            mutator->EndLocalObjectRegionsForFrame(framePtr->GetFA());
+        }
 
         if (framePtr->GetIP() == throwingSOFFramePc) {
             framePtr->RestoreToCallerContext(context, adjustedSize);

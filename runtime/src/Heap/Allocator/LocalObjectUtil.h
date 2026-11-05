@@ -7,7 +7,8 @@
 #ifndef MRT_LOCAL_OBJECT_UTIL_H
 #define MRT_LOCAL_OBJECT_UTIL_H
 
-#include "Heap/Heap.h"
+#include "Common/BaseObject.h"
+#include "Mutator/Mutator.h"
 
 namespace MapleRuntime {
 inline bool IsLocalObject(BaseObject* obj)
@@ -15,9 +16,15 @@ inline bool IsLocalObject(BaseObject* obj)
     return obj != nullptr && obj->IsLocalObject();
 }
 
-inline bool IsManagedObject(BaseObject* obj)
+// Barrier-only fast check using the current mutator's local allocation state.
+// GC and debug checks use IsLocalObject directly instead.
+inline bool IsLocalObjectForBarrier(BaseObject* obj)
 {
-    return Heap::IsHeapAddress(obj) || IsLocalObject(obj);
+    Mutator* mutator = Mutator::GetMutator();
+    if (LIKELY(mutator == nullptr || !mutator->IsLocalModeEnabled())) {
+        return false;
+    }
+    return obj != nullptr && obj->IsLocalObject();
 }
 } // namespace MapleRuntime
 

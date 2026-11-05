@@ -70,8 +70,7 @@ using FuncPtr = void(*)(void*);
 enum class AllocType {
     MOVEABLE_OBJECT = 0,
     PINNED_OBJECT,
-    RAW_POINTER_OBJECT,
-    LOCAL_OBJECT
+    RAW_POINTER_OBJECT
 };
 
 #ifdef __cplusplus
