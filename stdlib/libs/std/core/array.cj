@@ -180,6 +180,7 @@ public struct Array<T> {
         this.len = len
     }
 
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local!, data: RawArray<T> @local!, start: Int64, len: Int64) {
         this.rawptr = data
@@ -187,6 +188,7 @@ public struct Array<T> {
         this.len = len
     }
     
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local?, data: RawArray<T> @local?, start: Int64, len: Int64) {
         this.rawptr = data
@@ -543,6 +545,7 @@ public struct Array<T> {
         return Array<T>(this.rawptr, this.start + start_, end_ - start_)
     }
 
+    @When[env != "ohos"]
     @Frozen
     private func rangeSlice(this @local!, range: Range<Int64>, _: Int64): Array<T> @local! {
         if (range.step != 1) {
@@ -558,6 +561,7 @@ public struct Array<T> {
         }
     }
 
+    @When[env != "ohos"]
     @Frozen
     private func rangeSlice(this @local?, range: Range<Int64>, _: Int64): Array<T> @local? {
         if (range.step != 1) {
@@ -579,6 +583,7 @@ public struct Array<T> {
         0 <= start_ && start_ <= end_ && end_ <= this.len
     }
 
+    @When[env != "ohos"]
     @Frozen
     const func isLegal(this @local?, start_: Int64, end_: Int64): Bool {
         0 <= start_ && start_ <= end_ && end_ <= this.len
@@ -608,6 +613,7 @@ public struct Array<T> {
         return (start, end)
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     const func normalize(this @local?, range: Range<Int64>): (Int64, Int64) {
@@ -908,12 +914,14 @@ public struct Array<T> {
         return arrayGetUnchecked(this.rawptr, start + index)
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local!, index: Int64): T @local! {
         exclave { arrayGetUnchecked2<T>(this.rawptr, start + index) }
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local?, index: Int64): T @local? {
@@ -925,6 +933,8 @@ public struct Array<T> {
     protected unsafe func setUnchecked(index: Int64, element: T): Unit {
         return arraySetUnchecked(this.rawptr, start + index, element)
     }
+
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     protected exclave unsafe func setUnchecked(this @local!, index: Int64, element: T @local!): Unit {

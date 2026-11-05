@@ -220,7 +220,27 @@ public struct FileInfo <: Equatable<FileInfo> {
     /**
      * @throws FSException if cPath is invalid
      */
+    @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath = LibC.mallocCString(pathStr)
+            var ret: Int8 = nativeFunction(cPath)
+            LibC.free(cPath)
+            if (ret < 0) {
+                throw FSException("Native function error return ${ret}.")
+            }
+            return ret > 0
+        }
+    }
+
+    @When[env == "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
             let pathStr = if (shouldFixLongPath) {
@@ -242,7 +262,32 @@ public struct FileInfo <: Equatable<FileInfo> {
      * @throws FSException if cPath is invalid
      * @throws FSException if operation not permitted on Windows
      */
+    @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
+        shouldFixLongPath!: Bool = true): Bool {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath = LibC.mallocCString(pathStr)
+            let ret: Int8 = nativeFunction(cPath, flag)
+            LibC.free(cPath)
+            if (ret == -1) {
+                throw FSException("Native function error return ${ret}.")
+            } else if (ret == -4) {
+                throw FSException("Operation not permitted!")
+            } else if (ret == -2) {
+                throw FSException("Invalid argument!")
+            }
+            return ret > 0
+        }
+    }
+
+    @When[env == "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
         shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
@@ -268,7 +313,27 @@ public struct FileInfo <: Equatable<FileInfo> {
     /**
      * @throws FSException if `nativeFunction` returns negative error code
      */
+    @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath: CString = LibC.mallocCString(pathStr)
+            let ret: Int64 = nativeFunction(cPath)
+            LibC.free(cPath)
+            if (ret < 0) {
+                throw FSException("${msg} Native function return ${ret}.")
+            }
+            return ret
+        }
+    }
+
+    @When[env == "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
         unsafe {
             let raw = _path.toString()
             let pathStr = if (shouldFixLongPath) {

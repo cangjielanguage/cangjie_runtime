@@ -48,8 +48,13 @@ let TMP_FILE = "/tmpFileXXXXXX\0".toArray()
 /**
  * Before calling this function, call func checkPath to verify @param path.
  */
-@When[os != "Windows"]
+@When[env != "ohos" && os != "Windows"]
 func isAbsolutePath(path: String @local?): Bool {
+    path.size > 0 && isSlash(path[0])
+}
+
+@When[env == "ohos" && os != "Windows"]
+func isAbsolutePath(path: String): Bool {
     path.size > 0 && isSlash(path[0])
 }
 
@@ -312,8 +317,16 @@ exclave func getFileName(path: String @local?): String @local! {
     sb.toString()
 }
 
-@When[os != "Windows"]
+@When[env != "ohos" && os != "Windows"]
 func getRootLen(path: String @local?): Int64 {
+    if (path.size > 0 && isSlash(path[0])) {
+        return 1
+    }
+    0
+}
+
+@When[env == "ohos" && os != "Windows"]
+func getRootLen(path: String): Int64 {
     if (path.size > 0 && isSlash(path[0])) {
         return 1
     }

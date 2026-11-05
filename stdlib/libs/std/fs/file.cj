@@ -60,6 +60,13 @@ public enum OpenMode <: ToString & Equatable<OpenMode> {
 public struct FileDescriptor <: Copyable {
     var _fileHandle: IntNative = InvalidHandle
 
+    public prop fileHandle: IntNative {
+        get() {
+            _fileHandle
+        }
+    }
+
+    @When[env != "ohos"]
     public prop fileHandle: IntNative @local? {
         get() {
             _fileHandle
@@ -75,7 +82,16 @@ public class File <: Resource & IOStream & Seekable {
     private var _canWrite: Bool = true
     private var _canSeek: Bool = true
 
+    @When[env != "ohos"]
     ~init(this @local?) {
+        if (isHandleValid(_fileDescriptor._fileHandle)) {
+            unsafe { CJ_FS_CloseFile(_fileDescriptor._fileHandle) }
+            _fileDescriptor._fileHandle = InvalidHandle
+        }
+    }
+
+    @When[env == "ohos"]
+    ~init() {
         if (isHandleValid(_fileDescriptor._fileHandle)) {
             unsafe { CJ_FS_CloseFile(_fileDescriptor._fileHandle) }
             _fileDescriptor._fileHandle = InvalidHandle
@@ -318,7 +334,16 @@ public class File <: Resource & IOStream & Seekable {
         return val
     }
 
+    @When[env != "ohos"]
     private func canSeek(this @local?): Bool {
+        if (isClosed()) {
+            return false
+        }
+        return _canSeek
+    }
+
+    @When[env == "ohos"]
+    private func canSeek(): Bool {
         if (isClosed()) {
             return false
         }
@@ -542,7 +567,51 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if file already exists when operation is create
      * @throws FSException if path is invalid
      */
+    @When[env != "ohos"]
     private func openFile(this @local?): Unit {
+        let isExists = exists(_fileInfo.path)
+        let (r, w, s, openMode): (Bool, Bool, Bool, Int32) = match ((_openMode, isExists)) {
+            case (Read, false)        => throw FSException("The file `${_fileInfo.path}` does not exist or permission denied!")
+            case (Read, _)            => (true, false, true, READ_ONLY)
+            case (Write, _)           => (false, true, true, WRITE_ONLY)
+            case (OpenMode.Append, _) => (false, true, false, APPEND)
+            case (ReadWrite, _)       => (true, true, true, READ_WRITE)
+        }
+        _canRead = r
+        _canWrite = w
+        _canSeek = s
+        var fsInfoCp: CPointer<FsInfo>
+        var fsInfo: FsInfo
+        var fsInfoErrMsg = ""
+
+        let pathStr = _fileInfo.path.toString()
+        unsafe {
+            let cPath = LibC.mallocCString(pathStr)
+            fsInfoCp = CJ_FS_OpenFile(cPath, openMode)
+            LibC.free(cPath)
+            if (fsInfoCp.isNull()) {
+                throw FSException("Failed to open the file `${_fileInfo.path}`.")
+            }
+            fsInfo = fsInfoCp.read()
+            LibC.free(fsInfoCp)
+            try {
+                fsInfoErrMsg = fsInfo.msg.toString()
+            } finally {
+                LibC.free(fsInfo.msg)
+            }
+            _fileDescriptor._fileHandle = fsInfo.fd
+        }
+        if (!isHandleValid(_fileDescriptor._fileHandle)) {
+            var errMsg = "Failed to open the file `${_fileInfo.path}`."
+            if (fsInfoErrMsg != "") {
+                errMsg += " ${fsInfoErrMsg}."
+            }
+            throw FSException(errMsg)
+        }
+    }
+
+    @When[env == "ohos"]
+    private func openFile(): Unit {
         let isExists = exists(_fileInfo.path)
         let (r, w, s, openMode): (Bool, Bool, Bool, Int32) = match ((_openMode, isExists)) {
             case (Read, false)        => throw FSException("The file `${_fileInfo.path}` does not exist or permission denied!")
@@ -597,7 +666,18 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if the file to read is not opened
      * @throws FSException if the file does not have the read permission
      */
+    @When[env != "ohos"]
     private func checkCanRead(this @local?): Unit {
+        if (!isHandleValid(_fileDescriptor._fileHandle)) {
+            throw FSException("The file `${_fileInfo.path}` not opened, can not to read.")
+        }
+        if (!_canRead) {
+            throw FSException("The file `${_fileInfo.path}` does not have the read permission.")
+        }
+    }
+
+    @When[env == "ohos"]
+    private func checkCanRead(): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("The file `${_fileInfo.path}` not opened, can not to read.")
         }
@@ -610,7 +690,19 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if the file to read is not opened
      * @throws FSException if the file does not have the read permission
      */
+    @When[env != "ohos"]
     private func checkCanTruncate(this @local?): Unit {
+        if (!isHandleValid(_fileDescriptor._fileHandle)) {
+            throw FSException("The file `${_fileInfo.path}` not opened, can not to read.")
+        }
+        match (_openMode) {
+            case Write | ReadWrite => ()
+            case _ => throw FSException("The file `${_fileInfo.path}` does not have the write permission.")
+        }
+    }
+
+    @When[env == "ohos"]
+    private func checkCanTruncate(): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("The file `${_fileInfo.path}` not opened, can not to read.")
         }
@@ -628,9 +720,20 @@ public class File <: Resource & IOStream & Seekable {
      * @return Length successfully written into the array buffer
      * @since 0.17.4
      */
+    @When[env != "ohos"]
     private func directRead(this @local?, buffer: Array<Byte> @local?): Int64 {
         unsafe {
             let bufPtr: CPointerHandle<Byte> @local? = acquireArrayRawData(buffer)
+            let readSize: Int64 = CJ_FS_FileRead(_fileDescriptor._fileHandle, bufPtr.pointer, UIntNative(buffer.size))
+            releaseArrayRawData(bufPtr)
+            return readSize
+        }
+    }
+
+    @When[env == "ohos"]
+    private func directRead(buffer: Array<Byte>): Int64 {
+        unsafe {
+            let bufPtr: CPointerHandle<Byte> = acquireArrayRawData(buffer)
             let readSize: Int64 = CJ_FS_FileRead(_fileDescriptor._fileHandle, bufPtr.pointer, UIntNative(buffer.size))
             releaseArrayRawData(bufPtr)
             return readSize

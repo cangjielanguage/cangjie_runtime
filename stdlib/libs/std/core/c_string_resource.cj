@@ -28,6 +28,8 @@ func createStrFromCPointer(cp: CPointer<UInt8>): String {
     var len: Int64 = unsafe { Int64(strlen(cp)) }
     return String(cp, len)
 }
+
+@When[env != "ohos"]
 @OverflowWrapping
 exclave func createStrLocalFromCPointer(cp: CPointer<UInt8>): String @local! {
     if (cp.isNull()) {

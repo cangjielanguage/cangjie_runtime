@@ -41,6 +41,8 @@ struct HashMapEntry<K, V> {
         key = k
         value = v
     }
+
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local!, h: Int64, n: Int64, k: K @local!, v: V @local!) {
         hash = h
@@ -56,6 +58,8 @@ struct HashMapEntry<K, V> {
         key = unsafe { zeroValue<K>() }
         value = unsafe { zeroValue<V>() }
     }
+
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local!) {
         hash = -1
@@ -268,12 +272,16 @@ class HashMapEntryView<K, V> <: MapEntryView<K, V> where K <: Hashable & Equatab
             getKey()
         }
     }
+
+    @When[env != "ohos"]
     @Frozen
     public prop key: K @local! {
         get() {
             exclave { getKey() }
         }
     }
+
+    @When[env != "ohos"]
     @Frozen
     public prop key: K @local? {
         get() {
@@ -337,6 +345,8 @@ class HashMapEntryView<K, V> <: MapEntryView<K, V> where K <: Hashable & Equatab
         }
         return _key
     }
+
+    @When[env != "ohos"]
     @Frozen
     exclave func getKey(this @local!): K @local! {
         if (lockVersion != map.version()) {
@@ -344,6 +354,8 @@ class HashMapEntryView<K, V> <: MapEntryView<K, V> where K <: Hashable & Equatab
         }
         return _key
     }
+
+    @When[env != "ohos"]
     @Frozen
     func getKey(this @local?): K @local? {
         if (lockVersion != map.version()) {
@@ -1937,12 +1949,14 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
         return bucketIndex(hash, size)
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     func getIndex(this @local!, hash: Int64, size: Int64): Int64 {
         return bucketIndex(hash, size)
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     func getIndex(this @local?, hash: Int64, size: Int64): Int64 {
@@ -2046,11 +2060,14 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     func version(): Int64 {
         return modCount
     }
+
+    @When[env != "ohos"]
     @Frozen
     func version(this @local!): Int64 {
         return modCount
     }
 
+    @When[env != "ohos"]
     @Frozen
     func version(this @local?): Int64 {
         return modCount
