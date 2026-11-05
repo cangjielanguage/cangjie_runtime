@@ -218,7 +218,11 @@ static std::vector<std::pair<std::string, std::string>> checkListForTypes = {
     { "V3_lQlE", "VArray<Int64,$4> @ local?" },
     { "PlQLE", "CPointer<Int64> @ local!" },
     // A modal function type keeps its own mode-set in the rendering.
-    { "F0ilEQlE", "(Int64) -> Int32 @ local?" },
+    { "F0ilEQlE", "((Int64) -> Int32) @ local?" },
+    // A container-owned mode-set does not alter the element/pointee text: it matches the
+    // non-modal case.
+    { "V3_F0ilEQlE", "VArray<(Int64) -> Int32,$4> @ local?" },
+    { "PF0ilEQlE", "CPointer<(Int64) -> Int32> @ local?" },
 };
 
 std::string AssembleDemangledName(const std::string& pkgName, const std::string& fullName, bool isFunctionLike)
