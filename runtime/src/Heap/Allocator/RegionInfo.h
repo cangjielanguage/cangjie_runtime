@@ -487,8 +487,6 @@ public:
         RECENT_LARGE_REGION,
 
         GARBAGE_REGION,
-
-        LOCAL_MODE_REGION,
     };
 
     static void Initialize(size_t nUnit, uintptr_t heapAddress)
@@ -883,11 +881,6 @@ public:
     {
         return (static_cast<RegionType>(metadata.regionType) == RegionType::FULL_PINNED_REGION) ||
             (static_cast<RegionType>(metadata.regionType) == RegionType::RECENT_PINNED_REGION);
-    }
-
-    bool IsLocalModeRegion() const
-    {
-        return static_cast<RegionType>(metadata.regionType) == RegionType::LOCAL_MODE_REGION;
     }
 
     RegionInfo* GetPrevRegion() const

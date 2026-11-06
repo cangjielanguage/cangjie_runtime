@@ -56,11 +56,6 @@ public:
     static constexpr u8 HEAP_SIZE_THRESHOLD_4GB = 4ULL * 1024 * 1024 * 1024;
     static constexpr u8 NULL_OBJECT_ID = 0xFFFFFFFFFFFFFFFFULL;  // Special ID for null object references
 
-    // Local-object dump records use the 1.0.3 protocol and are opt-in until
-    // the perf parser supports that protocol.  Set cjEnableLocalObjectDump to
-    // 1, true or TRUE to enable them.
-    static bool IsLocalObjectDumpEnabled();
-
     // Encapsulates how cjprof dump records serialize object IDs for the current heap layout.
     class SerializedIdWrapper {
     public:

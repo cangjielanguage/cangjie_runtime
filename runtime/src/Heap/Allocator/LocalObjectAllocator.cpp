@@ -19,6 +19,8 @@
 #include "ObjectModel/MObject.h"
 
 #include <algorithm>
+#include <atomic>
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
@@ -62,22 +64,77 @@ private:
     std::vector<LocalRootEntry> localRoots;
 };
 
+// Shared by all mutators using one local allocator. Reservations include chunks
+// being allocated, so concurrent slow paths cannot exceed the capacity limit.
+class LocalMemoryBudget {
+public:
+    explicit LocalMemoryBudget(size_t limit) : limit(limit) {}
+
+    // Reserve before requesting backing memory. minBytes is the aligned object
+    // size; preferredBytes is the desired chunk capacity. On success,
+    // reservedBytes receives the charged capacity; on failure it is unchanged.
+    bool TryReserve(size_t minBytes, size_t preferredBytes, size_t& reservedBytes)
+    {
+        if (minBytes == 0 || preferredBytes < minBytes || minBytes > limit) {
+            return false;
+        }
+        // Serialize reservations instead of retrying CAS indefinitely under
+        // contention. The lock covers accounting only, not chunk allocation.
+        std::lock_guard<std::mutex> lock(reservationMtx);
+        size_t current = usedBytes.load(std::memory_order_relaxed);
+        // minBytes <= limit above makes this subtraction safe.
+        if (current > limit - minBytes) {
+            return false;
+        }
+        // Use a smaller final chunk when the remaining budget can still
+        // satisfy this allocation; current + capacity cannot exceed limit.
+        size_t capacity = std::min(preferredBytes, limit - current);
+        // Other reservations hold the same mutex. Concurrent Release() calls
+        // can only lower the counter, so fetch_add preserves those releases
+        // while keeping the resulting total within the checked limit.
+        usedBytes.fetch_add(capacity, std::memory_order_relaxed);
+        reservedBytes = capacity;
+        return true;
+    }
+
+    // Return exactly the reserved capacity after allocation failure or after
+    // freeing a whole chunk. Rewinding within a retained chunk releases nothing.
+    void Release(size_t bytes)
+    {
+        usedBytes.fetch_sub(bytes, std::memory_order_relaxed);
+    }
+
+    // A concurrent snapshot for diagnostics, including in-flight reservations.
+    size_t GetUsedBytes() const { return usedBytes.load(std::memory_order_relaxed); }
+    size_t GetLimit() const { return limit; }
+
+private:
+    // cjLocalRegionMaxSize in bytes; shared by all mutators, not per region.
+    const size_t limit;
+    // Only reservations take this lock; Release() remains an atomic decrement.
+    std::mutex reservationMtx;
+    // Full capacities of held chunks plus reservations not yet attached to a
+    // mutator, including unused tails. Metadata and native caches are excluded.
+    // All atomic operations only arbitrate this counter; they do not publish
+    // chunk data or pointers, so relaxed ordering is sufficient.
+    std::atomic<size_t> usedBytes { 0 };
+};
+
 // Native local allocator.  The active storage is a doubly-linked chunk list and
 // region lifetime is represented by an explicit frame snapshot (top chunk + bump
 // pointer). This keeps nested regions cheap: ending a region only rolls back the
 // suffix allocated after its snapshot.
 class NativeLocalObjectAllocator final : public LocalObjectAllocator {
 public:
-    static constexpr size_t DEFAULT_REGION_LIMIT = 256 * MB;
+    static constexpr size_t DEFAULT_MEMORY_LIMIT = 256 * MB;
 
-    explicit NativeLocalObjectAllocator(size_t regionLimit) : regionLimit(regionLimit) {}
+    explicit NativeLocalObjectAllocator(size_t memoryLimit) : memoryBudget(memoryLimit) {}
     ~NativeLocalObjectAllocator() override = default;
 
     void StartRegion(Mutator& mutator, FrameAddress* ownerFA) override;
     void EndRegion(Mutator& mutator, FrameAddress* ownerFA) override;
     void EndRegionsForFrame(Mutator& mutator, FrameAddress* ownerFA) override;
     MAddress Allocate(Mutator& mutator, size_t size) override;
-    size_t GetHeapAllocatedBytes() const override { return 0; }
     size_t GetAllocatedObjectBytes() const override;
     void AddFinalizer(Mutator& mutator, BaseObject* obj) override;
     void RemoveFinalizer(Mutator& mutator, BaseObject* obj) override;
@@ -105,7 +162,6 @@ private:
         uint8_t* top = nullptr;
         RegionChunk* chunk = nullptr;
         FrameAddress* ownerFA = nullptr;
-        size_t allocatedBytes = 0;
         LocalObjectRootRegistry rootRegistry;
     };
 
@@ -124,7 +180,7 @@ private:
         return static_cast<MutatorData*>(mutator.GetLocalObjectAllocatorData());
     }
     MutatorData* CreateData(Mutator& mutator);
-    RegionChunk* AllocateChunk(RegionFrame& frame, size_t minSize);
+    RegionChunk* AllocateChunk(size_t minSize);
     void ReleaseChunk(RegionChunk* chunk);
     void AppendActiveChunk(MutatorData& data, RegionChunk* chunk);
     void DetachActiveSuffix(MutatorData& data, RegionChunk* snapshotChunk);
@@ -136,13 +192,12 @@ private:
     RegionFrame* FindFrameOfObject(MutatorData& data, BaseObject* obj) const;
     void VisitRootsInFrame(MutatorData& data, RegionFrame& frame, const LocalObjectVisitor& visitor) const;
     ALWAYS_INLINE MAddress TryAllocate(MutatorData& data, size_t size);
-    bool IsAllocationWithinFrameLimit(const RegionFrame& frame, size_t size) const;
     void RunFinalizers(Mutator& mutator, RegionFrame& frame);
     void EndTopFrame(Mutator& mutator, MutatorData& data);
 
     mutable std::mutex activeDataMtx;
     std::vector<MutatorData*> activeData;
-    const size_t regionLimit;
+    LocalMemoryBudget memoryBudget;
 };
 
 constexpr size_t NativeLocalObjectAllocator::DEFAULT_CHUNK_SIZE;
@@ -155,6 +210,7 @@ void RunLocalObjectFinalizer(Mutator& mutator, BaseObject* obj)
     CHECK_DETAIL(finalizerMethod != nullptr, "%p has no finalize method", obj);
     void (*finalizer)(BaseObject*, TypeInfo*) = reinterpret_cast<void (*)(BaseObject*, TypeInfo*)>(finalizerMethod);
 
+    const bool hadPendingException = ExceptionManager::HasPendingException();
     bool oldManagedContext = mutator.IsManagedContext();
     mutator.SetManagedContext(true);
     DLOG(FINALIZE, "tid %u finalize local object %p", mutator.GetTid(), obj);
@@ -169,7 +225,10 @@ void RunLocalObjectFinalizer(Mutator& mutator, BaseObject* obj)
 #endif
         LOG(RTLOG_FATAL, "FatalException happened in local finalizer");
     }
-    ExceptionManager::ClearPendingException();
+    // Preserve the exception that was already driving stack unwinding.
+    if (!hadPendingException) {
+        ExceptionManager::ClearPendingException();
+    }
 }
 }
 
@@ -319,18 +378,18 @@ bool LocalObjectRootRegistry::RunFinalizerAt(Mutator& mutator, size_t idx)
 
 LocalObjectAllocator* LocalObjectAllocator::InitLocalObjectAllocator()
 {
-    size_t regionLimit = NativeLocalObjectAllocator::DEFAULT_REGION_LIMIT;
+    size_t memoryLimit = NativeLocalObjectAllocator::DEFAULT_MEMORY_LIMIT;
     const char* env = std::getenv("cjLocalRegionMaxSize");
     if (env != nullptr) {
         size_t configuredLimit = CString::ParseSizeFromEnv(env);
         if (configuredLimit == 0 || configuredLimit > std::numeric_limits<size_t>::max() / KB) {
             LOG(RTLOG_ERROR, "Unsupported cjLocalRegionMaxSize parameter: %s. Use the default limit instead.", env);
         } else {
-            regionLimit = configuredLimit * KB;
+            memoryLimit = configuredLimit * KB;
         }
     }
-    LocalObjectAllocator* localObjectAllocator = new (std::nothrow) NativeLocalObjectAllocator(regionLimit);
-    VLOG(LOCAL_REGION, "use native local object allocator with per-region limit %zu B", regionLimit);
+    LocalObjectAllocator* localObjectAllocator = new (std::nothrow) NativeLocalObjectAllocator(memoryLimit);
+    VLOG(LOCAL_REGION, "use native local object allocator with global chunk capacity limit %zu B", memoryLimit);
     CHECK_DETAIL(localObjectAllocator != nullptr, "new local object allocator failed");
     return localObjectAllocator;
 }
@@ -350,23 +409,21 @@ NativeLocalObjectAllocator::MutatorData* NativeLocalObjectAllocator::CreateData(
     return data;
 }
 
-NativeLocalObjectAllocator::RegionChunk* NativeLocalObjectAllocator::AllocateChunk(RegionFrame& frame,
-                                                                                   size_t minSize)
+NativeLocalObjectAllocator::RegionChunk* NativeLocalObjectAllocator::AllocateChunk(size_t minSize)
 {
-    if (minSize > std::numeric_limits<size_t>::max() - (Allocator::ALLOC_ALIGN - 1U)) {
-        ExceptionManager::LocalRegionOutOfMemory();
-        return nullptr;
-    }
     size_t alignedSize = RoundUp<size_t>(minSize, Allocator::ALLOC_ALIGN);
-    if (UNLIKELY(!IsAllocationWithinFrameLimit(frame, alignedSize))) {
-        VLOG(LOCAL_REGION, "native local region limit reached: frame %p, used %zu B, request %zu B, limit %zu B",
-             &frame, frame.allocatedBytes, alignedSize, regionLimit);
+    size_t capacity = 0;
+    // Atomically charge the whole chunk before allocating it. All mutators
+    // share this budget; reserved capacity may shrink to the remaining quota.
+    if (UNLIKELY(!memoryBudget.TryReserve(alignedSize, std::max(DEFAULT_CHUNK_SIZE, alignedSize), capacity))) {
+        VLOG(LOCAL_REGION, "native local memory limit reached: used %zu B, request %zu B, limit %zu B",
+             memoryBudget.GetUsedBytes(), alignedSize, memoryBudget.GetLimit());
         ExceptionManager::LocalRegionOutOfMemory();
         return nullptr;
     }
-    size_t capacity = std::max(DEFAULT_CHUNK_SIZE, alignedSize);
     void* memory = NativeAllocator::NativeAlloc(capacity);
     if (memory == nullptr) {
+        memoryBudget.Release(capacity);
         return nullptr;
     }
     // NativeAllocator may return a chunk recycled from its thread cache.  A
@@ -376,6 +433,7 @@ NativeLocalObjectAllocator::RegionChunk* NativeLocalObjectAllocator::AllocateChu
     RegionChunk* chunk = new (std::nothrow) RegionChunk();
     if (chunk == nullptr) {
         NativeAllocator::NativeFree(memory, capacity);
+        memoryBudget.Release(capacity);
         return nullptr;
     }
     chunk->base = reinterpret_cast<MAddress>(memory);
@@ -401,8 +459,10 @@ void NativeLocalObjectAllocator::AppendActiveChunk(MutatorData& data, RegionChun
 void NativeLocalObjectAllocator::ReleaseChunk(RegionChunk* chunk)
 {
     CHECK_DETAIL(chunk != nullptr, "release null native chunk");
-    NativeAllocator::NativeFree(reinterpret_cast<void*>(chunk->base), chunk->capacity);
+    size_t capacity = chunk->capacity;
+    NativeAllocator::NativeFree(reinterpret_cast<void*>(chunk->base), capacity);
     delete chunk;
+    memoryBudget.Release(capacity);
 }
 
 void NativeLocalObjectAllocator::StartRegion(Mutator& mutator, FrameAddress* ownerFA)
@@ -443,11 +503,6 @@ ALWAYS_INLINE MAddress NativeLocalObjectAllocator::TryAllocate(MutatorData& data
     return addr;
 }
 
-bool NativeLocalObjectAllocator::IsAllocationWithinFrameLimit(const RegionFrame& frame, size_t size) const
-{
-    return size <= regionLimit && frame.allocatedBytes <= regionLimit - size;
-}
-
 MAddress NativeLocalObjectAllocator::Allocate(Mutator& mutator, size_t size)
 {
     MutatorData* data = GetData(mutator);
@@ -455,22 +510,17 @@ MAddress NativeLocalObjectAllocator::Allocate(Mutator& mutator, size_t size)
         LOG(RTLOG_ERROR, "alloc native local object without local object region");
         return 0;
     }
-    RegionFrame& frame = *data->currentFrame;
     MAddress addr = TryAllocate(*data, size);
     if (addr != 0) {
-        size_t allocSize = RoundUp<size_t>(size, Allocator::ALLOC_ALIGN);
-        frame.allocatedBytes += allocSize;
         return addr;
     }
-    RegionChunk* chunk = AllocateChunk(frame, size);
+    RegionChunk* chunk = AllocateChunk(size);
     if (chunk == nullptr) {
         return 0;
     }
     AppendActiveChunk(*data, chunk);
     addr = TryAllocate(*data, size);
     CHECK_DETAIL(addr != 0, "native local allocation failed after adding chunk");
-    size_t allocSize = RoundUp<size_t>(size, Allocator::ALLOC_ALIGN);
-    frame.allocatedBytes += allocSize;
     VLOG(LOCAL_REGION, "AllocNativeLocalObject: mutator %p, chunk %p, obj %p, objSize %zu", &mutator, chunk,
          reinterpret_cast<void*>(addr), size);
     return addr;
@@ -735,12 +785,15 @@ void NativeLocalObjectAllocator::RemoveFinalizer(Mutator& mutator, BaseObject* o
         return;
     }
     MutatorData* data = GetData(mutator);
-    RegionFrame* frame = data == nullptr ? nullptr : data->currentFrame;
+    RegionFrame* frame = data == nullptr ? nullptr : FindFrameOfObject(*data, obj);
     if (frame == nullptr) {
-        LOG(RTLOG_ERROR, "remove native local finalizer without current frame: obj %p", obj);
+        LOG(RTLOG_WARNING, "remove native local finalizer for object outside active frames: obj %p", obj);
         return;
     }
-    (void)frame->rootRegistry.RunFinalizer(mutator, obj);
+    if (!frame->rootRegistry.RunFinalizer(mutator, obj)) {
+        LOG(RTLOG_WARNING, "remove native local finalizer not pending or not registered: obj %p, frame %p",
+            obj, frame);
+    }
 }
 
 void NativeLocalObjectAllocator::AddLocalRoot(Mutator& mutator, BaseObject* obj, RefField<false>* field)
@@ -752,6 +805,10 @@ void NativeLocalObjectAllocator::AddLocalRoot(Mutator& mutator, BaseObject* obj,
     CHECK_DETAIL(data != nullptr && data->currentFrame != nullptr,
                  "add native local root without current frame: obj %p, field %p", obj, field);
     RegionFrame* frame = FindFrameOfObject(*data, obj);
+    if (UNLIKELY(frame == nullptr)) {
+        LOG(RTLOG_FATAL, "add native local root for object outside active frames: obj %p, field %p", obj, field);
+        return;
+    }
     frame->rootRegistry.AddLocalRoot(obj, field);
 }
 
@@ -794,8 +851,7 @@ void NativeLocalObjectAllocator::OnMutatorExit(Mutator& mutator)
     RegionChunk* chunk = data->regionData;
     while (chunk != nullptr) {
         RegionChunk* next = chunk->next;
-        NativeAllocator::NativeFree(reinterpret_cast<void*>(chunk->base), chunk->capacity);
-        delete chunk;
+        ReleaseChunk(chunk);
         chunk = next;
     }
     while (data->currentFrame != nullptr) {

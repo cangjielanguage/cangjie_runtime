@@ -64,12 +64,9 @@ public:
     virtual void EndRegionsForFrame(Mutator& mutator, FrameAddress* ownerFA) = 0;
 
     // Allocates an object payload block in the current local region. Returns 0 on
-    // allocation failure.
+    // allocation failure. Native backing chunks across all mutators share the
+    // cjLocalRegionMaxSize capacity budget, including unused chunk tails.
     virtual MAddress Allocate(Mutator& mutator, size_t size) = 0;
-
-    // Native-backed local objects are outside the tracing heap, so this is
-    // always 0. It is not part of tracing-heap live bytes.
-    virtual size_t GetHeapAllocatedBytes() const = 0;
 
     // Returns the memory accounted to active local regions across all mutators.
     // Native-backed regions report the full capacity of chunks that are no
@@ -83,7 +80,8 @@ public:
     virtual void AddFinalizer(Mutator& mutator, BaseObject* obj) = 0;
 
     // Finalizes and removes a registered object when the compiler determines
-    // that its local live range has ended.
+    // that its local live range has ended. Locate its owning active frame even
+    // when an inner region is currently active.
     virtual void RemoveFinalizer(Mutator& mutator, BaseObject* obj) = 0;
 
     // Registers one local-to-heap reference slot. The root visitor updates the
@@ -110,7 +108,6 @@ public:
     {
         (void)visitor;
     }
-
     virtual bool HasLocalObjects() const { return false; }
 };
 } // namespace MapleRuntime

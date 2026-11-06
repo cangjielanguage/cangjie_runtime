@@ -347,11 +347,11 @@ void TraceBarrier::ReadGeneric(const ObjectPtr dstObj, ObjectPtr obj, void* fiel
 {
     bool dstIsHeap = Heap::IsHeapAddress(dstObj);
     bool objIsHeap = Heap::IsHeapAddress(obj);
-    if (!dstIsHeap && IsLocalObject(dstObj)) {
+    if (!dstIsHeap && IsLocalObjectForBarrier(dstObj)) {
         ReadGenericToLocalObject(dstObj, fieldPtr, size);
         return;
     }
-    if (!objIsHeap && IsLocalObject(obj)) {
+    if (!objIsHeap && IsLocalObjectForBarrier(obj)) {
         ReadGenericFromLocalObject(dstObj, obj, fieldPtr, size);
         return;
     }

@@ -524,6 +524,9 @@ public:
 
     void VisitLocalObjectAllocatorRoots(const RootVisitor& visitor);
 
+    // Local allocator data is created on first use and retained until mutator reset/exit.
+    bool IsLocalModeEnabled() const { return localObjectAllocatorData != nullptr; }
+
     void* GetLocalObjectAllocatorData() const { return localObjectAllocatorData; }
 
     void SetLocalObjectAllocatorData(void* data) { localObjectAllocatorData = data; }
@@ -621,8 +624,7 @@ public:
     }
 #endif
 
-    // Backend-private local object allocator state. The heap backend stores its RegionInfo stack here,
-    // while future native backends can store a native region/block list.
+    // Native local allocator's MutatorData: region snapshots and the active chunk list.
     void* localObjectAllocatorData = { nullptr };
 };
 
