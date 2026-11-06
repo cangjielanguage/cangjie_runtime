@@ -14,26 +14,8 @@
 package std.collection
 
 public interface ReadOnlyList<T> <: Collection<T> {
-    // The plain `first`/`last` properties carry throwing default bodies so that a plain receiver
-    // resolves to the plain property instead of being captured by the `@local?` overload below.
-    @When[env != "ohos"]
-    prop first: ?T {
-        get() {
-            throw UnimplementedException("Current Type does not implement 'first' property")
-        }
-    }
-    @When[env != "ohos"]
-    prop last: ?T {
-        get() {
-            throw UnimplementedException("Current Type does not implement 'last' property")
-        }
-    }
-    @When[env == "ohos"]
     prop first: ?T
-
-    @When[env == "ohos"]
     prop last: ?T
-
     func get(index: Int64): ?T
 
     operator func [](index: Int64): T
