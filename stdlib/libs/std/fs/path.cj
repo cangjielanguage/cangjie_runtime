@@ -179,7 +179,31 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return !isAbsolutePath(_rawPath)
     }
 
+    @When[env != "ohos"]
     private func checkWindowsSpecialPrefix(this @local?, path: String @local?): Unit {
+        if (!isWindows) {
+            return
+        }
+        let specialPrefix = #"\??\"#
+        if (path.size < specialPrefix.size) {
+            return
+        }
+        for (i in 0..(path.size - specialPrefix.size + 1)) {
+            var matched = true
+            for (j in 0..specialPrefix.size) {
+                if (path[i + j] != specialPrefix[j]) {
+                    matched = false
+                    break
+                }
+            }
+            if (matched) {
+                throw IllegalArgumentException("Path `${path}` cannot contain `${specialPrefix}`!")
+            }
+        }
+    }
+
+    @When[env == "ohos"]
+    private func checkWindowsSpecialPrefix(path: String): Unit {
         if (!isWindows) {
             return
         }
@@ -495,11 +519,20 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
 class PathValidator {
     private init() {} // static class
 
+    @When[env != "ohos"]
     static func throwIfEmpty(name: String, path: String @local?, isInput: Bool): Unit {
         if (path.isEmpty()) {
             throw IllegalArgumentException(generateExceptionMessage(name, "is empty", isInput))
         }
     }
+
+    @When[env == "ohos"]
+    static func throwIfEmpty(name: String, path: String, isInput: Bool): Unit {
+        if (path.isEmpty()) {
+            throw IllegalArgumentException(generateExceptionMessage(name, "is empty", isInput))
+        }
+    }
+
     static func throwIfContainsNullByte(name: String, path: String, isInput: Bool): Unit {
         if (path.contains(NULL_BYTE)) {
             throw IllegalArgumentException(generateExceptionMessage(name, "value ${unsafe { path.rawData() }} contains null character", isInput))
@@ -525,9 +558,21 @@ class PathValidator {
         throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }
 
+    @When[env != "ohos"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: String @local?, isInput: Bool): Unit {
         throwIfEmpty(name, path, isInput)
         throwIfContainsNullByte(name, path, isInput)
+    }
+
+    @When[env == "ohos"]
+    static func throwIfEmptyOrContainsNullByte(name: String, path: String, isInput: Bool): Unit {
+        throwIfEmpty(name, path, isInput)
+        throwIfContainsNullByte(name, path, isInput)
+    }
+
+    @When[env == "ohos"]
+    static func throwIfEmptyOrContainsNullByte(name: String, path: Path, isInput: Bool): Unit {
+        throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }
 
     private static func generateExceptionMessage(name: String, postfix: String, isInput: Bool): String {

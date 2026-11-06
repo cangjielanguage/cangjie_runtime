@@ -1835,6 +1835,8 @@ public class ArrayList<T> <: List<T> {
     protected func updateVersion(): Unit {
         myVersion++
     }
+
+    @When[env != "ohos"]
     protected func updateVersion(this @local!): Unit {
         myVersion++
     }

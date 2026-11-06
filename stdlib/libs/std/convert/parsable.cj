@@ -54,7 +54,50 @@ public interface RadixConvertible<T> {
     func toString(radix!: Int64): String
 }
 
+@When[env != "ohos"]
 func parseCompInt(rawData: Array<Byte> @local?, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
+    var num: UInt64 = 0
+    var lineLength = 0
+    var rawDataSlice = rawData
+    if (isMark && formatBaseNum != 10) {
+        rawDataSlice = rawData[2..]
+    }
+    var digitCount: Int64 = 0
+    var lastWasUnderscore: Bool = false
+    for (i in 0..rawDataSlice.size) {
+        var digit: UInt64 = 0
+        if (rawDataSlice[i] == b'_') {
+            if (digitCount == 0 || lastWasUnderscore) {
+                throw IllegalArgumentException("The part of value convert failed.")
+            }
+            lastWasUnderscore = true
+            lineLength++
+            continue
+        }
+        lastWasUnderscore = false
+        digit = DIGITS_UI64[Int64(rawDataSlice[i])]
+        if (digit >= formatBaseNum || lineLength >= rawDataSlice.size) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        if (num > multmin) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        num *= formatBaseNum
+        if (maxAbsVal - num < digit) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        num += digit
+        digitCount++
+    }
+    if (digitCount == 0 || lastWasUnderscore) {
+        throw IllegalArgumentException("The part of value convert failed.")
+    }
+    return num
+}
+
+// OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
+@When[env == "ohos"]
+func parseCompInt(rawData: Array<Byte>, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
     var num: UInt64 = 0
     var lineLength = 0
     var rawDataSlice = rawData

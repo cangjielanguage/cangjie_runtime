@@ -130,6 +130,7 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         (myData, start, length) = (value, 0u32, UInt32(len))
     }
 
+    @When[env != "ohos"]
     @Frozen
     init(this @local!, value: RawArray<UInt8> @local!) {
         exclave {
@@ -167,6 +168,7 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         (this.myData, this.start, this.length) = (newRawPtr, 0u32, value.length)
     }
 
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local!, value: RawArray<UInt8> @local!, start: UInt32, len: UInt32) {
         myData = value
@@ -174,6 +176,7 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         length = len
     }
 
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local?, value: RawArray<UInt8> @local?, start: UInt32, len: UInt32) {
         (this.myData, this.start, this.length) = (value, start, len)
@@ -209,6 +212,8 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             this.length = UInt32(cSize)
         }
     }
+
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local!, ptr: CPointer<UInt8>, cSize: Int64) {
         if (cSize > Int64(UInt32.Max)) {
@@ -278,6 +283,7 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         (myData, start, length) = (value.rawptr, UInt32(value.start), UInt32(value.len))
     }
 
+    @When[env != "ohos"]
     @Frozen
     init(this @local!, value: Array<UInt8> @local!) {
         exclave {
@@ -290,6 +296,7 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
     }
 
+    @When[env != "ohos"]
     @Frozen
     exclave init(this @local?, value: Array<UInt8> @local?) {
         if (value.len > Int64(UInt32.Max)) {
@@ -331,12 +338,14 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         unsafe { releaseRawData<UInt8>(this.myData, ptr - Int64(start)) }
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     internal func acquireRaw(this @local?): CPointer<UInt8> {
         unsafe { acquireRawData2<UInt8>(this.myData) + Int64(this.start) }
     }
 
+    @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     internal func releaseRaw(this @local?, ptr: CPointer<UInt8>): Unit {
@@ -425,6 +434,8 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         intrinsicBuiltInCopyTo3<UInt8>(this.myData, newRawPtr, Int64(this.start), 0, Int64(this.length))
         String(newRawPtr, 0, this.length)
     }
+
+    @When[env != "ohos"]
     internal exclave func toLocal(): String @local! {
         let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
         rawArrayInitByValue3<UInt8>(newRawPtr, this.size, 0)
@@ -917,13 +928,100 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return this.splitOfString(str, -1, removeEmpty)
     }
 
-    // 提案 9.2：@local! 版 split。无上限版本委托给带 maxSplits 的重载（-1 表示不限制），
-    // 匹配、空段与 UTF-8 处理只在那一处维护。
+    // Count segments before allocating the result array; slices share the source buffer.
     @Frozen
     @OverflowWrapping
     @When[env != "ohos"]
     public exclave func split(this @local!, str: String @local?, removeEmpty!: Bool = false): Array<String> @local! {
-        this.split(str, -1, removeEmpty: removeEmpty)
+        if (size == 0) {
+            return Array<String>()
+        }
+        let strLen: Int64 = str.size
+        var i: Int64 = 0
+        if (strLen == 0) {
+            // Split at UTF-8 rune boundaries when the separator is empty.
+            var count: Int64 = 0
+            let runeEnd: Int64 = Int64(start) + Int64(length)
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                count++
+                i = i + num
+            }
+            let ret: Array<String> @local! = Array<String>(count, repeat: unsafe { String() @local! })
+            var idx: Int64 = 0
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                ret[idx] = String(myData, start + UInt32(i), UInt32(num)) @local!
+                idx++
+                i = i + num
+            }
+            return ret
+        }
+        // Count segments, including empty ones unless removeEmpty is set.
+        var segCount: Int64 = 0
+        var segStart: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    segCount++
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen = size - segStart
+        if (!removeEmpty || tailLen > 0) {
+            segCount++
+        }
+        // Use the same empty-segment rule as the counting pass.
+        let ret: Array<String> @local! = Array<String>(segCount, repeat: unsafe { String() @local! })
+        segStart = 0
+        var fillIdx: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(segLen)) @local!
+                    fillIdx++
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen2 = size - segStart
+        if (!removeEmpty || tailLen2 > 0) {
+            ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(tailLen2)) @local!
+        }
+        ret
     }
 
     /**

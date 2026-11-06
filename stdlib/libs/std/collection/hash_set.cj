@@ -82,11 +82,13 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         this.myMap = HashMap<T, Unit>(capacity)
     }
 
+    @When[env != "ohos"]
     @Frozen
     public exclave init(this @local!) {
         myMap = HashMap<T, Unit>()
     }
 
+    @When[env != "ohos"]
     @Frozen
     public exclave init(this @local!, capacity: Int64) {
         myMap = HashMap<T, Unit>(capacity)
@@ -170,6 +172,8 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
             case _ => false
         }
     }
+
+    @When[env != "ohos"]
     @Frozen
     public exclave func add(this @local!, element: T @local!): Bool {
         return match (this.myMap.add(element, ())) {
@@ -505,6 +509,8 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     public func iterator(): Iterator<T> {
         return this.myMap.keys().iterator()
     }
+
+    @When[env != "ohos"]
     @Frozen
     public exclave func iterator(this @local!): Iterator<T> @local! {
         myMap.keys().iterator()
@@ -551,6 +557,8 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     public func toArray(): Array<T> {
         return myMap.keys().toArray()
     }
+
+    @When[env != "ohos"]
     @Frozen
     public exclave func toArray(this @local!): Array<T> @local! {
         return myMap.keys().toArray()
