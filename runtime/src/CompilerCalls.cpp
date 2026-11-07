@@ -44,6 +44,8 @@
 #endif
 #include "Sync/Sync.h"
 #include "UnwindStack/GcStackInfo.h"
+#include "UnwindStack/StackInfo.h"
+#include "ThreadCreatorInfo.h"
 #include "CpuProfiler/CpuProfiler.h"
 #ifdef __OHOS__
 #include "schedule.h"
@@ -698,7 +700,19 @@ extern "C" ArrayRef MCC_FillInStackTraceImpl(const TypeInfo* arrayInfo, const Ar
             liteFrameInfos.push_back(static_cast<uint64_t>(SofStackFlag::TOP_FOLDED));
         }
     }
-    MIndex size = liteFrameInfos.size();
+    // Append the creator triple as the last complete triple, fold flag stays
+    // last. Local copy only: liteFrameInfos is the ExceptionWrapper's vector, also read
+    // by the dump paths (DumpException / iOS IPS).
+    MapleRuntime::CreatorFrameInfo creator = MapleRuntime::CJThreadGetCreatorFrame();
+    std::vector<uint64_t> pcArrayInfos;
+    if (creator.ip != 0) {
+        pcArrayInfos = liteFrameInfos;
+        // Insert before the trailing SOF fold flag (if any), keeping it the last element.
+        pcArrayInfos.insert(pcArrayInfos.end() - ((pcArrayInfos.size() % frameInfoPairLen == 1) ? 1 : 0),
+                            {creator.ip, creator.funcStart, creator.funcDesc});
+    }
+    const std::vector<uint64_t>& arrayInfos = (creator.ip != 0) ? pcArrayInfos : liteFrameInfos;
+    MIndex size = arrayInfos.size();
 #if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
     if (UNLIKELY(ENABLE_LOG(EXCEPTION))) {
         MIndex arraySize = size;
@@ -708,8 +722,8 @@ extern "C" ArrayRef MCC_FillInStackTraceImpl(const TypeInfo* arrayInfo, const Ar
         DLOG(EXCEPTION, "fill in stack info");
         DLOG(EXCEPTION, "layer\tframePC\t\tframeFuncStart\tsize : %zu", (arraySize / frameInfoPairLen));
         for (int i = 0; i < arraySize; ++i) {
-            uint64_t framePC = liteFrameInfos[i];
-            uint64_t frameFuncStart = liteFrameInfos[++i];
+            uint64_t framePC = arrayInfos[i];
+            uint64_t frameFuncStart = arrayInfos[++i];
             DLOG(EXCEPTION, "#%x\t0x%x\t0x%x", ((i - 1) / frameInfoPairLen), framePC, frameFuncStart);
         }
     }
@@ -734,10 +748,12 @@ extern "C" ArrayRef MCC_FillInStackTraceImpl(const TypeInfo* arrayInfo, const Ar
         return nullptr;
     }
     for (MIndex i = 0; i < size; ++i) {
-        array->SetPrimitiveElement(i, static_cast<int64_t>(liteFrameInfos[i]));
+        array->SetPrimitiveElement(i, static_cast<int64_t>(arrayInfos[i]));
     }
     return array;
 }
+
+static ArrayRef CreateCharArrayFromCString(const TypeInfo* charArray, CString name);
 
 extern "C" StackTraceData MCC_DecodeStackTraceImpl(const uint64_t ip, const uint64_t pc, const uint64_t funcDesc,
                                                    const TypeInfo* charArray)

@@ -108,7 +108,6 @@ public:
     // used for exception backtrace.
     bool IsNeedFiltExceptionCreationLayer() const { return mangleNameHelper->IsNeedFilt(); }
 
-private:
     static uint64_t* ResolveFuncDesc(const FrameInfo& frameInfo)
     {
 #ifdef __APPLE__
@@ -119,6 +118,7 @@ private:
 #endif
     }
 
+private:
     // function pc address.
     const uint32_t* funcPC;
 

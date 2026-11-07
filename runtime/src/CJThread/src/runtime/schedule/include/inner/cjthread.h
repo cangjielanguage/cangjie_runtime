@@ -19,6 +19,7 @@
 #include "thread.h"
 #include "cjthread_context.h"
 #include "Mutator/Mutator.h"
+#include "ThreadCreatorInfo.h"
 #include "base.h"
 
 #ifdef __cplusplus
@@ -153,6 +154,8 @@ struct CJThread {
 #ifdef __OHOS__
     std::vector<unsigned long long> threadStackTopList;
 #endif
+    /* Creator-frame identity for spawn diagnostics (see ThreadCreatorInfo.h). */
+    MapleRuntime::CreatorFrameInfo creatorFrame;
 };
 
 /**

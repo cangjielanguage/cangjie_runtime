@@ -20,6 +20,7 @@
 #include "Mutator/Mutator.inline.h"
 
 #include "cjthread.h"
+#include "ThreadCreatorInfo.h"
 #if defined(CANGJIE_SANITIZER_SUPPORT)
 #include "Sanitizer/SanitizerInterface.h"
 #endif
@@ -186,6 +187,8 @@ MRT_STATIC_INLINE int CJThreadInit(struct CJThread *newCJThread, struct ArgAttr 
     DulinkInit(&(newCJThread->schdDulink));
     atomic_store_explicit(&newCJThread->state, CJTHREAD_IDLE, std::memory_order_relaxed);
     newCJThread->name[0] = '\0';
+    // Clear the creator frame on every allocation/reuse path (stale values never observable).
+    newCJThread->creatorFrame = {};
 
     return 0;
 }
@@ -900,37 +903,10 @@ struct CJThread* CJThreadBuild(ScheduleHandle schedule, const struct CJThreadAtt
     return newCJThread;
 }
 
-/* Create a cjthread in the cjthread context. */
-CJThreadHandle CJThreadNew(ScheduleHandle schedule, const struct CJThreadAttr *attrUser, CJThreadFunc func,
-                           const void *argStart, unsigned int argSize, CJThreadCreateSource createSource)
+/* Enqueue a new cjthread and release it if submission fails. */
+static int CJThreadEnqueue(struct CJThread *newCJThread, struct Schedule *targetSchedule, CJThreadBuf buf)
 {
-    unsigned long long cjthreadId = CJThreadNewId();
-#ifdef __OHOS__
-    TRACE_START_ASYNC(TRACE_CJTHREAD_NEW, cjthreadId);
-#elif defined(__ANDROID__)
-    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_NEW, cjthreadId);
-    TRACE_START(traceInfo.Str());
-#endif
     int error = 0;
-    struct Schedule *currentSchedule;
-    struct Schedule *targetSchedule = (struct Schedule *)schedule;
-    struct ScheduleCJThread *scheduleCJThread = &targetSchedule->schdCJThread;
-    currentSchedule = ScheduleGet();
-    struct CJThread* newCJThread = CJThreadBuild(schedule, attrUser, func, argStart, argSize, createSource);
-    if (newCJThread == nullptr) {
-        HILOG_ERROR(ERRNO_SCHD_CJTHREAD_NULL, "build cjthread failed");
-        return nullptr;
-    }
-    // Set cjthread id in CJThreadNew
-    CJThreadSetId(newCJThread, cjthreadId);
-    CJThreadBuf buf = (CJThreadGet() == nullptr || currentSchedule != targetSchedule ||
-                       createSource == CJTHREAD_CREATE_SOURCE_SIGNAL) ? GLOBAL_BUF : LOCAL_BUF;
-#ifdef __OHOS__
-    TRACE_FINISH_ASYNC(TRACE_CJTHREAD_NEW, cjthreadId);
-#elif defined(__ANDROID__)
-    TRACE_FINISH();
-#endif
-    // Put new cjthread into the running queue of processor
     if (targetSchedule->scheduleType == SCHEDULE_UI_THREAD &&
         g_scheduleManager.postTaskFunc != nullptr) {
         error = AddToCJSingleModeThreadList(newCJThread);
@@ -943,9 +919,51 @@ CJThreadHandle CJThreadNew(ScheduleHandle schedule, const struct CJThreadAttr *a
         atomic_store_explicit(&newCJThread->state, CJTHREAD_IDLE, std::memory_order_relaxed);
         CJThreadFree(newCJThread, true);
         if (targetSchedule->scheduleType != SCHEDULE_DEFAULT) {
-            atomic_fetch_sub(&scheduleCJThread->cjthreadNum, 1ULL);
+            atomic_fetch_sub(&targetSchedule->schdCJThread.cjthreadNum, 1ULL);
         }
         HILOG_ERROR(error, "cjthread add to running queue failed");
+    }
+    return error;
+}
+
+/* Create a cjthread, copying the creatorFrame's three values into the child's tail
+ * fields before publish (the parent-stack pointer is never stored). */
+CJThreadHandle CJThreadNewWithCreator(ScheduleHandle schedule, const struct CJThreadAttr *attrUser,
+                                      CJThreadFunc func, const void *argStart, unsigned int argSize,
+                                      CJThreadCreateSource createSource, const void *creatorFrame)
+{
+    unsigned long long cjthreadId = CJThreadNewId();
+#ifdef __OHOS__
+    TRACE_START_ASYNC(TRACE_CJTHREAD_NEW, cjthreadId);
+#elif defined(__ANDROID__)
+    MapleRuntime::CString traceInfo = MapleRuntime::TraceInfoFormat(TRACE_CJTHREAD_NEW, cjthreadId);
+    TRACE_START(traceInfo.Str());
+#endif
+    struct Schedule *currentSchedule;
+    struct Schedule *targetSchedule = (struct Schedule *)schedule;
+    currentSchedule = ScheduleGet();
+    struct CJThread* newCJThread = CJThreadBuild(schedule, attrUser, func, argStart, argSize, createSource);
+    if (newCJThread == nullptr) {
+        HILOG_ERROR(ERRNO_SCHD_CJTHREAD_NULL, "build cjthread failed");
+        return nullptr;
+    }
+    // Set cjthread id in CJThreadNew
+    CJThreadSetId(newCJThread, cjthreadId);
+    // Copy before enqueue: the scheduler's queue/wake sync gives the child the happens-before.
+    if (creatorFrame != nullptr) {
+        const MapleRuntime::CreatorFrameInfo *info =
+            static_cast<const MapleRuntime::CreatorFrameInfo *>(creatorFrame);
+        newCJThread->creatorFrame = *info;
+    }
+    CJThreadBuf buf = (CJThreadGet() == nullptr || currentSchedule != targetSchedule ||
+                       createSource == CJTHREAD_CREATE_SOURCE_SIGNAL) ? GLOBAL_BUF : LOCAL_BUF;
+#ifdef __OHOS__
+    TRACE_FINISH_ASYNC(TRACE_CJTHREAD_NEW, cjthreadId);
+#elif defined(__ANDROID__)
+    TRACE_FINISH();
+#endif
+    // Put new cjthread into the running queue of processor
+    if (CJThreadEnqueue(newCJThread, targetSchedule, buf) != 0) {
         return nullptr;
     }
 
@@ -961,6 +979,12 @@ CJThreadHandle CJThreadNew(ScheduleHandle schedule, const struct CJThreadAttr *a
     // Attempt to start a thread to perform scheduling.
     ProcessorWake(targetSchedule, nullptr);
     return newCJThread;
+}
+
+CJThreadHandle CJThreadNew(ScheduleHandle schedule, const struct CJThreadAttr *attrUser, CJThreadFunc func,
+                           const void *argStart, unsigned int argSize, CJThreadCreateSource createSource)
+{
+    return CJThreadNewWithCreator(schedule, attrUser, func, argStart, argSize, createSource, nullptr);
 }
 
 /* Submit tasks from an external thread to the scheduling framework. */
@@ -2352,3 +2376,13 @@ void CJThreadSetSanitizerContext(void *cjthread, void *state)
 #ifdef __cplusplus
 }
 #endif
+
+/* Declared in ThreadCreatorInfo.h; defined here where struct CJThread is visible. */
+MapleRuntime::CreatorFrameInfo MapleRuntime::CJThreadGetCreatorFrame()
+{
+    struct CJThread *cjthread = CJThreadGet();
+    if (cjthread == nullptr) {
+        return MapleRuntime::CreatorFrameInfo{};
+    }
+    return cjthread->creatorFrame;
+}

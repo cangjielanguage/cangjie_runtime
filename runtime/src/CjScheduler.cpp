@@ -30,6 +30,7 @@
 #include "ExceptionManager.h"
 #include "ExceptionManager.inline.h"
 #include "Mutator/Mutator.inline.h"
+#include "ThreadCreatorInfo.h"
 #if defined(CANGJIE_SANITIZER_SUPPORT)
 #include "Sanitizer/SanitizerInterface.h"
 #endif
@@ -371,11 +372,15 @@ void* MCC_NewCJThread(void* execute, void* future, void* scheduler)
     data.threadObject = nullptr;
     data.obj = nullptr;
     RefField<>* runtimeRootField = reinterpret_cast<RefField<>*>(&data.obj);
+    // Write the root before capturing the creator so the future argument is rooted during capture.
     Heap::GetBarrier().WriteStaticRef(*runtimeRootField, reinterpret_cast<BaseObject*>(future));
+    MapleRuntime::CreatorFrameInfo creatorFrame = MapleRuntime::CaptureCreator();
     if (!scheduler) {
         scheduler = MapleRuntime::Runtime::Current().GetConcurrencyModel().GetThreadScheduler();
     }
-    CJThreadHandle handle = CJThreadNew(scheduler, nullptr, WrapperTask, &data, sizeof(LWTData));
+    CJThreadHandle handle =
+        CJThreadNewWithCreator(scheduler, nullptr, WrapperTask, &data, sizeof(LWTData),
+                               CJTHREAD_CREATE_SOURCE_DEFAULT, &creatorFrame);
     if (handle == nullptr) {
 #if defined(CANGJIE_TSAN_SUPPORT)
         MapleRuntime::Sanitizer::TsanFuncExit();
@@ -587,12 +592,19 @@ void* MCC_NewCJThreadNoReturn(void* executeClosure, void* closurePtr, void* sche
     data.obj = nullptr;
     data.threadObject = futureTi; // used to pass TypeInfo of future
     RefField<>* runtimeRootField = reinterpret_cast<RefField<>*>(&data.obj);
+    // Write the root before capturing the creator so the closure argument is rooted during capture.
     Heap::GetBarrier().WriteStaticRef(*runtimeRootField, reinterpret_cast<BaseObject*>(closurePtr));
+    MapleRuntime::CreatorFrameInfo creatorFrame = MapleRuntime::CaptureCreator();
     if (!scheduler) {
         scheduler = MapleRuntime::Runtime::Current().GetConcurrencyModel().GetThreadScheduler();
     }
+    if (scheduler == nullptr) {
+        LOG(RTLOG_ERROR, "schedule null invalid");
+        return nullptr;
+    }
     CJThreadHandle handle =
-        CJThreadNewToSchedule(scheduler, nullptr, WrapperOfExecuteClosure, &data, sizeof(LWTData));
+        CJThreadNewWithCreator(scheduler, nullptr, WrapperOfExecuteClosure, &data, sizeof(LWTData),
+                               CJTHREAD_CREATE_SOURCE_DEFAULT, &creatorFrame);
     return handle;
 }
 
