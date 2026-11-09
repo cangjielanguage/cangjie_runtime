@@ -28,7 +28,17 @@ public interface ReadOnlyList<T> <: Collection<T> {
             throw UnimplementedException("Current Type does not implement 'last' property")
         }
     }
+    @When[env == "ohos"]
+    prop first: ?T
+
+    @When[env == "ohos"]
+    prop last: ?T
+
     func get(index: Int64): ?T
+
+    operator func [](index: Int64): T
+
+    // Keep new receiver-mode members after existing members to preserve dispatch slots.
     @When[env != "ohos"]
     func get(this @local!, index: Int64): ?T @local! {
         throw UnimplementedException("Current Type does not implement 'get' method for its @local! instance")
@@ -37,7 +47,6 @@ public interface ReadOnlyList<T> <: Collection<T> {
     func get(this @local?, index: Int64): ?T @local? {
         throw UnimplementedException("Current Type does not implement 'get' method for its @local? instance")
     }
-    operator func [](index: Int64): T
     @When[env != "ohos"]
     operator func [](this @local!, index: Int64): T @local! {
         throw UnimplementedException("Current Type does not implement '[]' method for its @local! instance")
@@ -70,12 +79,6 @@ public interface ReadOnlyList<T> <: Collection<T> {
             throw UnimplementedException("Current Type does not implement 'last' property for its @local? instance")
         }
     }
-
-    @When[env == "ohos"]
-    prop first: ?T
-
-    @When[env == "ohos"]
-    prop last: ?T
 }
 
 public interface List<T> <: ReadOnlyList<T> {

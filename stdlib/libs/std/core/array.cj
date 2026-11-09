@@ -1659,6 +1659,7 @@ private func arrayInvalidRangeStepExceptionMessage(rangeStep: Int64): String {
     "Array slice step must be 1, got '${rangeStep}'."
 }
 
+@When[env != "ohos"]
 public interface Copyable {}
 
 @When[env != "ohos"]

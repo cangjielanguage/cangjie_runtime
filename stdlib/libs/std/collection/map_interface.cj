@@ -179,6 +179,57 @@ public interface Map<K, V> <: ReadOnlyMap<K, V> {
      */
     operator func [](key: K, value!: V): Unit
 
+    func entryView(k: K): MapEntryView<K, V>
+
+    /**
+     * Associates the specified @p value with the specified @p key in this map if the key is absent.
+     *
+     * @param key the key to put.
+     * @param value the value to set if absent.
+     *
+     * @return:
+     * - Some(v): if the @p key exists in map before invoking this method, return the old value.
+     * - None: if @p key is not in the map, set the @p key and @p value pair and return None.
+     *
+     * @since 0.59.3
+     */
+    @Frozen
+    func addIfAbsent(key: K, value: V): ?V {
+        var view = entryView(key)
+        return match (view.value) {
+            case None =>
+                view.value = value
+                None
+            case _ => view.value
+        }
+    }
+
+    /**
+     * Replaces the value associated with @p key to @p value,
+     * if there exists a pair of @p key and some value v in the map.
+     * Otherwise, just returns 'None' and does nothing.
+     *
+     * @param key: the key of the key-value pair, whose value needs to be replaced.
+     * @param value: the value to be set.
+     *
+     * @return:
+     * - Some(v): if the pair of @p key and v exists in map before invoking this method.
+     * - None: if @p key is not in the map.
+     *
+     * @since 0.59.3
+     */
+    @Frozen
+    func replace(key: K, value: V): ?V {
+        var view = entryView(key)
+        return match (view.value) {
+            case Some(v) =>
+                view.value = value
+                v
+            case _ => None
+        }
+    }
+
+    // Keep new receiver-mode members after existing members to preserve dispatch slots.
     @When[env != "ohos"]
     func add(this @local!, key: K @local!, value: V @local!): ?V @local! {
         throw UnimplementedException("Current Type does not implement 'add' method for its @local! instance")
@@ -207,9 +258,6 @@ public interface Map<K, V> <: ReadOnlyMap<K, V> {
     operator func [](this @local!, key: K @local!, value!: V @local!): Unit {
         throw UnimplementedException("Current Type does not implement '[]' method for its @local! instance")
     }
-
-    func entryView(k: K): MapEntryView<K, V>
-
     @When[env != "ohos"]
     func entryView(this @local!, k: K @local!): MapEntryView<K, V> @local! {
         throw UnimplementedException("Current Type does not implement 'entryView' method for its @local! instance")
@@ -218,61 +266,11 @@ public interface Map<K, V> <: ReadOnlyMap<K, V> {
     func entryView(this @local?, k: K @local!): MapEntryView<K, V> @local? {
         throw UnimplementedException("Current Type does not implement 'entryView' method for its @local? instance")
     }
-
-    /**
-     * Associates the specified @p value with the specified @p key in this map if the key is absent.
-     *
-     * @param key the key to put.
-     * @param value the value to set if absent.
-     *
-     * @return:
-     * - Some(v): if the @p key exists in map before invoking this method, return the old value.
-     * - None: if @p key is not in the map, set the @p key and @p value pair and return None.
-     *
-     * @since 0.59.3
-     */
-    @Frozen
-    func addIfAbsent(key: K, value: V): ?V {
-        var view = entryView(key)
-        return match (view.value) {
-            case None =>
-                view.value = value
-                None
-            case _ => view.value
-        }
-    }
-
     @Frozen
     @When[env != "ohos"]
     func addIfAbsent(this @local!, key: K @local!, value: V @local!): ?V @local! {
         throw UnimplementedException("Current Type does not implement 'addIfAbsent' method for its @local! instance")
     }
-
-    /**
-     * Replaces the value associated with @p key to @p value,
-     * if there exists a pair of @p key and some value v in the map.
-     * Otherwise, just returns 'None' and does nothing.
-     *
-     * @param key: the key of the key-value pair, whose value needs to be replaced.
-     * @param value: the value to be set.
-     *
-     * @return:
-     * - Some(v): if the pair of @p key and v exists in map before invoking this method.
-     * - None: if @p key is not in the map.
-     *
-     * @since 0.59.3
-     */
-    @Frozen
-    func replace(key: K, value: V): ?V {
-        var view = entryView(key)
-        return match (view.value) {
-            case Some(v) =>
-                view.value = value
-                v
-            case _ => None
-        }
-    }
-
     @Frozen
     @When[env != "ohos"]
     func replace(this @local!, key: K @local!, value: V @local!): ?V @local! {
