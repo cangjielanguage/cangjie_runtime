@@ -231,6 +231,12 @@ make_cangjie_lib(
     set_target_properties(cangjie-std-interop PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS cangjie-std-interop DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
 
+# std.interop.arkts is declaration-only in this version: its bodyless foreign
+# members have no implementations until the reference semantics lands with
+# AR-05/06, so a shared/static library cannot link. The .cjo is produced and
+# installed by add_cangjie_library(cangjie${BACKEND_TYPE}InteropArkts ...)
+# above; restore the library targets when the member glue exists.
+
 make_cangjie_lib(
     std-ref IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Ref
@@ -1004,7 +1010,6 @@ add_cangjie_library(
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Interop
-    NO_SUB_PKG
     IS_STDLIB
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "interop"
@@ -1012,6 +1017,21 @@ add_cangjie_library(
     SOURCES ${INTEROP_SRCS}
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop
     DEPENDS ${INTEROP_DEPENDENCIES})
+
+# IS_PACKAGE: AddCangjieSource compiles this target with `cjc -p ${SOURCE_DIR}`
+# and discovers the sources itself through `file(GLOB ... CONFIGURE_DEPENDS)`.
+# The target therefore needs no `SOURCES` argument and no per-package
+# CMakeLists.txt / add_subdirectory.
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}InteropArkts
+    NO_SUB_PKG
+    IS_STDLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "interop.arkts"
+    MODULE_NAME "std"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop/arkts
+    DEPENDS ${INTEROP_ARKTS_DEPENDENCIES})
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Ref
