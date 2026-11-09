@@ -29,6 +29,16 @@ func createStrFromCPointer(cp: CPointer<UInt8>): String {
     return String(cp, len)
 }
 
+@When[env != "ohos"]
+@OverflowWrapping
+exclave func createStrLocalFromCPointer(cp: CPointer<UInt8>): String @local! {
+    if (cp.isNull()) {
+        return String()
+    }
+    var len: Int64 = unsafe { Int64(strlen(cp)) }
+    return String(cp, len) @local!
+}
+
 extend CString <: ToString {
     public func getChars(): CPointer<UInt8> {
         return convertCStr2Ptr(this)

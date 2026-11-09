@@ -10,14 +10,39 @@ package std.core
 
 public interface Equal<T> {
     operator func ==(other: T): Bool
+    @When[env != "ohos"]
+    operator func ==(this @local!, other: T @local!): Bool {
+        throw UnimplementedException("Current Type does not implement '==' method for its @local! instance")
+    }
+    @When[env != "ohos"]
+    operator func ==(this @local?, other: T @local?): Bool {
+        throw UnimplementedException("Current Type does not implement '==' method for its @local? instance")
+    }
 }
 
 public interface NotEqual<T> {
     operator func !=(other: T): Bool
+    @When[env != "ohos"]
+    operator func !=(this @local!, other: T @local!): Bool {
+        throw UnimplementedException("Current Type does not implement '!=' method for its @local! instance")
+    }
+    @When[env != "ohos"]
+    operator func !=(this @local?, other: T @local?): Bool {
+        throw UnimplementedException("Current Type does not implement '!=' method for its @local? instance")
+    }
 }
 
 public interface Equatable<T> <: Equal<T> & NotEqual<T> {
     operator func !=(other: T): Bool {
+        !(this == other)
+    }
+    @When[env != "ohos"]
+    operator func !=(this @local!, other: T @local!): Bool {
+        // exclave { !(this == other) }
+        throw UnimplementedException("Current Type does not implement '!=' method for its @local! instance")
+    }
+    @When[env != "ohos"]
+    operator func !=(this @local?, other: T @local?): Bool {
         !(this == other)
     }
 }

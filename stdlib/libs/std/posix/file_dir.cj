@@ -848,7 +848,7 @@ public func getos(): String {
 public func gethostname(): String {
     var strArr: Array<Rune> = Array<Rune>(1024, {_ => r'\0'})
     var array: Array<Rune> = strArr
-    var cstr: CString = unsafe { LibC.mallocCString(String(array)) }
+    var cstr: CString = unsafe { LibC.mallocCString(String(array) @~local) }
     var res: Int32 = unsafe { gethostname(cstr, 1024) }
     if (res == -1) {
         unsafe { LibC.free(cstr) }

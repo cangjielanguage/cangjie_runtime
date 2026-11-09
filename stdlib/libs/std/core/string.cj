@@ -9,7 +9,7 @@
 package std.core
 
 @Intrinsic
-func vectorCompare32(arr1: RawArray<Byte>, offset1: Int64, arr2: RawArray<Byte>, offset2: Int64): Int64
+func vectorCompare32(arr1: RawArray<Byte> @local?, offset1: Int64, arr2: RawArray<Byte> @local?, offset2: Int64): Int64
 
 @Intrinsic
 func vectorIndexByte32(arr: RawArray<Byte>, offset: Int64, target: Byte): Int64
@@ -40,6 +40,13 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     public const init() {
         (myData, start, length) = (EMPTY_UINT8_RAW_ARRAY, 0u32, 0u32)
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave const init(this @local!) {
+        myData = rawArrayAllocate2<UInt8>(0)
+        start = 0
+        length = 0
+    }
 
     @Frozen
     @OverflowWrapping
@@ -59,6 +66,25 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
 
     @Frozen
     @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave init(this @local!, value: Array<Rune> @local?) {
+        if (value.size == 0) {
+            myData = rawArrayAllocate2<UInt8>(0)
+            start = 0u32
+            length = 0u32
+            return
+        }
+        let data = RunesToUtf8Bytes.getBytesLocal(value)
+        if (data.size > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        this.myData = data.rawptr
+        this.start = UInt32(data.start)
+        this.length = UInt32(data.len)
+    }
+
+    @Frozen
+    @OverflowWrapping
     public init(value: Collection<Rune>) {
         let data = RunesToUtf8Bytes.getBytes(value)
         if (data.size > Int64(UInt32.Max)) {
@@ -67,6 +93,32 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         this.myData = data.rawptr
         this.start = UInt32(data.start)
         this.length = UInt32(data.len)
+    }
+
+    // The compiler does not support dispatching the `size` / `iterator` / `toArray` interface members on
+    // a `Collection<Rune> @local?` receiver: match on the concrete type for the data; other implementations rely on the caller to convert to Array<Rune> first.
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave init(this @local!, value: Collection<Rune> @local?) {
+        match (value) {
+            case runes: Array<Rune> =>
+                let data = RunesToUtf8Bytes.getBytesLocal(runes)
+                if (data.size > Int64(UInt32.Max)) {
+                    throw IllegalArgumentException("The size of String is too large.")
+                }
+                this.myData = data.rawptr
+                this.start = UInt32(data.start)
+                this.length = UInt32(data.len)
+            case _ =>
+                let data = RunesToUtf8Bytes.getBytesLocalCollection(value)
+                if (data.size > Int64(UInt32.Max)) {
+                    throw IllegalArgumentException("The size of String is too large.")
+                }
+                this.myData = data.rawptr
+                this.start = UInt32(data.start)
+                this.length = UInt32(data.len)
+        }
     }
 
     @Frozen
@@ -78,8 +130,55 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         (myData, start, length) = (value, 0u32, UInt32(len))
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    init(this @local!, value: RawArray<UInt8> @local!) {
+        exclave {
+            let len = arraySize(value)
+            if (len > Int64(UInt32.Max)) {
+                throw IllegalArgumentException("The size of String is too large.")
+            }
+            // (myData, start, length) = (value, 0u32, UInt32(len))
+            myData = value
+            start = 0u32
+            length = UInt32(len)
+        }
+    }
+
     @Frozen
     init(value: RawArray<UInt8>, start: UInt32, len: UInt32) {
+        (this.myData, this.start, this.length) = (value, start, len)
+    }
+
+    @When[env != "ohos"]
+    public exclave init(this @local!, value: String @local?) {
+        let newRawPtr = rawArrayAllocate2<UInt8>(value.size)
+        rawArrayInitByValue3<UInt8>(newRawPtr, value.size, 0)
+        intrinsicBuiltInCopyTo3<UInt8>(value.myData, newRawPtr, Int64(value.start), 0, Int64(value.length))
+        myData = newRawPtr
+        start = 0u32
+        length = value.length
+    }
+
+    @When[env != "ohos"]
+    public init(value: String @local?) {
+        let newRawPtr = rawArrayAllocate<UInt8>(value.size)
+        rawArrayInitByValue3<UInt8>(newRawPtr, value.size, 0)
+        intrinsicBuiltInCopyTo3<UInt8>(value.myData, newRawPtr, Int64(value.start), 0, Int64(value.length))
+        (this.myData, this.start, this.length) = (newRawPtr, 0u32, value.length)
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    exclave init(this @local!, value: RawArray<UInt8> @local!, start: UInt32, len: UInt32) {
+        myData = value
+        this.start = start
+        length = len
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    exclave init(this @local?, value: RawArray<UInt8> @local?, start: UInt32, len: UInt32) {
         (this.myData, this.start, this.length) = (value, start, len)
     }
 
@@ -94,14 +193,16 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         if (cSize == 0) {
             (myData, start, length) = (EMPTY_UINT8_RAW_ARRAY, 0u32, 0u32)
         } else if (cSize < STRING_C_THRESHOLD) {
-            this.myData = RawArray<UInt8>(cSize, repeat: 0)
+            this.myData = rawArrayAllocate<UInt8>(cSize)
+            rawArrayInitByValue(this.myData, cSize, 0)
             for (i in 0..cSize) {
                 arraySetUnchecked(myData, i, unsafe { ptr.read(i) })
             }
             this.start = 0
             this.length = UInt32(cSize)
         } else {
-            this.myData = RawArray<UInt8>(cSize, repeat: 0)
+            this.myData = rawArrayAllocate<UInt8>(cSize)
+            rawArrayInitByValue(this.myData, cSize, 0)
             unsafe {
                 let itemP: CPointer<UInt8> = acquireRawData(myData)
                 memcpy_s(itemP, UIntNative(cSize), ptr, UIntNative(cSize))
@@ -112,12 +213,98 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    exclave init(this @local!, ptr: CPointer<UInt8>, cSize: Int64) {
+        if (cSize > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        if (cSize == 0) {
+            myData = rawArrayAllocate2<UInt8>(0)
+            start = 0
+            length = 0
+        } else if (cSize < STRING_C_THRESHOLD) {
+            this.myData = rawArrayAllocate2<UInt8>(cSize)
+            rawArrayInitByValue2(this.myData, cSize, 0)
+            for (i in 0..cSize) {
+                arraySetUnchecked2(myData, i, unsafe { ptr.read(i) })
+            }
+            this.start = 0
+            this.length = UInt32(cSize)
+        } else {
+            this.myData = rawArrayAllocate2<UInt8>(cSize)
+            rawArrayInitByValue2(this.myData, cSize, 0)
+            unsafe {
+                let itemP: CPointer<UInt8> = acquireRawData2(myData)
+                memcpy_s(itemP, UIntNative(cSize), ptr, UIntNative(cSize))
+                releaseRawData2<UInt8>(myData, itemP)
+            }
+            this.start = 0
+            this.length = UInt32(cSize)
+        }
+    }
+
+    /**
+     * Create a local String by copying a null-terminated C string via memcpy.
+     * @throws IllegalArgumentException if the C string length exceeds UInt32.Max.
+     */
+    @Frozen
+    @When[env != "ohos"]
+    public exclave init(this @local!, ptr: CPointer<UInt8>) {
+        let cSize = if (ptr.isNull()) {
+            0
+        } else {
+            unsafe { Int64(strlen(ptr)) }
+        }
+        if (cSize > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        if (cSize == 0) {
+            myData = rawArrayAllocate2<UInt8>(0)
+            start = 0
+            length = 0
+        } else {
+            myData = rawArrayAllocate2<UInt8>(cSize)
+            unsafe {
+                let itemP: CPointer<UInt8> = acquireRawData2(myData)
+                memcpy_s(itemP, UIntNative(cSize), ptr, UIntNative(cSize))
+                releaseRawData2<UInt8>(myData, itemP)
+            }
+            start = 0
+            length = UInt32(cSize)
+        }
+    }
+
     @Frozen
     init(value: Array<UInt8>) {
         if (value.len > Int64(UInt32.Max)) {
             throw IllegalArgumentException("String size '${value.len}' exceeds maximum allowed size '${UInt32.Max}'.")
         }
         (myData, start, length) = (value.rawptr, UInt32(value.start), UInt32(value.len))
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    init(this @local!, value: Array<UInt8> @local!) {
+        exclave {
+            if (value.len > Int64(UInt32.Max)) {
+                throw IllegalArgumentException("The size of String is too large.")
+            }
+            myData = value.rawptr
+            start = UInt32(value.start)
+            length = UInt32(value.len)
+        }
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    exclave init(this @local?, value: Array<UInt8> @local?) {
+        if (value.len > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        myData = value.rawptr
+        start = UInt32(value.start)
+        length = UInt32(value.len)
     }
 
     // Returns the byte at the specified index.
@@ -132,6 +319,15 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
 
     @Frozen
     @OverflowWrapping
+    @When[env != "ohos"]
+    public func get(this @local?, index: Int64): Option<Byte> {
+        if (UInt64(index) >= UInt64(length)) {
+            return None<Byte>
+        }
+        Some<Byte>(arrayGetUnchecked3<Byte>(this.myData, Int64(this.start) + index))
+    }
+    @Frozen
+    @OverflowWrapping
     internal func acquireRaw(): CPointer<UInt8> {
         unsafe { acquireRawData<UInt8>(this.myData) + Int64(this.start) }
     }
@@ -140,6 +336,20 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     @OverflowWrapping
     internal func releaseRaw(ptr: CPointer<UInt8>): Unit {
         unsafe { releaseRawData<UInt8>(this.myData, ptr - Int64(start)) }
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    internal func acquireRaw(this @local?): CPointer<UInt8> {
+        unsafe { acquireRawData2<UInt8>(this.myData) + Int64(this.start) }
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    internal func releaseRaw(this @local?, ptr: CPointer<UInt8>): Unit {
+        unsafe { releaseRawData2<UInt8>(this.myData, ptr - Int64(start)) }
     }
 
     /**
@@ -163,32 +373,120 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return runes
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func toRuneArray(this @local!): Array<Rune> @local! {
+        var runeSize: Int64 = 0
+        for (i in Int64(length) - 1..=0 : -1) {
+            if ((arrayGetUnchecked2<UInt8>(myData, Int64(start) + i) & 0xC0) != 0x80) {
+                runeSize++
+            }
+        }
+        let runes: Array<Rune> @local! = Array<Rune>(runeSize, repeat: unsafe { zeroValue2<Rune>() })
+        var i: Int64 = Int64(start)
+        var end: Int64 = Int64(start) + Int64(length)
+        var j: Int64 = 0
+        var utf8Size: Int64 = 0
+        while (i < end) {
+            let (r, sz): (Rune, Int64) = Rune.fromUtf8(myData, i, end)
+            arraySet2<Rune>(runes.rawptr, j, r)
+            i = i + sz
+            j++
+        }
+        runes
+    }
 
     @Frozen
     public func toArray(): Array<Byte> {
-        let newRawPtr = RawArray<UInt8>(this.size, repeat: 0)
+        let newRawPtr = rawArrayAllocate<UInt8>(this.size)
+        rawArrayInitByValue(newRawPtr, this.size, 0)
         intrinsicBuiltInCopyTo<Byte>(this.myData, newRawPtr, Int64(this.start), 0, Int64(length))
         return Array<Byte>(newRawPtr, 0, size)
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func toArray(this @local!): Array<Byte> @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue2(newRawPtr, this.size, 0)
+        intrinsicBuiltInCopyTo2<Byte>(this.myData, newRawPtr, Int64(this.start), 0, Int64(length))
+        return Array<Byte>(newRawPtr, 0, size)
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func toArray(this @local?): Array<Byte> @local? {
+        let newRawPtr = rawArrayAllocate3<UInt8>(Int64(length))
+        rawArrayInitByValue3<UInt8>(newRawPtr, Int64(length), 0)
+        intrinsicBuiltInCopyTo3<Byte>(this.myData, newRawPtr, Int64(this.start), 0, Int64(length))
+        return Array<Byte>(newRawPtr, 0, Int64(length))
     }
 
     @Frozen
     public func toString(): String {
         return this
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func toString(this @local?): String @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue3<UInt8>(newRawPtr, this.size, 0)
+        intrinsicBuiltInCopyTo3<UInt8>(this.myData, newRawPtr, Int64(this.start), 0, Int64(this.length))
+        String(newRawPtr, 0, this.length)
+    }
+
+    @When[env != "ohos"]
+    internal exclave func toLocal(): String @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue3<UInt8>(newRawPtr, this.size, 0)
+        intrinsicBuiltInCopyTo3<UInt8>(this.myData, newRawPtr, Int64(start), 0, Int64(length))
+        return String(newRawPtr, 0, length)
+    }
+
 
     @Frozen
     public func iterator(): Iterator<Byte> {
         return StringByteIterator(StringIteratorData(unsafe { rawData() }))
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func iterator(this @local!): Iterator<Byte> @local! {
+        return StringByteIterator(StringIteratorData(unsafe { rawData() }) @local!) @local!
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func iterator(this @local?): Iterator<Byte> @local? {
+        return StringByteIterator(StringIteratorData(unsafe { rawData() }) @local?) @local?
     }
 
     @Frozen
     public func runes(): Iterator<Rune> {
         return StringRuneIterator(StringIteratorData(unsafe { rawData() }))
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func runes(this @local!): Iterator<Rune> @local! {
+        return StringRuneIterator(StringIteratorData(unsafe { rawData() }) @local!) @local!
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func runes(this @local?): Iterator<Rune> @local? {
+        return StringRuneIterator(StringIteratorData(unsafe { rawData() }) @local?) @local?
+    }
 
     @Frozen
     public func lines(): Iterator<String> {
         return StringLineIterator(StringIteratorData(unsafe { rawData() }))
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func lines(this @local!): Iterator<String> @local! {
+        return StringLineIterator(StringIteratorData(unsafe { rawData() }) @local!) @local!
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func lines(this @local?): Iterator<String> @local? {
+        return StringLineIterator(StringIteratorData(unsafe { rawData() }) @local?) @local?
     }
 
     // Returns the byte counts of this string.
@@ -199,9 +497,24 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
     }
 
+    @Frozen
+    @When[env != "ohos"]
+    public prop size: Int64 @local? {
+        get() {
+            Int64(length)
+        }
+    }
+
     // Returns true if and only if this string is an empty string.
     @Frozen
     public func isEmpty(): Bool {
+        return length == 0
+    }
+
+    // Returns true if and only if this string is an empty string.
+    @Frozen
+    @When[env != "ohos"]
+    public func isEmpty(this @local?): Bool {
         return length == 0
     }
 
@@ -224,6 +537,21 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     }
 
     @Frozen
+    @When[env != "ohos"]
+    public func isAscii(this @local?): Bool {
+        /* Back-to-front traversal can reduce boundary checks and improve performance */
+        let b: Int64 = size
+        for (i in b - 1..=0 : -1) {
+            let b = arrayGetUnchecked3<UInt8>(this.myData, Int64(start) + i)
+            // ascii rune's most significant bit (MSB) is zero
+            if ((b >> 7) == 1) {
+                return false
+            }
+        }
+        return true
+    }
+
+    @Frozen
     public func isAsciiBlank(): Bool {
         /* Back-to-front traversal can reduce boundary checks and improve performance */
         for (i in size - 1..=0 : -1) {
@@ -233,12 +561,32 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return true
     }
+    @Frozen
+    @When[env != "ohos"]
+    public func isAsciiBlank(this @local?): Bool {
+        /* Back-to-front traversal can reduce boundary checks and improve performance */
+        for (i in size - 1..=0 : -1) {
+            if (!arrayGetUnchecked3<UInt8>(this.myData, Int64(start) + i).isAsciiWhiteSpace()) {
+                return false
+            }
+        }
+        true
+    }
 
     @Frozen
     public func clone(): String {
-        let newRawPtr = RawArray<UInt8>(this.size, repeat: 0)
+        let newRawPtr = rawArrayAllocate<UInt8>(this.size)
+        rawArrayInitByValue(newRawPtr, this.size, 0)
         intrinsicBuiltInCopyTo<UInt8>(this.myData, newRawPtr, Int64(start), 0, Int64(length))
         return String(newRawPtr, 0, length)
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func clone(this @local!): String @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue2(newRawPtr, this.size, 0)
+        intrinsicBuiltInCopyTo2<UInt8>(this.myData, newRawPtr, Int64(start), 0, Int64(length))
+        String(newRawPtr, 0, length)
     }
 
     /**
@@ -248,6 +596,20 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     @OverflowWrapping
     public func hashCode(): Int64 {
         return Int64(wyhash(myData, Int64(start), Int64(length), 0))
+    }
+
+
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func hashCode(this @local!): Int64 {
+        Int64(wyhash(myData, Int64(start), Int64(length), 0))
+    }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public func hashCode(this @local?): Int64 {
+        Int64(wyhash(myData, Int64(start), Int64(length), 0))
     }
 
     /**
@@ -261,6 +623,19 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         checkInvalid(utf8Data.rawptr, utf8Data.start, utf8Data.start + utf8Data.size)
         return String(utf8Data.clone())
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave static func fromUtf8(utf8Data: Array<UInt8> @local!): String @local! {
+        checkInvalid(utf8Data.rawptr, utf8Data.start, utf8Data.start + utf8Data.size)
+        return String(utf8Data.clone())
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave static func fromUtf8(utf8Data: Array<UInt8> @local?): String @local! {
+        checkInvalid(utf8Data.rawptr, utf8Data.start, utf8Data.start + utf8Data.size)
+        let ret: Array<UInt8> @local! = utf8Data.cloneToLocal()
+        String(ret)
+    }
 
     @Frozen
     public unsafe func rawData(): Array<Byte> {
@@ -272,6 +647,35 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return String(utf8Data.clone())
     }
 
+    @Frozen
+    @When[env != "ohos"]
+    public exclave unsafe func rawData(this @local!): Array<Byte> @local! {
+        Array<Byte>(myData, Int64(start), Int64(length))
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public exclave unsafe func rawData(this @local?): Array<Byte> @local? {
+        Array<Byte>(myData, Int64(start), Int64(length))
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public exclave unsafe static func fromUtf8Unchecked(utf8Data: Array<UInt8> @local!): String @local! {
+        // `fromUtf8Unchecked` keeps its copy semantics for every receiver mode: the caller may
+        // still hold and mutate `utf8Data` after this returns (verified: adopting the array made
+        // an existing string change when the buffer was rewritten). Use `withRawData` when the
+        // no-copy contract is what you want.
+        let ret: Array<UInt8> @local! = utf8Data.cloneToLocal()
+        String(ret)
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public exclave unsafe static func fromUtf8Unchecked(utf8Data: Array<UInt8> @local?): String @local! {
+        let ret: Array<UInt8> @local! = utf8Data.cloneToLocal()
+        String(ret)
+    }
     // Returns the index of the first occurrence of the specified byte.
     // Return `Option<Int64>.None` if the specified byte is absent.
     @Frozen
@@ -280,6 +684,19 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             case -1 => None
             case val => Some(val)
         }
+    }
+    // The vectorIndexByte32 intrinsic has no @local? form; the @local? indexOf degrades to a byte-by-byte scan.
+    @Frozen
+    @When[env != "ohos"]
+    public func indexOf(this @local?, b: Byte): Option<Int64> {
+        var i: Int64 = 0
+        while (i < size) {
+            if (arrayGetUnchecked3<UInt8>(this.myData, Int64(this.start) + i) == b) {
+                return Some<Int64>(i)
+            }
+            i = i + 1
+        }
+        return None<Int64>
     }
 
     // Returns the index of the first occurrence of the specified byte at or after the specified index.
@@ -387,6 +804,34 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return Option<Int64>.Some(index)
     }
 
+    // Reuses the same native search core as the plain overload: borrowing the backing storage through
+    // `acquireRaw` keeps the view origin and length without copying, and `CJ_CORE_IndexOfString` uses
+    // FastStrstr or a rolling hash instead of restarting the match at every position. The previous
+    // byte-by-byte loop was O(n*m) on inputs sharing a long prefix (measured: 14.40 ms plain vs
+    // 1106.91 ms for the identical heap string bound as `@local?`).
+    @Frozen
+    @When[env != "ohos"]
+    public func indexOf(this @local?, str: String @local?): Option<Int64> {
+        if (str.size == 0) {
+            return Some<Int64>(0)
+        }
+        if (this.size < str.size) {
+            return None<Int64>
+        }
+        var index: Int64 = -1
+        unsafe {
+            let org: CPointer<UInt8> = this.acquireRaw()
+            let pat: CPointer<UInt8> = str.acquireRaw()
+            index = CJ_CORE_IndexOfString(org, pat, this.size, str.size, 0)
+            this.releaseRaw(org)
+            str.releaseRaw(pat)
+        }
+        if (index < 0) {
+            return None<Int64>
+        }
+        Some<Int64>(index)
+    }
+
     // Returns the index of the last occurrence of the specified byte.
     // Return `Option<Int64>.None` if specified byte is absent.
     @Frozen
@@ -483,6 +928,102 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return this.splitOfString(str, -1, removeEmpty)
     }
 
+    // Count segments before allocating the result array; slices share the source buffer.
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func split(this @local!, str: String @local?, removeEmpty!: Bool = false): Array<String> @local! {
+        if (size == 0) {
+            return Array<String>()
+        }
+        let strLen: Int64 = str.size
+        var i: Int64 = 0
+        if (strLen == 0) {
+            // Split at UTF-8 rune boundaries when the separator is empty.
+            var count: Int64 = 0
+            let runeEnd: Int64 = Int64(start) + Int64(length)
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                count++
+                i = i + num
+            }
+            let ret: Array<String> @local! = Array<String>(count, repeat: unsafe { String() @local! })
+            var idx: Int64 = 0
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                ret[idx] = String(myData, start + UInt32(i), UInt32(num)) @local!
+                idx++
+                i = i + num
+            }
+            return ret
+        }
+        // Count segments, including empty ones unless removeEmpty is set.
+        var segCount: Int64 = 0
+        var segStart: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    segCount++
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen = size - segStart
+        if (!removeEmpty || tailLen > 0) {
+            segCount++
+        }
+        // Use the same empty-segment rule as the counting pass.
+        let ret: Array<String> @local! = Array<String>(segCount, repeat: unsafe { String() @local! })
+        segStart = 0
+        var fillIdx: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(segLen)) @local!
+                    fillIdx++
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen2 = size - segStart
+        if (!removeEmpty || tailLen2 > 0) {
+            ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(tailLen2)) @local!
+        }
+        ret
+    }
+
     /**
      * @return an array of strings which are the result of separating this string using the specified
      *         separator with maximum split number `maxSplits`.
@@ -494,6 +1035,123 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             return EMPTY_STRING_ARRAY
         }
         return this.splitOfString(str, maxSplits, removeEmpty)
+    }
+
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func split(this @local!, str: String @local?, maxSplits: Int64, removeEmpty!: Bool = false): Array<String> @local! {
+        if (size == 0 || maxSplits == 0) {
+            return Array<String>()
+        }
+        let strLen: Int64 = str.size
+        var i: Int64 = 0
+        let unlimited: Bool = maxSplits < 0
+        let emptyLimit: Int64 = if (!unlimited && maxSplits < size) { maxSplits } else { size }
+        if (strLen == 0) {
+            var count: Int64 = 0
+            let runeEnd: Int64 = Int64(start) + Int64(length)
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                count++
+                i = i + num
+            }
+            let segTotal: Int64 = if (count < emptyLimit) { count } else { emptyLimit }
+            let ret: Array<String> @local! = Array<String>(segTotal, repeat: unsafe { String() @local! })
+            var idx: Int64 = 0
+            i = 0
+            while (i < size && idx < segTotal) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, runeEnd)
+                if (idx == segTotal - 1) {
+                    ret[idx] = String(myData, start + UInt32(i), UInt32(size - i)) @local!
+                    idx++
+                    break
+                }
+                ret[idx] = String(myData, start + UInt32(i), UInt32(num)) @local!
+                idx++
+                i = i + num
+            }
+            return ret
+        }
+        var segCount: Int64 = 0
+        var segStart: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    segCount++
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen = size - segStart
+        if (!removeEmpty || tailLen > 0) {
+            segCount++
+        }
+        // The limit counts retained segments, so empty segments do not consume it.
+        let resultCount = if (!unlimited && maxSplits < segCount) { maxSplits } else { segCount }
+        let ret: Array<String> @local! = Array<String>(resultCount, repeat: unsafe { String() @local! })
+        if (resultCount == 0) {
+            return ret
+        }
+        if (maxSplits == 1) {
+            ret[0] = String(myData, start, length) @local!
+            return ret
+        }
+        segStart = 0
+        var fillIdx: Int64 = 0
+        i = 0
+        while (i <= size - strLen) {
+            var matched: Bool = true
+            var j: Int64 = 0
+            while (j < strLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(str.myData, Int64(str.start) + j)) {
+                    matched = false
+                    break
+                }
+                j = j + 1
+            }
+            if (matched) {
+                let segLen = i - segStart
+                if (!removeEmpty || segLen > 0) {
+                    let itemLen = if (fillIdx == resultCount - 1 && segCount > resultCount) {
+                        size - segStart
+                    } else {
+                        segLen
+                    }
+                    ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(itemLen)) @local!
+                    fillIdx++
+                    if (fillIdx == resultCount) {
+                        return ret
+                    }
+                }
+                i = i + strLen
+                segStart = i
+            } else {
+                i = i + 1
+            }
+        }
+        let tailLen2 = size - segStart
+        if (!removeEmpty || tailLen2 > 0) {
+            ret[fillIdx] = String(myData, start + UInt32(segStart), UInt32(tailLen2)) @local!
+        }
+        ret
     }
 
     @Frozen
@@ -527,6 +1185,137 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         } else {
             return replaceString(old, new)
         }
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func replace(this @local!, old: String @local?, new: String @local?): String @local! {
+        let oldLen: Int64 = old.size
+        let newLen: Int64 = new.size
+        if (size == 0) {
+            if (oldLen == 0) {
+                return String(new)
+            }
+            return String() @local!
+        }
+
+        var count: Int64 = 0
+        var i: Int64 = 0
+        if (oldLen == 0) {
+            var runeCount: Int64 = 0
+            // Scan must start at the view origin: with pos starting at 0 the loop
+            // walks the whole backing array up to start+length instead of just this
+            // view. That inflates runeCount (so the result length and allocation are
+            // sized by the backing array), and can make Rune.fromUtf8 fail when pos
+            // lands inside a multi-byte character.
+            var pos: Int64 = Int64(start)
+            let end: Int64 = Int64(start) + Int64(length)
+            while (pos < end) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, pos, end)
+                runeCount++
+                pos = pos + num
+            }
+
+            // Check the multiplication before allocating: with empty `old` the insertion count is
+            // runeCount + 1, so a large `new` overflows the byte budget long before the UInt32
+            // conversion at the end. Same guard as the plain `insertString`.
+            let insertCount: Int64 = runeCount + 1
+            let maxSize: Int64 = Int64(UInt32.Max) - size
+            if (insertCount > 0 && newLen > maxSize / insertCount) {
+                throw IllegalArgumentException("The size of String is too large.")
+            }
+            let newSize: Int64 = size + newLen * insertCount
+            let newRawPtr = rawArrayAllocate2<UInt8>(newSize)
+            rawArrayInitByValue2(newRawPtr, newSize, 0)
+            var cursor: Int64 = 0
+            var j: Int64 = 0
+            while (j < newLen) {
+                arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked3<UInt8>(new.myData, Int64(new.start) + j))
+                j = j + 1
+            }
+            cursor += newLen
+            i = 0
+            while (i < size) {
+                let (_, num): (Rune, Int64) = Rune.fromUtf8(myData, Int64(start) + i, end)
+                j = 0
+                while (j < num) {
+                    arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j))
+                    j = j + 1
+                }
+                cursor += num
+                j = 0
+                while (j < newLen) {
+                    arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked3<UInt8>(new.myData, Int64(new.start) + j))
+                    j = j + 1
+                }
+                cursor += newLen
+                i = i + num
+            }
+            return String(newRawPtr, 0, UInt32(cursor))
+        }
+
+        while (i <= size - oldLen) {
+            var matched: Bool = true
+            for (j in 0..oldLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(old.myData, Int64(old.start) + j)) {
+                    matched = false
+                    break
+                }
+            }
+            if (matched) {
+                count++
+                i = i + oldLen
+            } else {
+                i = i + 1
+            }
+        }
+        if (count == 0) {
+            let newRawPtr = rawArrayAllocate2<UInt8>(size)
+            rawArrayInitByValue2(newRawPtr, size, 0)
+            for (j in 0..size) {
+                arraySetUnchecked2<UInt8>(newRawPtr, j, arrayGetUnchecked2<UInt8>(myData, Int64(start) + j))
+            }
+            return String(newRawPtr, 0, length)
+        }
+
+        let resultLen: Int64 = size + (newLen - oldLen) * count
+        if (resultLen > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        let resultPtr = rawArrayAllocate2<UInt8>(resultLen)
+        rawArrayInitByValue2(resultPtr, resultLen, 0)
+        var cursor: Int64 = 0
+        var srcPos: Int64 = 0
+        i = 0
+        while (i <= size - oldLen) {
+            var matched: Bool = true
+            for (j in 0..oldLen) {
+                if (arrayGetUnchecked2<UInt8>(myData, Int64(start) + i + j) !=
+                    arrayGetUnchecked3<UInt8>(old.myData, Int64(old.start) + j)) {
+                    matched = false
+                    break
+                }
+            }
+            if (matched) {
+                for (j in 0..(i - srcPos)) {
+                    arraySetUnchecked2<UInt8>(resultPtr, cursor + j, arrayGetUnchecked2<UInt8>(myData, Int64(start) + srcPos + j))
+                }
+                cursor += i - srcPos
+                for (j in 0..newLen) {
+                    arraySetUnchecked2<UInt8>(resultPtr, cursor + j, arrayGetUnchecked3<UInt8>(new.myData, Int64(new.start) + j))
+                }
+                cursor += newLen
+                i = i + oldLen
+                srcPos = i
+            } else {
+                i = i + 1
+            }
+        }
+        for (j in 0..(size - srcPos)) {
+            arraySetUnchecked2<UInt8>(resultPtr, cursor + j, arrayGetUnchecked2<UInt8>(myData, Int64(start) + srcPos + j))
+        }
+        String(resultPtr, 0, UInt32(resultLen))
     }
 
     @Frozen
@@ -619,7 +1408,8 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     @Frozen
     @OverflowWrapping
     public func toAsciiLower(): String {
-        let newRawPtr = RawArray<UInt8>(this.size, repeat: 0)
+        let newRawPtr = rawArrayAllocate<UInt8>(this.size)
+        rawArrayInitByValue(newRawPtr, this.size, 0)
         /* Back-to-front traversal can reduce boundary checks and improve performance */
         for (i in Int64(length) - 1..=0 : -1) {
             var c: UInt8 = arrayGetUnchecked(this.myData, i + Int64(start))
@@ -631,11 +1421,29 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return String(newRawPtr, 0, length)
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func toAsciiLower(this @local!): String @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue2(newRawPtr, this.size, 0)
+        /* Back-to-front traversal can reduce boundary checks and improve performance */
+        for (i in Int64(length) - 1..=0 : -1) {
+            var c = arrayGetUnchecked2(this.myData, i + Int64(start))
+            if (ASCII_A <= c && c <= ASCII_Z) {
+                arraySetUnchecked2(newRawPtr, i, c + ASCII_UPPER_LOWER_DIFFERENCE)
+            } else {
+                arraySetUnchecked2(newRawPtr, i, c)
+            }
+        }
+        String(newRawPtr, 0, length)
+    }
 
     @Frozen
     @OverflowWrapping
     public func toAsciiUpper(): String {
-        let newRawPtr = RawArray<UInt8>(this.size, repeat: 0)
+        let newRawPtr = rawArrayAllocate<UInt8>(this.size)
+        rawArrayInitByValue(newRawPtr, this.size, 0)
         /* Back-to-front traversal can reduce boundary checks and improve performance */
         for (i in Int64(length) - 1..=0 : -1) {
             var c: UInt8 = arrayGetUnchecked(this.myData, i + Int64(start))
@@ -647,12 +1455,30 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return String(newRawPtr, 0, length)
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func toAsciiUpper(this @local!): String @local! {
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue2(newRawPtr, this.size, 0)
+        /* Back-to-front traversal can reduce boundary checks and improve performance */
+        for (i in Int64(length) - 1..=0 : -1) {
+            var c = arrayGetUnchecked2(this.myData, i + Int64(start))
+            if (ASCII_a <= c && c <= ASCII_z) {
+                arraySetUnchecked2(newRawPtr, i, c - ASCII_UPPER_LOWER_DIFFERENCE)
+            } else {
+                arraySetUnchecked2(newRawPtr, i, c)
+            }
+        }
+        String(newRawPtr, 0, length)
+    }
 
     @Frozen
     @OverflowWrapping
     public func toAsciiTitle(): String {
         var i: Int64 = 0
-        let newRawPtr = RawArray<UInt8>(this.size, repeat: 0)
+        let newRawPtr = rawArrayAllocate<UInt8>(this.size)
+        rawArrayInitByValue(newRawPtr, this.size, 0)
         var next: Bool = true
         while (i < size) {
             var c: UInt8 = arrayGetUnchecked(this.myData, i + Int64(start))
@@ -675,10 +1501,44 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return String(newRawPtr, 0, length)
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func toAsciiTitle(this @local!): String @local! {
+        var i: Int64 = 0
+        let newRawPtr = rawArrayAllocate2<UInt8>(this.size)
+        rawArrayInitByValue2(newRawPtr, this.size, 0)
+        var next: Bool = true
+        while (i < size) {
+            var c = arrayGetUnchecked2(this.myData, i + Int64(start))
+            arraySetUnchecked2(newRawPtr, i, c)
+            if (ASCII_a <= c && c <= ASCII_z) {
+                if (next) {
+                    arraySetUnchecked2(newRawPtr, i, c - ASCII_UPPER_LOWER_DIFFERENCE)
+                    next = false
+                }
+            } else if (ASCII_A <= c && c <= ASCII_Z) {
+                if (!next) {
+                    arraySetUnchecked2(newRawPtr, i, c + ASCII_UPPER_LOWER_DIFFERENCE)
+                } else {
+                    next = false
+                }
+            } else {
+                next = true
+            }
+            i++
+        }
+        String(newRawPtr, 0, length)
+    }
 
     @Frozen
     public func trimAscii(): String {
         this.trimAsciiStart().trimAsciiEnd()
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func trimAscii(this @local!): String @local! {
+        trimAsciiStart().trimAsciiEnd()
     }
 
     @Frozen
@@ -698,6 +1558,24 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         String(myData, this.start + UInt32(start), length - UInt32(start))
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func trimAsciiStart(this @local!): String @local! {
+        var start: Int64 = 0
+        var foundFirst: Bool = false
+        for (i in 0..size) {
+            if (!arrayGetUnchecked2(myData, i + Int64(this.start)).isAsciiWhiteSpace()) {
+                start = i
+                foundFirst = true
+                break
+            }
+        }
+        if (!foundFirst) {
+            return String() @local!
+        }
+        String(myData, this.start + UInt32(start), length - UInt32(start))
+    }
 
     @Frozen
     @OverflowWrapping
@@ -713,6 +1591,24 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         if (!foundLast) {
             return String.empty
+        }
+        String(myData, this.start, UInt32(end) + 1)
+    }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func trimAsciiEnd(this @local!): String @local! {
+        var end: Int64 = size - 1
+        var foundLast: Bool = false
+        for (i in end..-1 : -1) {
+            if (!arrayGetUnchecked2(myData, i + Int64(this.start)).isAsciiWhiteSpace()) {
+                end = i
+                foundLast = true
+                break
+            }
+        }
+        if (!foundLast) {
+            return String() @local!
         }
         String(myData, this.start, UInt32(end) + 1)
     }
@@ -781,6 +1677,14 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return this
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func removePrefix(this @local!, prefix: String @local?): String @local! {
+        if (this.startsWith(prefix)) {
+            return String(this.myData, this.start + UInt32(prefix.size), this.length - UInt32(prefix.size))
+        }
+        this
+    }
 
     @Frozen
     public func removeSuffix(suffix: String): String {
@@ -788,6 +1692,14 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             return this[0..this.size - suffix.size]
         }
         return this
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func removeSuffix(this @local!, suffix: String @local?): String @local! {
+        if (this.endsWith(suffix)) {
+            return String(this.myData, this.start, this.length - UInt32(suffix.size))
+        }
+        this
     }
 
     @Frozen
@@ -799,6 +1711,12 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             case None => false
             case _ => true
         }
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public func contains(this @local?, str: String @local?): Bool {
+        // Empty pattern and over-long pattern are already handled by `indexOf`.
+        this.indexOf(str).isSome()
     }
 
     // Returns true if and only if this string starts with the given `prefix`.
@@ -830,6 +1748,33 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             releaseRawData<UInt8>(prefix.myData, handle2 - Int64(prefix.start))
         }
         return res == 0
+    }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func startsWith(this @local!, prefix: String @local?): Bool {
+        let strLen: Int64 = prefix.size
+        if (strLen == 0) {
+            return true
+        }
+        if (size < strLen) {
+            return false
+        }
+        compareBytes(this.myData, Int64(this.start), prefix.myData, Int64(prefix.start), strLen) == 0
+    }
+
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public func startsWith(this @local?, prefix: String @local?): Bool {
+        let strLen: Int64 = prefix.size
+        if (strLen == 0) {
+            return true
+        }
+        if (size < strLen) {
+            return false
+        }
+        compareBytes(this.myData, Int64(this.start), prefix.myData, Int64(prefix.start), strLen) == 0
     }
 
     // Returns true if and only if this string ends with the given `suffix`.
@@ -863,6 +1808,47 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             releaseRawData<UInt8>(suffix.myData, handle2 - Int64(suffix.start))
         }
         return res == 0
+    }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave func endsWith(this @local!, suffix: String @local?): Bool {
+        let strLen: Int64 = suffix.size
+        if (strLen == 0) {
+            return true
+        }
+        if (size < strLen) {
+            return false
+        }
+        let distance: Int64 = size - strLen
+        for (i in 0..strLen) {
+            if (arrayGetUnchecked3(this.myData, Int64(start) + distance + i) !=
+                arrayGetUnchecked3(suffix.myData, Int64(suffix.start) + i)) {
+                return false
+            }
+        }
+        true
+    }
+
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public func endsWith(this @local?, suffix: String @local?): Bool {
+        let strLen: Int64 = suffix.size
+        if (strLen == 0) {
+            return true
+        }
+        if (size < strLen) {
+            return false
+        }
+        let distance: Int64 = size - strLen
+        for (i in 0..strLen) {
+            if (arrayGetUnchecked3(this.myData, Int64(start) + distance + i) !=
+                arrayGetUnchecked3(suffix.myData, Int64(suffix.start) + i)) {
+                return false
+            }
+        }
+        true
     }
 
     /**
@@ -905,6 +1891,42 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         itemBytes[k..(k + size)] = unsafe { this.rawData() }
         return String(itemBytes)
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func padStart(this @local!, totalWidth: Int64, padding!: String @local? = " "): String @local! {
+        if (totalWidth < 0) {
+            throw IllegalArgumentException("Negative totalWidth.")
+        }
+        if (totalWidth == 0 || this.size > totalWidth) {
+            return this
+        }
+        let runeLen = padding.size
+        if (runeLen == 0) {
+            throw IllegalArgumentException("Padding string cannot be empty.")
+        }
+        if (totalWidth > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        let padLen: Int64 = (totalWidth - this.size + runeLen - 1) / runeLen
+        let totalBytes: Int64 = runeLen * padLen + size
+        if (totalBytes > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        let newRawPtr = rawArrayAllocate2<UInt8>(totalBytes)
+        rawArrayInitByValue2(newRawPtr, totalBytes, 0)
+        var k: Int64 = 0
+        for (_ in 0..padLen) {
+            for (i in 0..runeLen) {
+                arraySetUnchecked2<UInt8>(newRawPtr, k + i, arrayGetUnchecked3<UInt8>(padding.myData, Int64(padding.start) + i))
+            }
+            k += runeLen
+        }
+        for (i in 0..size) {
+            arraySetUnchecked2<UInt8>(newRawPtr, k + i, arrayGetUnchecked3<UInt8>(this.myData, Int64(this.start) + i))
+        }
+        String(newRawPtr, 0, UInt32(totalBytes))
+    }
 
     /**
      * @return a new string which is the result of padding zero or more `padding` to this string on the right.
@@ -944,6 +1966,43 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return String(itemBytes)
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func padEnd(this @local!, totalWidth: Int64, padding!: String @local? = " "): String @local! {
+        if (totalWidth < 0) {
+            throw IllegalArgumentException("Negative totalWidth.")
+        }
+        if (totalWidth == 0 || this.size > totalWidth) {
+            return this
+        }
+        let runeLen = padding.size
+        if (runeLen == 0) {
+            throw IllegalArgumentException("Padding string cannot be empty.")
+        }
+        if (totalWidth > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+        let padLen: Int64 = (totalWidth - this.size + runeLen - 1) / runeLen
+        let totalBytes: Int64 = runeLen * padLen + size
+        if (totalBytes > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        let newRawPtr = rawArrayAllocate2<UInt8>(totalBytes)
+        rawArrayInitByValue2(newRawPtr, totalBytes, 0)
+        var k: Int64 = 0
+        for (i in 0..size) {
+            arraySetUnchecked2<UInt8>(newRawPtr, k + i, arrayGetUnchecked3<UInt8>(this.myData, Int64(this.start) + i))
+        }
+        k += size
+        for (_ in 0..padLen) {
+            for (i in 0..runeLen) {
+                arraySetUnchecked2<UInt8>(newRawPtr, k + i, arrayGetUnchecked3<UInt8>(padding.myData, Int64(padding.start) + i))
+            }
+            k += runeLen
+        }
+        String(newRawPtr, 0, UInt32(totalBytes))
+    }
 
     @Frozen
     @OverflowWrapping
@@ -964,9 +2023,44 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return true
     }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public func equalsIgnoreAsciiCase(this @local?, other: String @local?): Bool {
+        if (this.length != other.length) {
+            return false
+        }
+        var idx1 = Int64(this.start)
+        var idx2 = Int64(other.start)
+        while (idx1 < Int64(this.start + this.length)) {
+            let b1 = arrayGetUnchecked3<UInt8>(this.myData, idx1)
+            let b2 = arrayGetUnchecked3<UInt8>(other.myData, idx2)
+            if (!byteEqualsIgnoreAsciiCase(b1, b2)) {
+                return false
+            }
+            idx1++
+            idx2++
+        }
+        true
+    }
 
     @Frozen
     private func byteEqualsIgnoreAsciiCase(b1: Byte, b2: Byte): Bool {
+        if (b1 == b2) {
+            return true
+        }
+        // b1 in 'A' ~ 'Z', and the lower case of b1 equals to b2
+        if (b1 >= b'A' && b1 <= b'Z' && (b1 + ASCII_UPPER_TO_LOWER_DIFF) == b2) {
+            return true
+        }
+        if (b2 >= b'A' && b2 <= b'Z' && (b2 + ASCII_UPPER_TO_LOWER_DIFF) == b1) {
+            return true
+        }
+        return false
+    }
+    @When[env != "ohos"]
+    @Frozen
+    private func byteEqualsIgnoreAsciiCase(this @local?, b1: Byte, b2: Byte): Bool {
         if (b1 == b2) {
             return true
         }
@@ -1042,6 +2136,68 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return 0
     }
 
+    // compare `num` bytes of ptr1[start1..] to ptr2[start2..],
+    // returning zero if they are all equal
+    // or a positive value representing ptr1[start1..] is greater
+    @Frozen
+    static const func compareBytes(ptr1: RawArray<Byte> @local?, start1: Int64, ptr2: RawArray<Byte> @local?, start2: Int64, num: Int64): Int64 {
+        return if (IS_SIMD_SUPPORTED) {
+            compareBytesFast(ptr1, start1, ptr2, start2, num)
+        } else {
+            compareBytesCommon(ptr1, start1, ptr2, start2, num)
+        }
+    }
+
+    @Frozen
+    @OverflowWrapping
+    static const func compareBytesCommon(ptr1: RawArray<Byte> @local?, start1: Int64,
+                                    ptr2: RawArray<Byte> @local?, start2: Int64, num: Int64): Int64 {
+        var offset1 = start1
+        var offset2 = start2
+        for (_ in 0..num) {
+            let b1 = arrayGetUnchecked3<Byte>(ptr1, offset1)
+            let b2 = arrayGetUnchecked3<Byte>(ptr2, offset2)
+            if (b1 != b2) {
+                return if (b1 > b2) { 1 } else { -1 }
+            }
+            offset1++
+            offset2++
+        }
+        return 0
+    }
+
+    @Frozen
+    @OverflowWrapping
+    static const func compareBytesFast(ptr1: RawArray<Byte> @local?, start1: Int64,
+                                    ptr2: RawArray<Byte> @local?, start2: Int64, num: Int64): Int64 {
+        var i = 0
+        var offset1 = start1
+        var offset2 = start2
+        while (i + VECTOR_OFFSET_32 <= num) {
+            let vecCmpRes: Int64 = vectorCompare32(ptr1, offset1, ptr2, offset2)
+            // If any byte is not matched, return a value different from 32
+            if (vecCmpRes != 32) {
+                let b1 = arrayGetUnchecked3<Byte>(ptr1, offset1 + vecCmpRes)
+                let b2 = arrayGetUnchecked3<Byte>(ptr2, offset2 + vecCmpRes)
+                return if (b1 > b2) { 1 } else { -1 }
+            }
+            i += VECTOR_OFFSET_32
+            offset1 += VECTOR_OFFSET_32
+            offset2 += VECTOR_OFFSET_32
+        }
+
+        for (_ in i..num) {
+            let b1 = arrayGetUnchecked3<Byte>(ptr1, offset1)
+            let b2 = arrayGetUnchecked3<Byte>(ptr2, offset2)
+            if (b2 != b1) {
+                return if (b1 > b2) { 1 } else { -1 }
+            }
+            offset1++
+            offset2++
+        }
+        return 0
+    }
+
     /**
      * Compare the relationship between two instance of String, lexically byte-wise.
      *
@@ -1078,6 +2234,32 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return Ordering.EQ
     }
 
+    @Frozen
+    @When[env != "ohos"]
+    public func compare(this @local?, str: String @local?): Ordering {
+        let minSize: Int64 = if (this.size < str.size) {
+            this.size
+        } else {
+            str.size
+        }
+
+        let res = compareBytes(this.myData, Int64(this.start), str.myData, Int64(str.start), minSize)
+
+        if (res > 0) {
+            return Ordering.GT
+        } else if (res < 0) {
+            return Ordering.LT
+        }
+
+        if (this.size > minSize) {
+            return Ordering.GT
+        } else if (str.size > minSize) {
+            return Ordering.LT
+        }
+
+        return Ordering.EQ
+    }
+
     // Return a string which is the result of concatenating `left` and `right`.
     @Frozen
     @OverflowWrapping
@@ -1087,10 +2269,26 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             throw IllegalArgumentException("String size '${newLen}' exceeds maximum allowed size '${UInt32.Max}'.")
         }
 
-        let newData = RawArray<Byte>(newLen, repeat: 0)
+        let newData = rawArrayAllocate<Byte>(newLen)
+        rawArrayInitByValue(newData, newLen, 0)
         intrinsicBuiltInCopyTo<UInt8>(this.myData, newData, Int64(this.start), 0, this.size)
         intrinsicBuiltInCopyTo<UInt8>(other.myData, newData, Int64(other.start), this.size, other.size)
         return String(newData, 0, UInt32(newLen))
+    }
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave operator const func +(this @local!, other: String @local?): String @local! {
+        let newLen = size + other.size
+        if (newLen > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        let newData = rawArrayAllocate2<Byte>(newLen)
+        rawArrayInitByValue2(newData, newLen, 0)
+        intrinsicBuiltInCopyTo3<UInt8>(myData, newData, Int64(start), 0, size)
+        intrinsicBuiltInCopyTo3<UInt8>(other.myData, newData, Int64(other.start), size, other.size)
+        String(newData, 0, UInt32(newLen))
     }
 
     @Frozen
@@ -1107,7 +2305,8 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
 
         let newLen = this.size * count
-        let newData = RawArray<Byte>(newLen, repeat: 0)
+        let newData = rawArrayAllocate<Byte>(newLen)
+        rawArrayInitByValue(newData, newLen, 0)
         var itemStart: Int64 = 0
         let byteSize: Int64 = size
         for (_ in 0..count) {
@@ -1115,6 +2314,31 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             itemStart += byteSize
         }
         return String(newData, 0, UInt32(newLen))
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave operator const func *(this @local!, count: Int64): String @local! {
+        if (count < 0) {
+            throw IllegalArgumentException("Negative count.")
+        }
+        if (this.size == 0 || count == 0) {
+            return String() @local!
+        }
+
+        if (count > Int64(UInt32.Max) / this.size) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        let newLen = this.size * count
+        let newData = rawArrayAllocate2<Byte>(newLen)
+        rawArrayInitByValue2(newData, newLen, 0)
+        var itemStart: Int64 = 0
+        let byteSize: Int64 = size
+        for (_ in 0..count) {
+            intrinsicBuiltInCopyTo2<UInt8>(this.myData, newData, Int64(this.start), itemStart, byteSize)
+            itemStart += byteSize
+        }
+        String(newData, 0, UInt32(newLen))
     }
 
     // Returns true if and only if string `left` is less than `right` with the lexicographical order.
@@ -1164,11 +2388,77 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         }
         return compareBytes(this.myData, Int64(this.start), other.myData, Int64(other.start), Int64(this.length)) == 0
     }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave operator const func ==(this @local!, other: String @local!): Bool {
+        if (this.length != other.length) {
+            return false
+        }
+        if (intrinsicRefEqRawArray(this.myData, other.myData) && this.start == other.start) {
+            return true
+        }
+        return compareBytes(this.myData, Int64(this.start), other.myData, Int64(other.start), Int64(this.length)) == 0
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func ==(this @local?, other: String @local?): Bool {
+        if (this.length != other.length) {
+            return false
+        }
+        if (intrinsicRefEqRawArray(this.myData, other.myData) && this.start == other.start) {
+            return true
+        }
+        compareBytes(this.myData, Int64(this.start), other.myData, Int64(other.start), Int64(this.length)) == 0
+    }
 
     // Returns true if and only if the two string are not identical.
     @Frozen
     public operator const func !=(other: String): Bool {
         return !(this == other)
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public exclave operator const func !=(this @local!, other: String @local!): Bool {
+        return !(this == other)
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func <(this @local?, other: String @local?): Bool {
+        return match (this.compare(other)) {
+            case LT => true
+            case _ => false
+        }
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func <=(this @local?, other: String @local?): Bool {
+        return match (this.compare(other)) {
+            case GT => false
+            case _ => true
+        }
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func >(this @local?, other: String @local?): Bool {
+        return match (this.compare(other)) {
+            case GT => true
+            case _ => false
+        }
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func >=(this @local?, other: String @local?): Bool {
+        return match (this.compare(other)) {
+            case LT => false
+            case _ => true
+        }
+    }
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func !=(this @local?, other: String @local?): Bool {
+        !(this == other)
     }
 
     /**
@@ -1184,6 +2474,16 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return arrayGetUnchecked(myData, index + Int64(start))
     }
 
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public operator const func [](this @local?, index: Int64): Byte {
+        if (index < 0 || index >= size) {
+            throw IndexOutOfBoundsException(stringIndexOutOfBoundsExceptionMessage(index, size))
+        }
+        arrayGetUnchecked3<Byte>(myData, index + Int64(start))
+    }
+
     // Considering the performance，this method do not check the parameters.
     // Use this method only with valid parameters.
     @Frozen
@@ -1191,6 +2491,17 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return String(Array<Byte>(myData, Int64(this.start) + startIndex, len))
     }
 
+@When[env != "ohos"]
+    @Frozen
+    private exclave func sliceUnchecked(this @local?, startIndex: Int64, len: Int64): String @local? {
+        String(Array<Byte>(myData, Int64(this.start) + startIndex, len) @local?)
+    }
+
+@When[env != "ohos"]
+    @Frozen
+    private exclave func sliceUnchecked(this @local!, startIndex: Int64, len: Int64): String @local! {
+        String(Array<Byte>(myData, Int64(this.start) + startIndex, len) @local!) @local!
+    }
     /**
      * @return the `String` value at the specified range.
      * @throws IllegalArgumentException if `step` is not equal to one.
@@ -1234,6 +2545,81 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         return sliceUnchecked(start, end - start)
     }
 
+    @OverflowWrapping
+    @Frozen
+    @When[env != "ohos"]
+    public operator const func [](this @local?, range: Range<Int64>): String @local? {
+        let start: Int64 = range.start
+        var end: Int64 = range.end
+        let step: Int64 = range.step
+        let isClosed: Bool = range.isClosed
+
+        if (step != 1) {
+            throw IllegalArgumentException("the value of the step should be '1'")
+        }
+
+        if (isClosed) {
+            end += 1
+        }
+        // If end is omitted, end = size of array.
+        if (!range.hasEnd) {
+            end = size
+        }
+
+        if (start < 0 || end < start || end > size) {
+            throw IndexOutOfBoundsException("Invalid range start: ${start} or end: ${end}")
+        }
+        if (start < size && (arrayGetUnchecked3<UInt8>(myData, start + Int64(this.start)) >> 6) == 0b10) {
+            // 0b10 means the start position is not the code point boundary
+            throw IllegalArgumentException("Invalid utf8 byte sequence.")
+        }
+        if (end < size && (arrayGetUnchecked3<UInt8>(myData, end + Int64(this.start)) >> 6) == 0b10) {
+            // 0b10 means the end position is not the code point boundary
+            throw IllegalArgumentException("Invalid utf8 byte sequence.")
+        }
+        if (end - start == 0) {
+            return String.empty
+        }
+        exclave { sliceUnchecked(start, end - start) }
+    }
+
+    @OverflowWrapping
+    @Frozen
+    @When[env != "ohos"]
+    public exclave operator const func [](this @local!, range: Range<Int64>): String @local! {
+        let start: Int64 = range.start
+        var end: Int64 = range.end
+        let step: Int64 = range.step
+        let isClosed: Bool = range.isClosed
+
+        if (step != 1) {
+            throw IllegalArgumentException("the value of the step should be '1'")
+        }
+
+        if (isClosed) {
+            end += 1
+        }
+        // If end is omitted, end = size of array.
+        if (!range.hasEnd) {
+            end = size
+        }
+
+        if (start < 0 || end < start || end > size) {
+            throw IndexOutOfBoundsException("Invalid range start: ${start} or end: ${end}")
+        }
+        if (start < size && (arrayGetUnchecked3<UInt8>(myData, start + Int64(this.start)) >> 6) == 0b10) {
+            // 0b10 means the start position is not the code point boundary
+            throw IllegalArgumentException("Invalid utf8 byte sequence.")
+        }
+        if (end < size && (arrayGetUnchecked3<UInt8>(myData, end + Int64(this.start)) >> 6) == 0b10) {
+            // 0b10 means the end position is not the code point boundary
+            throw IllegalArgumentException("Invalid utf8 byte sequence.")
+        }
+        if (end - start == 0) {
+            return String() @local!
+        }
+        sliceUnchecked(start, end - start)
+    }
     @Frozen
     @OverflowWrapping
     public static func join(strArray: Array<String>, delimiter!: String = String.empty): String {
@@ -1285,6 +2671,66 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         let lastStr: String = strArray[strArraySize - 1]
         bytes[cursor..(cursor + lastStr.size)] = unsafe { lastStr.rawData() }
         return String(bytes)
+    }
+
+    @Frozen
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave static func join(strArray: Array<String> @local!, delimiter!: String @local?): String @local! {
+        let strArraySize: Int64 = strArray.size
+        if (strArraySize == 0) {
+            return String() @local!
+        }
+        var sizeOfBytes: Int64 = 0
+        for (i in strArraySize - 1..=0 : -1) {
+            let strSize = strArray[i].size
+            if (sizeOfBytes > Int64(UInt32.Max) - strSize) {
+                throw IllegalArgumentException("The size of String is too large.")
+            }
+            sizeOfBytes += strSize
+        }
+
+        let delimiterCount = strArraySize - 1
+        if (delimiterCount > 0 && delimiter.size > Int64(UInt32.Max) / delimiterCount) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        let delimiterTotal = delimiter.size * delimiterCount
+        if (sizeOfBytes > Int64(UInt32.Max) - delimiterTotal) {
+            throw IllegalArgumentException("The size of String is too large.")
+        }
+
+        sizeOfBytes += delimiterTotal
+
+        if (sizeOfBytes == 0) {
+            return String() @local!
+        } else if (sizeOfBytes > Int64(UInt32.Max)) {
+            throw IllegalArgumentException("The size of target string is too large.")
+        }
+
+        let newRawPtr = rawArrayAllocate2<UInt8>(sizeOfBytes)
+        rawArrayInitByValue2(newRawPtr, sizeOfBytes, 0)
+        let sizeOfDelimiterByte: Int64 = Int64(delimiter.length)
+        var cursor: Int64 = 0
+        // Concatenate strings and delimiters except the last string
+        for (i in 0..(strArraySize - 1)) {
+            let sz: Int64 = Int64(strArray[i].length)
+            for (j in 0..sz) {
+                arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked3<UInt8>(strArray[i].myData, Int64(strArray[i].start) + j))
+            }
+            cursor += sz
+            // Append the delimiter
+            for (j in 0..sizeOfDelimiterByte) {
+                arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked3<UInt8>(delimiter.myData, Int64(delimiter.start) + j))
+            }
+            cursor += sizeOfDelimiterByte
+        }
+        // Append the last string
+        let lastStr: String @local! = strArray[strArraySize - 1]
+        for (j in 0..Int64(lastStr.length)) {
+            arraySetUnchecked2<UInt8>(newRawPtr, cursor + j, arrayGetUnchecked3<UInt8>(lastStr.myData, Int64(lastStr.start) + j))
+        }
+        String(newRawPtr, 0, UInt32(sizeOfBytes))
     }
 
     @Frozen
@@ -1471,6 +2917,12 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
     }
 
     @Frozen
+    @When[env != "ohos"]
+    public exclave static unsafe func withRawData(rawData: Array<UInt8> @local!): String @local! {
+        String(rawData)
+    }
+
+    @Frozen
     public static func checkUtf8Encoding(data: Array<UInt8>): Bool {
         let arr = data.rawptr
         let endIndex = data.start + data.size
@@ -1543,6 +2995,23 @@ struct RunesToUtf8Bytes {
     }
 
     @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave static func getBytesLocal(runes: Array<Rune> @local?): Array<UInt8> @local! {
+        var itemBytes: Array<UInt8> @local! = Array<UInt8>(getSize(runes), repeat: 0)
+        var itemLen: Int64 = 0
+        for (i in 0..Int64(runes.size)) {
+            let r = runes[i]
+            if (r.isAscii()) {
+                itemBytes[itemLen] = UInt8(UInt32(r))
+                itemLen++
+            } else {
+                itemLen += Rune.intoUtf8Array(r, itemBytes, itemLen)
+            }
+        }
+        itemBytes
+    }
+
+    @OverflowWrapping
     public static func getBytes(elements: Collection<Rune>): Array<UInt8> {
         let itemBytes: Array<UInt8> = Array<UInt8>(UNICODE_TO_UTF8_MAX_LEN * elements.size, repeat: 0)
         var itemLen: Int64 = 0
@@ -1560,7 +3029,45 @@ struct RunesToUtf8Bytes {
     }
 
     @OverflowWrapping
+    @When[env != "ohos"]
+    public exclave static func getBytesLocalCollection(value: Collection<Rune> @local?): Array<UInt8> @local! {
+        // `size` prop is not dispatchable on a `@local?` interface receiver, so run two
+        // passes with fresh iterators: one to count UTF-8 bytes, one to fill the buffer.
+        var total: Int64 = 0
+        let countIt = value.iterator()
+        while (true) {
+            let r: Rune = match (countIt.next()) {
+                case Some(v) => v
+                case None => break
+            }
+            total += Rune.utf8Size(r)
+        }
+        var itemBytes: Array<UInt8> @local! = Array<UInt8>(total, repeat: 0)
+        var itemLen: Int64 = 0
+        let fillIt = value.iterator()
+        while (true) {
+            let r: Rune = match (fillIt.next()) {
+                case Some(v) => v
+                case None => break
+            }
+            itemLen += Rune.intoUtf8Array(r, itemBytes, itemLen)
+        }
+        itemBytes
+    }
+
+    @OverflowWrapping
     public static func getSize(runes: Array<Rune>): Int64 {
+        var size: Int64 = 0
+        /* Back-to-front traversal can reduce boundary checks and improve performance */
+        for (i in runes.size - 1..=0 : -1) {
+            size += Rune.utf8Size(runes[i])
+        }
+        return size
+    }
+
+    @OverflowWrapping
+    @When[env != "ohos"]
+    public static func getSize(runes: Array<Rune> @local?): Int64 {
         var size: Int64 = 0
         /* Back-to-front traversal can reduce boundary checks and improve performance */
         for (i in runes.size - 1..=0 : -1) {

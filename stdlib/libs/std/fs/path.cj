@@ -22,6 +22,17 @@ public func canonicalize(path: String): Path {
     return Path(processPathHeader(path, Path.canonicalizePath(path)))
 }
 
+@When[env != "ohos"]
+public func canonicalize(path: String @local!): Path @local! {
+    exclave {
+        PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
+        if (!exists(path)) {
+            throw FSException("Failed to canonical: the input path `${path}` may not exist or permission denied!")
+        }
+        Path(processPathHeader(path, Path.canonicalizePath(path))) @local!
+    }
+}
+
 public func canonicalize(path: Path): Path {
     PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
 
@@ -30,6 +41,18 @@ public func canonicalize(path: Path): Path {
         throw FSException("Failed to canonicalize path '${path}': path does not exist or permission denied.")
     }
     return Path(processPathHeader(rawPath, Path.canonicalizePath(rawPath)))
+}
+
+@When[env != "ohos"]
+public func canonicalize(path: Path @local!): Path @local! {
+    exclave {
+        PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
+        let rawPath = path._rawPath
+        if (!exists(rawPath)) {
+            throw FSException("Failed to canonical: the input path `${rawPath}` may not exist or permission denied!")
+        }
+        Path(processPathHeader(rawPath, Path.canonicalizePath(rawPath))) @local!
+    }
 }
 
 @When[os != "Windows"]
@@ -58,6 +81,10 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
     public init(rawPath: String) {
         _rawPath = rawPath
     }
+    @When[env != "ohos"]
+    public exclave init(this @local!, rawPath: String @local!) {
+        _rawPath = rawPath
+    }
 
     /**
      * @throws IllegalArgumentException while path contains null character,
@@ -69,6 +96,15 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
             return getParent(_rawPath)
         }
     }
+    @When[env != "ohos"]
+    public prop parent: Path @local! {
+        get() {
+            exclave {
+                PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
+                getParent(_rawPath)
+            }
+        }
+    }
 
     /**
      * @throws IllegalArgumentException while path contains null character,
@@ -78,6 +114,15 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         get() {
             PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
             return getFileName(_rawPath)
+        }
+    }
+    @When[env != "ohos"]
+    public prop fileName: String @local? {
+        get() {
+            exclave {
+                PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
+                getFileName(_rawPath)
+            }
         }
     }
 
@@ -119,6 +164,11 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
         return isAbsolutePath(_rawPath)
     }
+    @When[env != "ohos"]
+    public func isAbsolute(this @local?): Bool {
+        PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
+        isAbsolutePath(_rawPath)
+    }
 
     /**
      * @throws IllegalArgumentException while path contains null character,
@@ -129,7 +179,31 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return !isAbsolutePath(_rawPath)
     }
 
-    private func checkWindowsSpecialPrefix(path: String) {
+    @When[env != "ohos"]
+    private func checkWindowsSpecialPrefix(this @local?, path: String @local?): Unit {
+        if (!isWindows) {
+            return
+        }
+        let specialPrefix = #"\??\"#
+        if (path.size < specialPrefix.size) {
+            return
+        }
+        for (i in 0..(path.size - specialPrefix.size + 1)) {
+            var matched = true
+            for (j in 0..specialPrefix.size) {
+                if (path[i + j] != specialPrefix[j]) {
+                    matched = false
+                    break
+                }
+            }
+            if (matched) {
+                throw IllegalArgumentException("Invalid path '${path}': cannot contain '${specialPrefix}'.")
+            }
+        }
+    }
+
+    @When[env == "ohos"]
+    private func checkWindowsSpecialPrefix(path: String): Unit {
         if (!isWindows) {
             return
         }
@@ -165,6 +239,36 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return Path(newPath)
     }
 
+    @When[env != "ohos"]
+    public func join(this @local!, path: String @local!): Path @local! {
+        exclave {
+            PathValidator.throwIfContainsNullByte("path", path, true)
+            PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
+
+            if (path.isEmpty()) {
+                if (isSlash(_rawPath[_rawPath.size - 1])) {
+                    return this
+                }
+                var sb = StringBuilder() @local!
+                sb.append(_rawPath)
+                sb.append(SLASH_STRING)
+                return Path(sb.toString()) @local!
+            }
+            if (isAbsolutePath(path)) {
+                throw FSException("The input path `${path}` cannot be an absolute path!")
+            }
+            var sb = StringBuilder() @local!
+            sb.append(_rawPath)
+            if (!isSlash(_rawPath[_rawPath.size - 1])) {
+                sb.append(SLASH_STRING)
+            }
+            sb.append(path)
+            let newPath = sb.toString()
+            checkWindowsSpecialPrefix(newPath)
+            Path(newPath) @local!
+        }
+    }
+
     /**
      * @throws IllegalArgumentException while path contains null character,
      * or path is empty.
@@ -173,7 +277,18 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return join(path.toString())
     }
 
+    @When[env != "ohos"]
+    public func join(this @local!, path: Path @local!): Path @local! {
+        exclave {
+            join(path._rawPath)
+        }
+    }
+
     public func isEmpty(): Bool {
+        _rawPath.isEmpty()
+    }
+    @When[env != "ohos"]
+    public func isEmpty(this @local?): Bool {
         _rawPath.isEmpty()
     }
 
@@ -325,6 +440,10 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
     public func toString(): String {
         return _rawPath
     }
+    @When[env != "ohos"]
+    public exclave func toString(this @local?): String @local! {
+        _rawPath.toString()
+    }
 
     /**
      * @throws FSException if cPath is invalid
@@ -354,11 +473,48 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
             realPathArr.slice(0, availLen)
         }
     }
+
+    @When[env != "ohos"]
+    static func canonicalizePath(pathStr: String @local!): Array<Byte> @local! {
+        exclave {
+            unsafe {
+                var realPathArr: Array<Byte> @local! = Array<Byte>(PATH_MAX_SIZE, repeat: 0)
+                let cPath = LibC.mallocCString(pathStr)
+                let arrPtr: CPointerHandle<Byte> @local? = acquireArrayRawData(realPathArr)
+                let resultptr = CJ_FS_NormalizePath(cPath, arrPtr.pointer)
+                releaseArrayRawData(arrPtr)
+                LibC.free(cPath)
+                if (resultptr.isNull()) {
+                    throw FSException("Failed malloc in C code!")
+                }
+                let result = resultptr.read()
+                LibC.free(resultptr)
+                let availLen = result.rtnCode
+                if (availLen <= 0) {
+                    try {
+                        let errMessage = result.msg.toString()
+                        throw FSException("Failed to canonical path `${pathStr}` return ${result.rtnCode}: \"${errMessage.trimAscii()}\".")
+                    } finally {
+                        LibC.free(result.msg)
+                    }
+                }
+                realPathArr.slice(0, availLen)
+            }
+        }
+    }
 }
 
 class PathValidator {
     private init() {} // static class
 
+    @When[env != "ohos"]
+    static func throwIfEmpty(name: String, path: String @local?, isInput: Bool): Unit {
+        if (path.isEmpty()) {
+            throw IllegalArgumentException(generateExceptionMessage(name, "cannot be empty", isInput))
+        }
+    }
+
+    @When[env == "ohos"]
     static func throwIfEmpty(name: String, path: String, isInput: Bool): Unit {
         if (path.isEmpty()) {
             throw IllegalArgumentException(generateExceptionMessage(name, "cannot be empty", isInput))
@@ -371,13 +527,40 @@ class PathValidator {
         }
     }
 
-    static func throwIfEmptyOrContainsNullByte(name: String, path: Path, isInput: Bool): Unit {
+    @When[env != "ohos"]
+    static func throwIfContainsNullByte(name: String, path: String @local?, isInput: Bool): Unit {
+        for (i in 0..path.size) {
+            if (path[i] == 0) {
+                let bytes = Array<Byte>(path.size, repeat: 0)
+                for (j in 0..path.size) {
+                    bytes[j] = path[j]
+                }
+                throw IllegalArgumentException(
+                    generateExceptionMessage(name, "value '${bytes}' contains null character", isInput))
+            }
+        }
+    }
+
+    @When[env != "ohos"]
+    static func throwIfEmptyOrContainsNullByte(name: String, path: Path @local?, isInput: Bool): Unit {
         throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }
 
+    @When[env != "ohos"]
+    static func throwIfEmptyOrContainsNullByte(name: String, path: String @local?, isInput: Bool): Unit {
+        throwIfEmpty(name, path, isInput)
+        throwIfContainsNullByte(name, path, isInput)
+    }
+
+    @When[env == "ohos"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: String, isInput: Bool): Unit {
         throwIfEmpty(name, path, isInput)
         throwIfContainsNullByte(name, path, isInput)
+    }
+
+    @When[env == "ohos"]
+    static func throwIfEmptyOrContainsNullByte(name: String, path: Path, isInput: Bool): Unit {
+        throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }
 
     private static func generateExceptionMessage(name: String, postfix: String, isInput: Bool): String {

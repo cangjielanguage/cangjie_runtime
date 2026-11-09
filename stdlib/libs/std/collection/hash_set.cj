@@ -82,6 +82,18 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         this.myMap = HashMap<T, Unit>(capacity)
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    public exclave init(this @local!) {
+        myMap = HashMap<T, Unit>()
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    public exclave init(this @local!, capacity: Int64) {
+        myMap = HashMap<T, Unit>(capacity)
+    }
+
     /**
      * Constructs a hash map with an incoming size and an initial element for initialization.
      *
@@ -105,6 +117,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
      */
     @Frozen
     public func contains(element: T): Bool {
+        return myMap.contains(element)
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func contains(this @local!, element: T @local!): Bool {
         return myMap.contains(element)
     }
 
@@ -155,6 +173,15 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         }
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func add(this @local!, element: T @local!): Bool {
+        return match (this.myMap.add(element, ())) {
+            case None => true
+            case _ => false
+        }
+    }
+
     /**
      * Removes the key-value pair corresponding to the key based on the specified key from this mapping, if one exists.
      *
@@ -182,6 +209,17 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     public func add(all!: Collection<T>): Unit {
         for (i in all) {
             this.myMap.add(i, ())
+        }
+    }
+
+    /**
+     * Add all elements from another local HashSet.
+     */
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func add(this @local!, all!: HashSet<T> @local!): Unit {
+        for ((k, _) in all.myMap) {
+            this.myMap.add(k, ())
         }
     }
 
@@ -472,6 +510,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return this.myMap.keys().iterator()
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func iterator(this @local!): Iterator<T> @local! {
+        myMap.keys().iterator()
+    }
+
     /**
      * Returns sizes of key-value.
      *
@@ -498,6 +542,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return myMap.isEmpty()
     }
 
+    @When[env != "ohos"]
+    @Frozen
+    public func isEmpty(this @local?): Bool {
+        return myMap.isEmpty()
+    }
+
     /**
      * Returns the element in this HashSet as an Array.
      *
@@ -505,6 +555,12 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
      */
     @Frozen
     public func toArray(): Array<T> {
+        return myMap.keys().toArray()
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    public exclave func toArray(this @local!): Array<T> @local! {
         return myMap.keys().toArray()
     }
 
@@ -575,7 +631,6 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return result
     }
 }
-
 /**
  * Defines the HashSet inherits the Equalable method and determines whether = = and! = methods.
  *

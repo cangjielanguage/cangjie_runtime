@@ -8,6 +8,7 @@
 #ifndef MRT_STATE_WORD_H
 #define MRT_STATE_WORD_H
 #include <atomic>
+#include <type_traits>
 
 #include "Base/Log.h"
 #include "Common/TypeDef.h"
@@ -27,15 +28,18 @@ public:
 
         // states for object from-version which has been forwarded.
         FORWARDED = 3,
+
+        // Local objects do not participate in GC forwarding or object locking.
+        LOCAL_OBJECT = 4,
     };
 
-    static constexpr size_t STATE_BIT_COUNT = 2;
+    static constexpr size_t STATE_BIT_COUNT = 3;
 
     // constructure and destructure
     ObjectState() { SetStateBits(0); }
     ObjectState(uint16_t word) : stateBits(word) {}
     ObjectState(ObjectStateCode state) : stateBits(static_cast<uint16_t>(state)) {}
-    ObjectState(const ObjectState& state) : stateBits(state.GetStateBits()) {}
+    ObjectState(const ObjectState& state) = default;
 
     ~ObjectState() = default;
 
@@ -47,11 +51,11 @@ public:
     bool IsForwardableState() const { return GetStateCode() == NORMAL; }
     bool IsLockedState() const { return GetStateCode() == LOCKED; }
     bool IsForwardedState() const { return GetStateCode() == FORWARDED; }
+    bool IsLocalObject() const { return GetStateCode() == LOCAL_OBJECT; }
 
     union {
         struct {
-            // the address of class metadata is at least 8-byte aligned.
-            // so the lowest 3 bits can be reused to encode state.
+            // The low bits encode the object state.
             uint16_t stateCode : STATE_BIT_COUNT;
         };
         uint16_t stateBits;
@@ -113,6 +117,12 @@ public:
 #endif
     }
 
+    void InitializeLocal(TypeInfo* newTypeInfo)
+    {
+        SetTypeInfo(newTypeInfo);
+        SetStateCode(ObjectState::LOCAL_OBJECT);
+    }
+
     bool IsValidStateWord() const { return GetTypeInfo() != nullptr; }
     StateWord GetStateWord() const
     {
@@ -128,6 +138,7 @@ public:
 
     bool IsForwardableState() const { return objectState.IsForwardableState(); }
     bool IsForwardedState() const { return objectState.IsForwardedState(); }
+    bool IsLocalObject() const { return objectState.IsLocalObject(); }
 
     bool IsLockedWord() const { return objectState.IsLockedState(); }
     void SetStateCode(ObjectState::ObjectStateCode state) { objectState.SetStateCode(state); }
@@ -176,6 +187,7 @@ private:
 #endif
 };
 
+static_assert(std::is_trivially_copyable<StateWord>::value, "StateWord must support whole-header initialization");
 static_assert(sizeof(StateWord) == sizeof(uint64_t), "illegal size of StateBits");
 } // namespace MapleRuntime
 #endif // MRT_STATE_WORD_H

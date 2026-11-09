@@ -263,6 +263,51 @@ public interface Comparable<T> <: Equatable<T> & Less<T> & Greater<T> & LessOrEq
             case _ => false
         }
     }
+
+    @When[env != "ohos"]
+    func compare(this @local?, other: T @local?): Ordering {
+        throw UnimplementedException("Current Type does not implement 'compare' method for its @local? instance")
+    }
+
+    @When[env != "ohos"]
+    operator func ==(this @local?, other: T @local?): Bool {
+        return match (this.compare(other)) {
+            case EQ => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    operator func <(this @local?, other: T @local?): Bool {
+        return match (this.compare(other)) {
+            case LT => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    operator func >(this @local?, other: T @local?): Bool {
+        return match (this.compare(other)) {
+            case GT => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    operator func <=(this @local?, other: T @local?): Bool {
+        return match (this.compare(other)) {
+            case LT | EQ => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    operator func >=(this @local?, other: T @local?): Bool {
+        return match (this.compare(other)) {
+            case GT | EQ => true
+            case _ => false
+        }
+    }
 }
 
 extend Ordering <: ToString {
@@ -271,6 +316,17 @@ extend Ordering <: ToString {
             case GT => "Ordering.GT"
             case LT => "Ordering.LT"
             case EQ => "Ordering.EQ"
+        }
+    }
+
+    @When[env != "ohos"]
+    public func toString(this @local?): String @local! {
+        exclave {
+            return match (this) {
+                case GT => "Ordering.GT"
+                case LT => "Ordering.LT"
+                case EQ => "Ordering.EQ"
+            }
         }
     }
 }
@@ -286,6 +342,60 @@ extend Ordering <: Comparable<Ordering> {
             case _ => GT
         }
     }
+
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Ordering @local?): Ordering {
+        return match ((this, other)) {
+            case (LT, LT) | (EQ, EQ) | (GT, GT) => EQ
+            case (LT, EQ) | (LT, GT) | (EQ, GT) => LT
+            case _ => GT
+        }
+    }
+
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Ordering @local?): Bool {
+        return match ((this, other)) {
+            case (LT, LT) | (EQ, EQ) | (GT, GT) => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Ordering @local?): Bool {
+        !(this == other)
+    }
+
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Ordering @local?): Bool {
+        return match ((this, other)) {
+            case (LT, EQ) | (LT, GT) | (EQ, GT) => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Ordering @local?): Bool {
+        return match ((this, other)) {
+            case (GT, EQ) | (GT, LT) | (EQ, LT) => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Ordering @local?): Bool {
+        return match ((this, other)) {
+            case (LT, LT) | (EQ, EQ) | (GT, GT) | (LT, EQ) | (LT, GT) | (EQ, GT) => true
+            case _ => false
+        }
+    }
+
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Ordering @local?): Bool {
+        return match ((this, other)) {
+            case (LT, LT) | (EQ, EQ) | (GT, GT) | (EQ, LT) | (GT, EQ) | (GT, LT) => true
+            case _ => false
+        }
+    }
 }
 
 extend IntNative <: Comparable<IntNative> {
@@ -296,6 +406,65 @@ extend IntNative <: Comparable<IntNative> {
             case _ => Ordering.EQ
         }
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: IntNative @local?): Ordering {
+        let a: IntNative = this
+        let b: IntNative = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: IntNative @local!): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: IntNative @local!): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: IntNative @local?): Bool {
+        let a: IntNative = this
+        let b: IntNative = other
+        a >= b
+    }
+
 }
 
 extend Int64 <: Comparable<Int64> {
@@ -306,6 +475,66 @@ extend Int64 <: Comparable<Int64> {
             case _ => Ordering.EQ
         }
     }
+
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Int64 @local?): Ordering {
+        let a: Int64 = this
+        let b: Int64 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Int64 @local!): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Int64 @local!): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Int64 @local?): Bool {
+        let a: Int64 = this
+        let b: Int64 = other
+        a >= b
+    }
+
 
     @Frozen
     public operator func <(other: Int64): Bool {
@@ -376,6 +605,65 @@ extend Int32 <: Comparable<Int32> {
     public operator func !=(other: Int32): Bool {
         return Int32NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Int32 @local?): Ordering {
+        let a: Int32 = this
+        let b: Int32 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Int32 @local!): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Int32 @local!): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Int32 @local?): Bool {
+        let a: Int32 = this
+        let b: Int32 = other
+        a >= b
+    }
+
 }
 
 extend Int16 <: Comparable<Int16> {
@@ -416,6 +704,65 @@ extend Int16 <: Comparable<Int16> {
     public operator func !=(other: Int16): Bool {
         return Int16NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Int16 @local?): Ordering {
+        let a: Int16 = this
+        let b: Int16 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Int16 @local!): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Int16 @local!): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Int16 @local?): Bool {
+        let a: Int16 = this
+        let b: Int16 = other
+        a >= b
+    }
+
 }
 
 extend Int8 <: Comparable<Int8> {
@@ -456,6 +803,65 @@ extend Int8 <: Comparable<Int8> {
     public operator func !=(other: Int8): Bool {
         return Int8NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Int8 @local?): Ordering {
+        let a: Int8 = this
+        let b: Int8 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Int8 @local!): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Int8 @local!): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Int8 @local?): Bool {
+        let a: Int8 = this
+        let b: Int8 = other
+        a >= b
+    }
+
 }
 
 extend UIntNative <: Comparable<UIntNative> {
@@ -466,6 +872,65 @@ extend UIntNative <: Comparable<UIntNative> {
             case _ => Ordering.EQ
         }
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: UIntNative @local?): Ordering {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: UIntNative @local!): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: UIntNative @local!): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: UIntNative @local?): Bool {
+        let a: UIntNative = this
+        let b: UIntNative = other
+        a >= b
+    }
+
 }
 
 extend UInt64 <: Comparable<UInt64> {
@@ -506,6 +971,65 @@ extend UInt64 <: Comparable<UInt64> {
     public operator func !=(other: UInt64): Bool {
         return UInt64NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: UInt64 @local?): Ordering {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: UInt64 @local!): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: UInt64 @local!): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: UInt64 @local?): Bool {
+        let a: UInt64 = this
+        let b: UInt64 = other
+        a >= b
+    }
+
 }
 
 extend UInt32 <: Comparable<UInt32> {
@@ -546,6 +1070,65 @@ extend UInt32 <: Comparable<UInt32> {
     public operator func !=(other: UInt32): Bool {
         return UInt32NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: UInt32 @local?): Ordering {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: UInt32 @local!): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: UInt32 @local!): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: UInt32 @local?): Bool {
+        let a: UInt32 = this
+        let b: UInt32 = other
+        a >= b
+    }
+
 }
 
 extend UInt16 <: Comparable<UInt16> {
@@ -586,6 +1169,65 @@ extend UInt16 <: Comparable<UInt16> {
     public operator func !=(other: UInt16): Bool {
         return UInt16NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: UInt16 @local?): Ordering {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: UInt16 @local!): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: UInt16 @local!): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: UInt16 @local?): Bool {
+        let a: UInt16 = this
+        let b: UInt16 = other
+        a >= b
+    }
+
 }
 
 extend UInt8 <: Comparable<UInt8> {
@@ -626,6 +1268,65 @@ extend UInt8 <: Comparable<UInt8> {
     public operator func !=(other: UInt8): Bool {
         return UInt8NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: UInt8 @local?): Ordering {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: UInt8 @local!): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: UInt8 @local!): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: UInt8 @local?): Bool {
+        let a: UInt8 = this
+        let b: UInt8 = other
+        a >= b
+    }
+
 }
 
 extend Float16 <: Comparable<Float16> {
@@ -666,6 +1367,65 @@ extend Float16 <: Comparable<Float16> {
     public operator func !=(other: Float16): Bool {
         return Float16NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Float16 @local?): Ordering {
+        let a: Float16 = this
+        let b: Float16 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Float16 @local!): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Float16 @local!): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Float16 @local?): Bool {
+        let a: Float16 = this
+        let b: Float16 = other
+        a >= b
+    }
+
 }
 
 extend Float32 <: Comparable<Float32> {
@@ -706,6 +1466,65 @@ extend Float32 <: Comparable<Float32> {
     public operator func !=(other: Float32): Bool {
         return Float32NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Float32 @local?): Ordering {
+        let a: Float32 = this
+        let b: Float32 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Float32 @local!): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Float32 @local!): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Float32 @local?): Bool {
+        let a: Float32 = this
+        let b: Float32 = other
+        a >= b
+    }
+
 }
 
 extend Float64 <: Comparable<Float64> {
@@ -746,6 +1565,65 @@ extend Float64 <: Comparable<Float64> {
     public operator func !=(other: Float64): Bool {
         return Float64NotEqual(this, other)
     }
+    @When[env != "ohos"]
+    public func compare(this @local?, other: Float64 @local?): Ordering {
+        let a: Float64 = this
+        let b: Float64 = other
+        match {
+            case a < b => Ordering.LT
+            case a > b => Ordering.GT
+            case _ => Ordering.EQ
+        }
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local!, other: Float64 @local!): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func ==(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a == b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local!, other: Float64 @local!): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func !=(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a != b
+    }
+    @When[env != "ohos"]
+    public operator func <(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a < b
+    }
+    @When[env != "ohos"]
+    public operator func >(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a > b
+    }
+    @When[env != "ohos"]
+    public operator func <=(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a <= b
+    }
+    @When[env != "ohos"]
+    public operator func >=(this @local?, other: Float64 @local?): Bool {
+        let a: Float64 = this
+        let b: Float64 = other
+        a >= b
+    }
+
 }
 
 @Frozen

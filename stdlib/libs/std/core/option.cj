@@ -8,6 +8,15 @@
 
 package std.core
 
+/**
+ * An optional value.
+ *
+ * Known experimental local-mode limitation: matching an `Option<T> @local!` in
+ * generic code can corrupt a payload reference and abort during GC. This also
+ * applies to local Option values returned by Array/ArrayList/HashMap iterators.
+ * Use a heap-mode Option/iterator or a non-generic consumer with a concrete
+ * payload type until generic local match-unpacking is supported.
+ */
 public enum Option<T> {
     Some(T)
     | None
@@ -24,10 +33,34 @@ public enum Option<T> {
     }
 
     /*
+     * @throws NoneValueException if the value of Option is None
+     */
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func getOrThrow(this @local!): T @local! {
+        match (this) {
+            case Some(v) => v
+            case None => throw NoneValueException()
+        }
+    }
+
+    /*
      * @throws input Exception if the value of Option is None
      */
     @Frozen
     public func getOrThrow(exception: () -> Exception): T {
+        match (this) {
+            case Some(v) => v
+            case None => throw exception()
+        }
+    }
+
+    /*
+     * @throws input Exception if the value of Option is None
+     */
+    @Frozen
+    @When[env != "ohos"]
+    public exclave func getOrThrow(this @local!, exception: () -> Exception): T @local! {
         match (this) {
             case Some(v) => v
             case None => throw exception()
@@ -51,7 +84,25 @@ public enum Option<T> {
     }
 
     @Frozen
+    @When[env != "ohos"]
+    public func isNone(this @local?): Bool {
+        match (this) {
+            case None => true
+            case Some(_) => false
+        }
+    }
+
+    @Frozen
     public func isSome(): Bool {
+        match (this) {
+            case Some(_) => true
+            case None => false
+        }
+    }
+
+    @Frozen
+    @When[env != "ohos"]
+    public func isSome(this @local?): Bool {
         match (this) {
             case Some(_) => true
             case None => false
@@ -118,10 +169,23 @@ extend<T> Option<T> <: ToString where T <: ToString {
             case None => "None"
         }
     }
+    // toString(this @local?) is not implemented (open defect, localized 2026-10-16): a generic
+    // `Option<T> @local!` match-unpack yields a corrupted payload reference; GC scanning reports
+    // "heap object must not reference local object" -> SIGABRT. Construction and predicates
+    // (isSome/getOrThrow) are fine; only generic match-unpack triggers it; non-generic
+    // (Option<String>) is fine. Repro: exclave func f<T>(o: Option<T> @local!) { match (o) { case Some(v) => 1; case _ => 0 } }
 }
 
 extend<T> Option<T> <: Hashable where T <: Hashable {
     public func hashCode(): Int64 {
+        return match (this) {
+            case Some(v) => v.hashCode()
+            case None => 0
+        }
+    }
+
+    @When[env != "ohos"]
+    public func hashCode(this @local?): Int64 {
         return match (this) {
             case Some(v) => v.hashCode()
             case None => 0

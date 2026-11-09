@@ -169,3 +169,7 @@ $ rm -rf <path>/<to>/cangjie
 - 如果选择 `zip` 格式的安装包进行的安装，删除仓颉工具链的安装包目录，同时移除上述环境变量设置（若有），即可完成卸载。
 
 若需要更新仓颉工具链，需要先卸载当前版本，然后按上述指导重新安装最新版本的仓颉工具链。
+
+## local mode 构建开关
+
+`CANGJIE_ENABLE_LOCAL_MODE` 控制 `add_cangjie_library` 是否传入 `--experimental --enable-local-mode`。单独复用该 CMake 模块时默认 `OFF`，需要使用 `-DCANGJIE_ENABLE_LOCAL_MODE=ON` 显式启用。本分支标准库源码包含 local-mode 声明，因此标准库主工程显式默认 `ON`，并在配置时显示该值。此选项保存在 CMake 缓存中；对于不依赖该特性的源码，可以通过 `-DCANGJIE_ENABLE_LOCAL_MODE=OFF` 关闭。

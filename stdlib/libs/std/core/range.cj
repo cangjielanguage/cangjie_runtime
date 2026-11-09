@@ -83,6 +83,23 @@ public struct Range<T> <: Iterable<T> where T <: Countable<T> & Comparable<T> & 
     }
 }
 
+// CJEEP-005 §3.4.1 asks for a conditional Copyable conformance on Range:
+//   extend<T> Range<T> <: Copyable where T <: Copyable {}
+// The compiler cannot express it. Marking Range as a copy type requires the
+// T-typed fields `start`/`end` to be unconditionally Copyable, which the struct's
+// own bound `where T <: Countable<T> & Comparable<T> & Equatable<T>` does not
+// provide:
+//   error: cannot declare field 'start' of non copy type 'Generics-T' in copy type 'Range'
+// The failure is not about the bound being too narrow: extending the conformance
+// bound to `where T <: Copyable & Countable<T> & Comparable<T> & Equatable<T>`, and
+// the unconditional form, both fail the same way. What is missing is the ability to
+// give the conformance's own type parameter a constraint that the struct body does
+// not repeat for its fields: the struct's `start`/`end` are declared as `T` under
+// the struct bound, and adding Copyable only on the extension cannot make those
+// fields copy types.
+// Range stays non-Copyable, so it also stays outside the local-mode surface: its
+// members are Copyable values (Range<IntXX>), which need no local adaptation.
+
 public class RangeIterator<T> <: Iterator<T> where T <: Countable<T> & Comparable<T> & Equatable<T> {
     private let _last: T
     private let _step: Int64

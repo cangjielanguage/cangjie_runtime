@@ -21,6 +21,19 @@ public func print(str: String, flush!: Bool = false): Unit {
 }
 
 @Frozen
+@When[env != "ohos"]
+public func print(str: String @local?, flush!: Bool = false): Unit {
+    unsafe {
+        var cp = acquireArrayRawData(str.rawData())
+        let ret = CJ_CORE_PrintUTF8(cp.pointer, str.size, false, flush)
+        releaseArrayRawData(cp)
+        if (ret == -1) {
+            throw OutOfMemoryError()
+        }
+    }
+}
+
+@Frozen
 public func println(): Unit {
     unsafe {
         CJ_CORE_PrintChar(UInt32(r'\n'), false, false)
@@ -29,6 +42,19 @@ public func println(): Unit {
 
 @Frozen
 public func println(str: String): Unit {
+    unsafe {
+        var cp = acquireArrayRawData(str.rawData())
+        let ret = CJ_CORE_PrintUTF8(cp.pointer, str.size, true, false)
+        releaseArrayRawData(cp)
+        if (ret == -1) {
+            throw OutOfMemoryError()
+        }
+    }
+}
+
+@Frozen
+@When[env != "ohos"]
+public func println(str: String @local?): Unit {
     unsafe {
         var cp = acquireArrayRawData(str.rawData())
         let ret = CJ_CORE_PrintUTF8(cp.pointer, str.size, true, false)

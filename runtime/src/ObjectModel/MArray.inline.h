@@ -139,5 +139,47 @@ inline MArray* MArray::NewKnownWidthArray(MIndex nElems, TypeInfo& arrayClass, c
     }
     return nullptr;
 }
+
+inline MArray* MArray::NewLocalArray(MIndex nElems, TypeInfo& arrayClass)
+{
+    DCHECK_D(arrayClass.IsArrayType(), "Expect an array type");
+    if (arrayClass.GetComponentTypeInfo()->IsObjectType()) {
+        return NewLocalRefArray(nElems, arrayClass);
+    }
+
+    auto elem = arrayClass.GetSuperTypeInfo();
+    auto elemBytes = sizeof(void*);
+    if (!elem->IsRef()) {
+        elemBytes = arrayClass.GetSuperTypeInfo()->GetComponentSize();
+    }
+    return NewLocalKnownWidthArray(nElems, arrayClass, elemBytes);
+}
+
+inline MArray* MArray::NewLocalRefArray(MIndex nElems, TypeInfo& arrayClass)
+{
+    return NewLocalKnownWidthArray(nElems, arrayClass, RefField<>::GetSize());
+}
+
+inline MArray* MArray::NewLocalKnownWidthArray(MIndex nElems, TypeInfo& arrayClass, const U32 elemBytes)
+{
+    DCHECK_D(arrayClass.IsArrayType(), "Expect an array type");
+    MIndex arraySize = CalculateArraySize(nElems, elemBytes);
+    if (UNLIKELY(arraySize == MAX_ARRAY_SIZE || arraySize > Heap::GetHeap().GetMaxCapacity())) {
+        ExceptionManager::OutOfMemory();
+        return nullptr;
+    }
+    auto address = HeapManager::AllocateLocal(arraySize);
+    if (LIKELY(address != NULL_ADDRESS)) {
+        MArray* newArray = reinterpret_cast<MArray*>(SetLocalClassInfo(address, &arrayClass));
+        newArray->SetLength(nElems);
+#if defined(__OHOS__) && (__OHOS__ == 1)
+        if (CjAllocData::GetCjAllocData()->IsRecording()) {
+            CjAllocData::GetCjAllocData()->RecordAllocNodes(&arrayClass, arraySize);
+        }
+#endif
+        return newArray;
+    }
+    return nullptr;
+}
 } // namespace MapleRuntime
 #endif // MRT_MARRAY_INLINE_H

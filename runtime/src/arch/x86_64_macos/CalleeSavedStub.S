@@ -69,6 +69,45 @@
     .cfi_endproc
 .endm
 
+.macro LocalRegionStub, funcName
+    .cfi_startproc
+    pushq   %rbp
+    .cfi_def_cfa_offset 16
+    .cfi_offset %rbp, -16
+    movq    %rsp, %rbp
+    .cfi_def_cfa_register %rbp
+    subq    $CalleeSavedRegistersStubFrameSize, %rsp
+
+    movq    %r15, -8(%rbp)
+    movq    %r14, -16(%rbp)
+    movq    %r13, -24(%rbp)
+    movq    %r12, -32(%rbp)
+    movq    %rbx, -40(%rbp)
+    .cfi_rel_offset %rbx, -40
+    .cfi_rel_offset %r12, -32
+    .cfi_rel_offset %r13, -24
+    .cfi_rel_offset %r14, -16
+    .cfi_rel_offset %r15, -8
+
+    movq    0(%rbp), %rdi
+    callq   _\funcName
+
+    callq   _MRT_GetThreadLocalData
+    movq    %rax,  %r15
+
+    addq    $CalleeSavedRegistersStubFrameSize, %rsp
+
+    movq    -16(%rbp), %r14
+    movq    -24(%rbp), %r13
+    movq    -32(%rbp), %r12
+    movq    -40(%rbp), %rbx
+
+    popq    %rbp
+    .cfi_def_cfa %rsp, 8
+    retq
+    .cfi_endproc
+.endm
+
 .global _unwindPCForC2RStubStart
 _unwindPCForC2RStubStart:
 
@@ -311,6 +350,84 @@ _CJ_MCC_NewAndInitEnumTupleObject:
     .global _CJ_MCC_GetAssociatedValues
 _CJ_MCC_GetAssociatedValues:
     CalleeSavedRegistersStub MCC_GetAssociatedValues
+
+    .text
+    .align 2
+    .global _CJ_MCC_StartLocalRegion
+_CJ_MCC_StartLocalRegion:
+    LocalRegionStub MCC_StartLocalRegion
+
+    .text
+    .align 2
+    .global _CJ_MCC_EndLocalRegion
+_CJ_MCC_EndLocalRegion:
+    LocalRegionStub MCC_EndLocalRegion
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalObject
+_CJ_MCC_NewLocalObject:
+    CalleeSavedRegistersStub MCC_NewLocalObject
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalFinalizer
+_CJ_MCC_NewLocalFinalizer:
+    CalleeSavedRegistersStub MCC_NewLocalFinalizer
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalArray
+_CJ_MCC_NewLocalArray:
+    CalleeSavedRegistersStub MCC_NewLocalArray
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalObjArray
+_CJ_MCC_NewLocalObjArray:
+    CalleeSavedRegistersStub MCC_NewLocalObjArray
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalArray8
+_CJ_MCC_NewLocalArray8:
+    CalleeSavedRegistersStub MCC_NewLocalArray8
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalArray16
+_CJ_MCC_NewLocalArray16:
+    CalleeSavedRegistersStub MCC_NewLocalArray16
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalArray32
+_CJ_MCC_NewLocalArray32:
+    CalleeSavedRegistersStub MCC_NewLocalArray32
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalArray64
+_CJ_MCC_NewLocalArray64:
+    CalleeSavedRegistersStub MCC_NewLocalArray64
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalGenericObject
+_CJ_MCC_NewLocalGenericObject:
+    CalleeSavedRegistersStub MCC_NewLocalGenericObject
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalGenericArray
+_CJ_MCC_NewLocalGenericArray:
+    CalleeSavedRegistersStub MCC_NewLocalGenericArray
+
+    .text
+    .align 2
+    .global _CJ_MCC_NewLocalWeakRefObject
+_CJ_MCC_NewLocalWeakRefObject:
+    CalleeSavedRegistersStub MCC_NewLocalWeakRefObject
 
 .global _unwindPCForC2RStubEnd
 _unwindPCForC2RStubEnd:

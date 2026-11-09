@@ -55,30 +55,38 @@ func getStackTraceImpl(pcArray: RawArray<UInt64>): Array<StackTraceElement> {
 
 public open class Exception <: ToString {
     private var detailMessage: String = String.empty
-    private var pcArray: RawArray<UInt64> = RawArray<UInt64>(1, repeat: 0)
+    private var pcArray: RawArray<UInt64> = rawArrayAllocate<UInt64>(0)
     private var traceElementArray: Array<StackTraceElement> = []
     private var innerCause: ?Exception = None
 
     public init() {
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     public init(message: String) {
         detailMessage = message
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     @When[env != "ohos"]
     public init(message: String, causedBy: Exception) {
         detailMessage = message
         innerCause = causedBy
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     @When[env != "ohos"]
     public init(causedBy: Exception) {
         innerCause = causedBy
-        pcArray = fillInStackTrace(RawArray<UInt64>(1, repeat: 0), detailMessage.toArray().rawptr)
+        let arr = rawArrayAllocate<UInt64>(1)
+        rawArrayInitByValue(arr, 1, 0)
+        pcArray = fillInStackTrace(arr, detailMessage.toArray().rawptr)
     }
 
     protected open func getClassName(): String {
