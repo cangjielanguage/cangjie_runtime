@@ -75,6 +75,7 @@ ast 包主要包含了仓颉源码的语法解析器和仓颉语法树节点，�
 | [EnumDecl](./ast_package_api/ast_package_classes.md#class-enumdecl) | 表示一个 `Enum` 定义节点。 |
 | [EnumPattern](./ast_package_api/ast_package_classes.md#class-enumpattern) | 表示 enum 模式节点。 |
 | [ExceptTypePattern](./ast_package_api/ast_package_classes.md#class-excepttypepattern) | 表示一个用于异常模式状态下的节点。 |
+| [ExclaveExpr](./ast_package_api/ast_package_classes.md#class-exclaveexpr) | 表示 `exclave` 表达式节点。 |
 | [Expr](./ast_package_api/ast_package_classes.md#class-expr) | 所有表达式节点的父类，继承自 `Node` 节点。 |
 | [ExtendDecl](./ast_package_api/ast_package_classes.md#class-extenddecl) | 表示一个扩展定义节点。 |
 | [FeatureId](./ast_package_api/ast_package_classes.md#class-featureid) | 表示一个 feature id。 |
@@ -103,6 +104,7 @@ ast 包主要包含了仓颉源码的语法解析器和仓颉语法树节点，�
 | [MacroExpandParam](./ast_package_api/ast_package_classes.md#class-macroexpandparam) | 表示宏调用节点。 |
 | [MacroMessage](./ast_package_api/ast_package_classes.md#class-macromessage) | 记录内层宏发送的信息。 |
 | [MainDecl](./ast_package_api/ast_package_classes.md#class-maindecl) | 表示一个 `main` 函数定义节点。 |
+| [ModalInfo](./ast_package_api/ast_package_classes.md#class-modalinfo) | 表示模态类型节点，即源码中的 `@ ~local`、`@ local?` 或 `@ local!`。 |
 | [MatchCase](./ast_package_api/ast_package_classes.md#class-matchcase) | 表示 `match` 表达式中的一个 `case` 节点。 |
 | [MatchExpr](./ast_package_api/ast_package_classes.md#class-matchexpr) | 表示模式匹配表达式实现模式匹配。 |
 | [MemberAccess](./ast_package_api/ast_package_classes.md#class-memberaccess) | 表示成员访问表达式。 |
@@ -133,6 +135,7 @@ ast 包主要包含了仓颉源码的语法解析器和仓颉语法树节点，�
 | [SubscriptExpr](./ast_package_api/ast_package_classes.md#class-subscriptexpr) | 表示索引访问表达式。 |
 | [SynchronizedExpr](./ast_package_api/ast_package_classes.md#class-synchronizedexpr) | 表示 `synchronized` 表达式。 |
 | [ThisType](./ast_package_api/ast_package_classes.md#class-thistype) | 表示 `This` 类型节点。 |
+| [ThisParam](./ast_package_api/ast_package_classes.md#class-thisparam) | 表示函数或构造函数的显式 `this` 参数节点。 |
 | [ThrowExpr](./ast_package_api/ast_package_classes.md#class-throwexpr) | 表示 `throw` 表达式节点。 |
 | [Tokens](./ast_package_api/ast_package_classes.md#class-tokens) | 对 `Token` 序列进行封装的类型。 |
 | [TokensIterator](./ast_package_api/ast_package_classes.md#class-tokensiterator) | 实现 `Tokens` 的迭代器功能。 |
@@ -160,6 +163,7 @@ ast 包主要包含了仓颉源码的语法解析器和仓颉语法树节点，�
 
 |                 枚举名             |                功能                |
 | --------------------------------- | ---------------------------------- |
+| [ASTMode](./ast_package_api/ast_package_enums.md#enum-astmode) | 表示模态类型节点上携带的 local 模式。|
 | [DiagReportLevel](./ast_package_api/ast_package_enums.md#enum-diagreportlevel) | 表示报错接口的信息等级，支持 `ERROR` 和 `WARNING` 两种等级。|
 | [ImportKind](./ast_package_api/ast_package_enums.md#enum-importkind) | 表示导入语句的类型，包括单导入、别名导入、全导入和多导入四种类型。|
 | [TokenKind](./ast_package_api/ast_package_enums.md#enum-tokenkind) | 表示仓颉编译内部所有的词法结构，包括符号、关键字、标识符、换行等。|

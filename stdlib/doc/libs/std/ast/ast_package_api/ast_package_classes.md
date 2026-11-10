@@ -1604,6 +1604,17 @@ public mut prop lParen: Token
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "(" 时，抛出异常。
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置 [CallExpr](ast_package_classes.md#class-callexpr) 节点中构造调用之后的模态类型。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop rParen
 
 ```cangjie
@@ -3915,6 +3926,217 @@ main(): Unit {
 Visiting ExceptTypePattern
 ```
 
+<!--Del_sink-->
+## class ExclaveExpr
+
+```cangjie
+public class ExclaveExpr <: Expr {
+    public init()
+    public init(inputs: Tokens)
+}
+```
+
+功能：表示 `exclave` 表达式节点。
+
+> **说明：**
+>
+> `exclave` 表达式与 local 模式相关。local 模式是实验特性，需要同时开启 `--experimental` 和 `--enable-local-mode` 编译选项。
+
+父类型：
+
+- [Expr](#class-expr)
+
+### prop block
+
+```cangjie
+public mut prop block: Block
+```
+
+功能：获取或设置 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 节点中的块。
+
+类型：[Block](ast_package_classes.md#class-block)
+
+### prop keyword
+
+```cangjie
+public mut prop keyword: Token
+```
+
+功能：获取或设置 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 节点中的 `exclave` 关键字。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 `exclave` 关键字时，抛出异常。
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 对象。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 构造一个默认的 ExclaveExpr 对象
+    let exclaveExpr = ExclaveExpr()
+
+    // 设置 ExclaveExpr 的属性
+    exclaveExpr.keyword = Token(TokenKind.EXCLAVE, "exclave")
+    let block = Block()
+    block.lBrace = Token(TokenKind.LCURL, "{")
+    block.rBrace = Token(TokenKind.RCURL, "}")
+    exclaveExpr.block = block
+
+    // 输出 ExclaveExpr 节点转化成的 Tokens
+    println("exclaveExpr.toTokens(): ${exclaveExpr.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+exclaveExpr.toTokens(): exclave {
+}
+```
+
+### init(Tokens)
+
+```cangjie
+public init(inputs: Tokens)
+```
+
+功能：构造一个 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 对象。
+
+参数：
+
+- inputs: [Tokens](ast_package_classes.md#class-tokens) - 将要构造 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 类型的词法单元集合 ([Tokens](ast_package_classes.md#class-tokens))。
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当输入的 [Tokens](ast_package_classes.md#class-tokens) 类型无法构造为 [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 节点时，抛出异常。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 从 Tokens 构造 ExclaveExpr 对象
+    let exclaveExpr = ExclaveExpr(quote(exclave { 1 }))
+
+    // 输出 ExclaveExpr 节点转化成的 Tokens
+    println("exclaveExpr.toTokens(): ${exclaveExpr.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+exclaveExpr.toTokens(): exclave {
+    1
+}
+```
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+功能：将当前语法树节点转化为 [Tokens](ast_package_classes.md#class-tokens) 类型。
+
+返回值：
+
+- [Tokens](ast_package_classes.md#class-tokens) - 转化后的 [Tokens](ast_package_classes.md#class-tokens) 类型节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 构造一个默认的 ExclaveExpr 对象
+    let exclaveExpr = ExclaveExpr()
+
+    // 设置 ExclaveExpr 的属性
+    exclaveExpr.keyword = Token(TokenKind.EXCLAVE, "exclave")
+    let block = Block()
+    block.lBrace = Token(TokenKind.LCURL, "{")
+    block.rBrace = Token(TokenKind.RCURL, "}")
+    exclaveExpr.block = block
+
+    // 输出 ExclaveExpr 节点转化成的 Tokens
+    println("exclaveExpr.toTokens(): ${exclaveExpr.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+exclaveExpr.toTokens(): exclave {
+}
+```
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+功能：遍历当前语法树节点及其子节点。若要提前终止子节点遍历，可重写 `visit` 函数并调用 `breakTraverse` 函数。请参见[自定义访问函数遍历 AST 对象示例](../ast_samples/traverse.md)。
+
+参数：
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - [Visitor](ast_package_classes.md#class-visitor) 类型的实例。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ExclaveExpr) {
+        println("Visiting ExclaveExpr")
+    }
+}
+
+main(): Unit {
+    // 构造一个默认的 ExclaveExpr 对象
+    let exclaveExpr = ExclaveExpr()
+
+    // 设置 ExclaveExpr 的属性
+    exclaveExpr.keyword = Token(TokenKind.EXCLAVE, "exclave")
+    let block = Block()
+    block.lBrace = Token(TokenKind.LCURL, "{")
+    block.rBrace = Token(TokenKind.RCURL, "}")
+    exclaveExpr.block = block
+
+    // 对 ExclaveExpr 节点进行遍历
+    exclaveExpr.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ExclaveExpr
+```
+<!--DelEnd_sink-->
 ## class Expr
 
 ```cangjie
@@ -5333,6 +5555,17 @@ public mut prop lParen: Token
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "(" 时，抛出异常。
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置 [FuncDecl](ast_package_classes.md#class-funcdecl) 节点中写在 `func` 关键字之前的模态类型。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop overloadOp
 
 ```cangjie
@@ -5357,6 +5590,17 @@ public mut prop rParen: Token
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 ")" 时，抛出异常。
 
+<!--Del_sink-->
+### prop thisParam
+
+```cangjie
+public mut prop thisParam: Option<ThisParam>
+```
+
+功能：获取或设置 [FuncDecl](ast_package_classes.md#class-funcdecl) 节点中参数列表内的显式 `this` 参数。
+
+类型：[Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[ThisParam](ast_package_classes.md#class-thisparam)>
+<!--DelEnd_sink-->
 ### init()
 
 ```cangjie
@@ -10546,6 +10790,182 @@ main(): Unit {
 Visiting MainDecl
 ```
 
+<!--Del_sink-->
+## class ModalInfo
+
+```cangjie
+public class ModalInfo {}
+```
+
+功能：表示一个模态类型节点。
+
+> **说明：**
+>
+> local 模式是实验特性，需要同时开启 `--experimental` 和 `--enable-local-mode` 编译选项。
+
+### prop at
+
+```cangjie
+public mut prop at: Token
+```
+
+功能：获取或设置 [ModalInfo](ast_package_classes.md#class-modalinfo) 节点中的 `@` 操作符。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "@" 操作符时，抛出异常。
+
+### prop local
+
+```cangjie
+public mut prop local: Token
+```
+
+功能：获取或设置 [ModalInfo](ast_package_classes.md#class-modalinfo) 节点中的 `local` 标识符。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是标识符，或标识符的值不为 "local" 时，抛出异常。
+
+### prop marker
+
+```cangjie
+public mut prop marker: Token
+```
+
+功能：获取或设置 [ModalInfo](ast_package_classes.md#class-modalinfo) 节点中的模式标记，即 `@ ~local` 中的 `~`、`@ local!` 中的 `!` 或 `@ local?` 中的 `?`。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "~"、"!" 或 "?" 操作符时，抛出异常。
+
+### prop mode
+
+```cangjie
+public mut prop mode: ASTMode
+```
+
+功能：获取或设置 [ModalInfo](ast_package_classes.md#class-modalinfo) 节点的模式。
+
+类型：[ASTMode](ast_package_enums.md#enum-astmode)
+
+### func isEmpty()
+
+```cangjie
+public func isEmpty(): Bool
+```
+
+功能：判断当前 [ModalInfo](ast_package_classes.md#class-modalinfo) 节点是否未标注模式。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 未标注模式（模式为 `MODAL_NONE`）返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 构造未标注模式的 ThisParam，其 modal 为空 ModalInfo
+    let thisParam1 = ThisParam()
+
+    println("modal1.isEmpty(): ${thisParam1.modal.isEmpty()}")
+
+    // 构造已标注模式的 ThisParam
+    let thisParam2 = ThisParam(quote(this @local!))
+
+    println("modal2.isEmpty(): ${thisParam2.modal.isEmpty()}")
+}
+```
+
+运行结果：
+
+```text
+modal1.isEmpty(): true
+modal2.isEmpty(): false
+```
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+功能：将当前语法树节点转化为 [Tokens](ast_package_classes.md#class-tokens) 类型。未标注模式时返回空的 [Tokens](ast_package_classes.md#class-tokens)。
+
+返回值：
+
+- [Tokens](ast_package_classes.md#class-tokens) - 转化后的 [Tokens](ast_package_classes.md#class-tokens) 类型节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    let thisParam = ThisParam(quote(this @local!))
+
+    // 输出 ModalInfo 节点转化成的 Tokens
+    println("modal.toTokens(): ${thisParam.modal.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+modal.toTokens(): @local!
+```
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+功能：遍历当前语法树节点及其子节点。该节点没有子节点；未标注模式（[isEmpty](#func-isempty) 返回 `true`）时不会访问该节点。若在访问时调用 `breakTraverse` 请求终止遍历，该请求不会影响所属节点其余子节点的遍历。
+
+参数：
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - [Visitor](ast_package_classes.md#class-visitor) 类型的实例。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ModalInfo) {
+        println("Visiting ModalInfo")
+    }
+}
+
+main(): Unit {
+    let thisParam = ThisParam(quote(this @local!))
+
+    // 对 ThisParam 节点中的 ModalInfo 进行遍历
+    thisParam.modal.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ModalInfo
+```
+<!--DelEnd_sink-->
 ## class MatchCase
 
 ```cangjie
@@ -13472,6 +13892,17 @@ public mut prop keyword: Token
 
 类型：[Token](ast_package_structs.md#struct-token)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置 [PrimitiveTypeExpr](ast_package_classes.md#class-primitivetypeexpr) 节点中的模态类型。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### init()
 
 ```cangjie
@@ -16588,6 +17019,205 @@ main(): Unit {
 Visiting SynchronizedExpr
 ```
 
+<!--Del_sink-->
+## class ThisParam
+
+```cangjie
+public class ThisParam <: Decl {
+    public init(inputs: Tokens)
+    public init()
+}
+```
+
+功能：表示函数或构造函数的显式 `this` 参数节点，例如成员函数 `func writeImplicit(this @local!)` 中的 `this @local!`。
+
+> **说明：**
+>
+> `this` 参数与 local 模式相关。local 模式是实验特性，需要同时开启 `--experimental` 和 `--enable-local-mode` 编译选项。
+
+父类型：
+
+- [Decl](#class-decl)
+
+### prop comma
+
+```cangjie
+public mut prop comma: Token
+```
+
+功能：获取或设置 [ThisParam](ast_package_classes.md#class-thisparam) 节点中的参数分隔符 ","，可能为 [ILLEGAL](ast_package_enums.md#illegal) 的词法单元。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "," 时，抛出异常。
+
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置 [ThisParam](ast_package_classes.md#class-thisparam) 节点中 `this` 上的模态类型。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+
+### prop this
+
+```cangjie
+public mut prop `this`: Token
+```
+
+功能：获取或设置 [ThisParam](ast_package_classes.md#class-thisparam) 节点中的 `this` 关键字。
+
+类型：[Token](ast_package_structs.md#struct-token)
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 "this" 时，抛出异常。
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ThisParam](ast_package_classes.md#class-thisparam) 对象。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 构造一个默认的 ThisParam 对象
+    let thisParam = ThisParam()
+
+    // 输出 ThisParam 节点转化成的 Tokens
+    println("thisParam.toTokens(): ${thisParam.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+thisParam.toTokens(): this
+```
+
+### init(Tokens)
+
+```cangjie
+public init(inputs: Tokens)
+```
+
+功能：构造一个 [ThisParam](ast_package_classes.md#class-thisparam) 对象。
+
+参数：
+
+- inputs: [Tokens](ast_package_classes.md#class-tokens) - 将要构造 [ThisParam](ast_package_classes.md#class-thisparam) 类型的词法单元集合 ([Tokens](ast_package_classes.md#class-tokens))。
+
+异常：
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - 当输入的 [Tokens](ast_package_classes.md#class-tokens) 类型无法构造为 [ThisParam](ast_package_classes.md#class-thisparam) 节点时，抛出异常。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 从 Tokens 创建 ThisParam 对象
+    let thisParam = ThisParam(quote(this @ local!))
+
+    // 输出 ThisParam 节点转化成的 Tokens
+    println("thisParam.toTokens(): ${thisParam.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+thisParam.toTokens(): this @local!
+```
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+功能：将当前语法树节点转化为 [Tokens](ast_package_classes.md#class-tokens) 类型。
+
+返回值：
+
+- [Tokens](ast_package_classes.md#class-tokens) - 转化后的 [Tokens](ast_package_classes.md#class-tokens) 类型节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 从 Tokens 创建 ThisParam 对象
+    let thisParam = ThisParam(quote(this @ local!))
+
+    // 输出 ThisParam 节点转化成的 Tokens
+    println("thisParam.toTokens(): ${thisParam.toTokens()}")
+}
+```
+
+运行结果：
+
+```text
+thisParam.toTokens(): this @local!
+```
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+功能：遍历当前语法树节点及其子节点。若要提前终止子节点遍历，可重写 `visit` 函数并调用 `breakTraverse` 函数。请参见[自定义访问函数遍历 AST 对象示例](../ast_samples/traverse.md)。
+
+参数：
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - [Visitor](ast_package_classes.md#class-visitor) 类型的实例。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ThisParam) {
+        println("Visiting ThisParam")
+    }
+}
+
+main(): Unit {
+    let thisParam = ThisParam(quote(this @local!))
+
+    // 对 ThisParam 节点进行遍历
+    thisParam.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ThisParam
+```
+<!--DelEnd_sink-->
 ## class ThisType
 
 ```cangjie
@@ -19281,6 +19911,17 @@ public mut prop colon: Token
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 ":" 操作符时，抛出异常。
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型，即 local 模态类型，如 `Array<Int64> @ local!` 中的 `@ local!`，用于指定该类型的模式。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop typeParameterName
 
 ```cangjie
@@ -19347,6 +19988,47 @@ typeNode.myDump(): FuncType {
   }
 ```
 
+<!--Del_sink-->
+### func modalTokens()
+
+```cangjie
+protected func modalTokens(): Tokens
+```
+
+功能：获取类型节点末尾模态标注对应的 [Tokens](ast_package_classes.md#class-tokens) 序列，供子类在 [toTokens](#func-totokens) 的实现末尾追加。当类型节点没有末尾模态标注时，返回空的 [Tokens](ast_package_classes.md#class-tokens)。
+
+返回值：
+
+- [Tokens](ast_package_classes.md#class-tokens) - 类型节点末尾模态标注对应的 [Tokens](ast_package_classes.md#class-tokens) 序列。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.ast.*
+
+// 在子类中调用
+extend PrimitiveType {
+    public func myModalTokens(): Tokens {
+        return modalTokens()
+    }
+}
+
+main(): Unit {
+    // 创建 TypeNode 的子类
+    let typeNode = PrimitiveType(quote(Int64))
+
+    // 输出末尾模态标注对应的 Tokens 数量
+    println("typeNode.myModalTokens().size: ${typeNode.myModalTokens().size}")
+}
+```
+
+运行结果：
+
+```text
+typeNode.myModalTokens().size: 0
+```
+<!--DelEnd_sink-->
 ### func toTokens()
 
 ```cangjie
@@ -21983,6 +22665,53 @@ main(): Unit {
 Visiting ExceptTypePattern
 ```
 
+### func visit(ExclaveExpr)
+
+```cangjie
+protected open func visit(_: ExclaveExpr): Unit
+```
+
+功能：定义访问节点时的操作，需要重写。
+
+参数：
+
+- _: [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) - [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) 类型的被遍历节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ExclaveExpr) {
+        println("Visiting ExclaveExpr")
+    }
+}
+
+main(): Unit {
+    // 构造一个默认的 ExclaveExpr 对象
+    let exclaveExpr = ExclaveExpr()
+
+    // 设置 ExclaveExpr 的属性
+    exclaveExpr.keyword = Token(TokenKind.EXCLAVE, "exclave")
+    let block = Block()
+    block.lBrace = Token(TokenKind.LCURL, "{")
+    block.rBrace = Token(TokenKind.RCURL, "}")
+    exclaveExpr.block = block
+
+    // 对 ExclaveExpr 节点进行遍历
+    exclaveExpr.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ExclaveExpr
+```
+
 ### func visit(Expr)
 
 ```cangjie
@@ -23164,6 +23893,45 @@ main(): Unit {
 Visiting MemberAccess
 ```
 
+### func visit(ModalInfo)
+
+```cangjie
+protected open func visit(_: ModalInfo): Unit
+```
+
+功能：定义访问节点时的操作，需要重写。
+
+参数：
+
+- _: [ModalInfo](ast_package_classes.md#class-modalinfo) - [ModalInfo](ast_package_classes.md#class-modalinfo) 类型的被遍历节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ModalInfo) {
+        println("Visiting ModalInfo")
+    }
+}
+
+main(): Unit {
+    let thisParam = ThisParam(quote(this @local!))
+
+    // 对 ThisParam 节点中的 ModalInfo 进行遍历
+    thisParam.modal.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ModalInfo
+```
+
 ### func visit(Modifier)
 
 ```cangjie
@@ -24219,6 +24987,45 @@ main(): Unit {
 
 ```text
 Visiting SynchronizedExpr
+```
+
+### func visit(ThisParam)
+
+```cangjie
+protected open func visit(_: ThisParam): Unit
+```
+
+功能：定义访问节点时的操作，需要重写。
+
+参数：
+
+- _: [ThisParam](ast_package_classes.md#class-thisparam) - [ThisParam](ast_package_classes.md#class-thisparam) 类型的被遍历节点。
+
+示例：
+
+<!-- verify -->
+<!-- cfg="--experimental --enable-local-mode" -->
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(_: ThisParam) {
+        println("Visiting ThisParam")
+    }
+}
+
+main(): Unit {
+    let thisParam = ThisParam(quote(this @local!))
+
+    // 对 ThisParam 节点进行遍历
+    thisParam.traverse(MyVisitor())
+}
+```
+
+运行结果：
+
+```text
+Visiting ThisParam
 ```
 
 ### func visit(ThisType)

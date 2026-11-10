@@ -1,5 +1,104 @@
 # Enums
 
+<!--Del_sink-->
+## enum ASTMode
+
+```cangjie
+public enum ASTMode {
+    | MODAL_NONE
+    | MODAL_NOT
+    | MODAL_HALF
+    | MODAL_FULL
+}
+```
+
+Function: Represents the local mode carried by modal AST nodes, consistent with the mode enum inside the compiler.
+
+- `MODAL_NONE`: no mode is annotated;
+- `MODAL_NOT`: corresponds to the `@ ~local` in source code;
+- `MODAL_HALF`: corresponds to the `@ local?` in source code;
+- `MODAL_FULL`: corresponds to the `@ local!` in source code.
+
+> **Note:**
+>
+> The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options.
+
+### MODAL_FULL
+
+```cangjie
+MODAL_FULL
+```
+
+Function: Constructs an enumeration instance representing the `@ local!` mode.
+
+### MODAL_HALF
+
+```cangjie
+MODAL_HALF
+```
+
+Function: Constructs an enumeration instance representing the `@ local?` mode.
+
+### MODAL_NONE
+
+```cangjie
+MODAL_NONE
+```
+
+Function: Constructs an enumeration instance representing that no mode is annotated.
+
+### MODAL_NOT
+
+```cangjie
+MODAL_NOT
+```
+
+Function: Constructs an enumeration instance representing the `@ ~local` mode.
+
+### operator func ==
+
+```cangjie
+public operator func ==(right: ASTMode): Bool
+```
+
+Function: Determines whether two [ASTMode](ast_package_enums.md#enum-astmode) instances are equal.
+
+Parameters:
+
+- right: [ASTMode](ast_package_enums.md#enum-astmode) - the enumeration instance to compare with.
+
+Return Value:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - `true` if the two instances are equal, otherwise `false`.
+
+### operator func !=
+
+```cangjie
+public operator func !=(right: ASTMode): Bool
+```
+
+Function: Determines whether two [ASTMode](ast_package_enums.md#enum-astmode) instances are not equal.
+
+Parameters:
+
+- right: [ASTMode](ast_package_enums.md#enum-astmode) - the enumeration instance to compare with.
+
+Return Value:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - `true` if the two instances are not equal, otherwise `false`.
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: Returns the string form of the enumeration value.
+
+Return Value:
+
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) - the string corresponding to the enumeration value, such as `MODAL_FULL`.
+<!--DelEnd_sink-->
 ## enum DiagReportLevel
 
 ```cangjie
@@ -101,7 +200,7 @@ Returns:
 - [String](../../core/core_package_api/core_package_structs.md#struct-string) - The converted string value of [ImportKind](ast_package_enums.md#enum-importkind).
 
 ## enum TokenKind
-
+<!--RP1_sink-->
 ```cangjie
 public enum TokenKind <: ToString {
     | DOT                          /*  "."           */
@@ -273,7 +372,7 @@ public enum TokenKind <: ToString {
     | ...
 }
 ```
-
+<!--RP1End_sink-->
 Function: Represents all lexical structures in Cangjie compilation, including symbols, keywords, identifiers, newlines, etc.
 
 Parent type:
@@ -560,6 +659,19 @@ DECR
 
 Function: Constructs an enumeration instance representing `--`.
 
+<!--Del_sink-->
+### DEMODE
+
+```cangjie
+DEMODE
+```
+
+Function: Constructs an enumeration instance representing `demode`.
+
+> **Note:**
+>
+> The `demode` keyword is produced by the lexer only when the local mode is enabled (compiler options `--experimental --enable-local-mode`). When the local mode is disabled, `demode` is an ordinary identifier and this token will not be produced.
+<!--DelEnd_sink-->
 ### DIV
 
 ```cangjie
@@ -664,6 +776,19 @@ EQUAL
 
 Function: Constructs an enumeration instance representing `==`.
 
+<!--Del_sink-->
+### EXCLAVE
+
+```cangjie
+EXCLAVE
+```
+
+Function: Constructs an enumeration instance representing `exclave`.
+
+> **Note:**
+>
+> The `exclave` keyword is produced by the lexer only when the local mode is enabled (compiler options `--experimental --enable-local-mode`). When the local mode is disabled, `exclave` is an ordinary identifier and this token will not be produced.
+<!--DelEnd_sink-->
 ### EXP
 
 ```cangjie

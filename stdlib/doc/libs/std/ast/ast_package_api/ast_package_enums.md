@@ -1,5 +1,176 @@
 # 枚举
 
+<!--Del_sink-->
+## enum ASTMode
+
+```cangjie
+public enum ASTMode {
+    | MODAL_NONE
+    | MODAL_NOT
+    | MODAL_HALF
+    | MODAL_FULL
+}
+```
+
+功能：表示模态类型节点上携带的 local 模式。
+
+- `MODAL_NONE`：未标注模式；
+- `MODAL_NOT`：对应源码中的 `@ ~local`；
+- `MODAL_HALF`：对应源码中的 `@ local?`；
+- `MODAL_FULL`：对应源码中的 `@ local!`。
+
+> **说明：**
+>
+> local 模式是实验特性，需要同时开启 `--experimental` 和 `--enable-local-mode` 编译选项。
+
+### MODAL_FULL
+
+```cangjie
+MODAL_FULL
+```
+
+功能：构造一个表示 `@ local!` 模式的枚举实例。
+
+### MODAL_HALF
+
+```cangjie
+MODAL_HALF
+```
+
+功能：构造一个表示 `@ local?` 模式的枚举实例。
+
+### MODAL_NONE
+
+```cangjie
+MODAL_NONE
+```
+
+功能：构造一个表示未标注模式的枚举实例。
+
+### MODAL_NOT
+
+```cangjie
+MODAL_NOT
+```
+
+功能：构造一个表示 `@ ~local` 模式的枚举实例。
+
+### operator func ==(ASTMode)
+
+```cangjie
+public operator func ==(right: ASTMode): Bool
+```
+
+功能：判断两个 [ASTMode](ast_package_enums.md#enum-astmode) 实例是否相等。
+
+参数：
+
+- right: [ASTMode](ast_package_enums.md#enum-astmode) - 被比较的枚举实例。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 相等返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 创建 ASTMode
+    let modeFull = ASTMode.MODAL_FULL
+    let modeNone = ASTMode.MODAL_NONE
+
+    println("modeFull == modeFull: ${modeFull == modeFull}")
+    println("modeFull == modeNone: ${modeFull == modeNone}")
+}
+```
+
+运行结果：
+
+```text
+modeFull == modeFull: true
+modeFull == modeNone: false
+```
+
+### operator func !=(ASTMode)
+
+```cangjie
+public operator func !=(right: ASTMode): Bool
+```
+
+功能：判断两个 [ASTMode](ast_package_enums.md#enum-astmode) 实例是否不相等。
+
+参数：
+
+- right: [ASTMode](ast_package_enums.md#enum-astmode) - 被比较的枚举实例。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 不相等返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 创建 ASTMode
+    let modeFull = ASTMode.MODAL_FULL
+    let modeNone = ASTMode.MODAL_NONE
+
+    println("modeFull != modeFull: ${modeFull != modeFull}")
+    println("modeFull != modeNone: ${modeFull != modeNone}")
+}
+```
+
+运行结果：
+
+```text
+modeFull != modeFull: false
+modeFull != modeNone: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：返回枚举值对应的字符串形式。
+
+返回值：
+
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) - 枚举值对应的字符串，如 `MODAL_FULL`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.ast.*
+
+main(): Unit {
+    // 创建 ASTMode
+    let modeFull = ASTMode.MODAL_FULL
+    let modeHalf = ASTMode.MODAL_HALF
+
+    // 比较两个模式是否相等
+    println("modeFull == modeHalf: ${modeFull == modeHalf}")
+
+    // 输出枚举值对应的字符串形式
+    println("modeFull.toString(): ${modeFull.toString()}")
+}
+```
+
+运行结果：
+
+```text
+modeFull == modeHalf: false
+modeFull.toString(): MODAL_FULL
+```
+<!--DelEnd_sink-->
 ## enum DiagReportLevel
 
 ```cangjie
@@ -155,7 +326,7 @@ kind3.toString(): Single
 ```
 
 ## enum TokenKind
-
+<!--RP1_sink-->
 ```cangjie
 public enum TokenKind <: ToString {
     | DOT /*  "."           */
@@ -327,7 +498,7 @@ public enum TokenKind <: ToString {
     | ...
 }
 ```
-
+<!--RP1End_sink-->
 功能：表示仓颉编译内部所有的词法结构，包括符号、关键字、标识符、换行等。
 
 父类型：
@@ -614,6 +785,19 @@ DECR
 
 功能：构造一个表示 `--` 的枚举实例。
 
+<!--Del_sink-->
+### DEMODE
+
+```cangjie
+DEMODE
+```
+
+功能：构造一个表示 `demode` 的枚举实例。
+
+> **说明：**
+>
+> `demode` 关键字仅在开启 local 模式（编译选项 `--experimental --enable-local-mode`）后由词法分析器产生；未开启 local 模式时，`demode` 是普通标识符，不会产生该词法单元。
+<!--DelEnd_sink-->
 ### DIV
 
 ```cangjie
@@ -718,6 +902,19 @@ EQUAL
 
 功能：构造一个表示 `==` 的枚举实例。
 
+<!--Del_sink-->
+### EXCLAVE
+
+```cangjie
+EXCLAVE
+```
+
+功能：构造一个表示 `exclave` 的枚举实例。
+
+> **说明：**
+>
+> `exclave` 关键字仅在开启 local 模式（编译选项 `--experimental --enable-local-mode`）后由词法分析器产生；未开启 local 模式时，`exclave` 是普通标识符，不会产生该词法单元。
+<!--DelEnd_sink-->
 ### EXP
 
 ```cangjie
