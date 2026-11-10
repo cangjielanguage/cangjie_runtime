@@ -60,8 +60,8 @@ func checkUtf8Of2Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex
     if (startIndex + 2 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
     }
-    let byte1 = arrayGetUnchecked3<UInt8>(arr, startIndex)
-    let byte2 = arrayGetUnchecked3<UInt8>(arr, startIndex + 1)
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
     if ((byte1 & 0x1e) == 0 || (byte2 & 0xc0) != 0x80) {
         throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 2-byte UTF-8 encoding.")
     }
@@ -91,9 +91,9 @@ func checkUtf8Of3Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex
     if (startIndex + 3 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
     }
-    let byte1 = arrayGetUnchecked3<UInt8>(arr, startIndex)
-    let byte2 = arrayGetUnchecked3<UInt8>(arr, startIndex + 1)
-    let byte3 = arrayGetUnchecked3<UInt8>(arr, startIndex + 2)
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
     // ensure b2 and b3 start with 0b10
     if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80) {
         throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 3-byte UTF-8 encoding.")
@@ -153,10 +153,10 @@ func checkUtf8Of4Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex
         throw IllegalArgumentException("Invalid UTF-8: need 4 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
     }
 
-    let byte1 = arrayGetUnchecked3<UInt8>(arr, startIndex)
-    let byte2 = arrayGetUnchecked3<UInt8>(arr, startIndex + 1)
-    let byte3 = arrayGetUnchecked3<UInt8>(arr, startIndex + 2)
-    let byte4 = arrayGetUnchecked3<UInt8>(arr, startIndex + 3)
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
+    let byte4 = arrayGetUnchecked<UInt8>(arr, startIndex + 3)
     if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 || (byte4 & 0xc0) != 0x80) {
         throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 4-byte UTF-8 encoding.")
     }
@@ -244,7 +244,7 @@ func checkInvalid(arr: RawArray<Byte>, startIndex: Int64, endIndex: Int64): Unit
 func checkInvalid(arr: RawArray<Byte> @local?, startIndex: Int64, endIndex: Int64): Unit {
     var i = startIndex
     while (i < endIndex) {
-        var nowByte: UInt8 = arrayGetUnchecked3<UInt8>(arr, i)
+        var nowByte: UInt8 = arrayGetUnchecked<UInt8>(arr, i)
         match {
             case nowByte < HIGH_1_UInt8 => i += 1
             case nowByte < HIGH_2_UInt8 => throw IllegalArgumentException("Invalid UTF-8: unexpected continuation byte '${nowByte}' at index '${i}' (missing leading byte).")

@@ -1002,9 +1002,9 @@ func wyhash(arr: RawArray<UInt8>, start: Int64, size: Int64, see: UInt64) {
     var b: UInt64
     match {
         case size < 4 =>
-            a = (UInt64(arrayGetUnchecked3<UInt8>(arr, start)) << 16) |
-                (UInt64(arrayGetUnchecked3<UInt8>(arr, start + (size >> 1))) << 8) |
-                (UInt64(arrayGetUnchecked3<UInt8>(arr, start + size - 1)))
+            a = (UInt64(arrayGetUnchecked<UInt8>(arr, start)) << 16) |
+                (UInt64(arrayGetUnchecked<UInt8>(arr, start + (size >> 1))) << 8) |
+                (UInt64(arrayGetUnchecked<UInt8>(arr, start + size - 1)))
             b = 0
         case size == 4 =>
             a = r4(arr, start)
@@ -1055,9 +1055,9 @@ func wyhash(arr: RawArray<UInt8> @local?, start: Int64, size: Int64, see: UInt64
     var b: UInt64
     match {
         case size < 4 =>
-            a = (UInt64(arrayGetUnchecked3<UInt8>(arr, start)) << 16) |
-                (UInt64(arrayGetUnchecked3<UInt8>(arr, start + (size >> 1))) << 8) |
-                (UInt64(arrayGetUnchecked3<UInt8>(arr, start + size - 1)))
+            a = (UInt64(arrayGetUnchecked<UInt8>(arr, start)) << 16) |
+                (UInt64(arrayGetUnchecked<UInt8>(arr, start + (size >> 1))) << 8) |
+                (UInt64(arrayGetUnchecked<UInt8>(arr, start + size - 1)))
             b = 0
         case size == 4 =>
             a = r4(arr, start)
@@ -1126,20 +1126,20 @@ func mix(A: UInt64, B: UInt64) {
 
 @OverflowWrapping
 func r4(arr: RawArray<UInt8> @local?, pos: Int64) {
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos)) << 24) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 1)) << 16) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 2)) << 8) |
-    UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 3))
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos)) << 24) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 1)) << 16) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 2)) << 8) |
+    UInt64(arrayGetUnchecked<UInt8>(arr, pos + 3))
 }
 
 @OverflowWrapping
 func r8(arr: RawArray<UInt8> @local?, pos: Int64) {
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos)) << 56) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 1)) << 48) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 2)) << 40) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 3)) << 32) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr,pos + 4)) << 24) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 5)) << 16) |
-    (UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 6)) << 8) |
-        UInt64(arrayGetUnchecked3<UInt8>(arr, pos + 7))
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos)) << 56) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 1)) << 48) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 2)) << 40) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 3)) << 32) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr,pos + 4)) << 24) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 5)) << 16) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 6)) << 8) |
+        UInt64(arrayGetUnchecked<UInt8>(arr, pos + 7))
 }

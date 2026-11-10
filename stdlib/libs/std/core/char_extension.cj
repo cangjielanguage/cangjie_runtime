@@ -176,7 +176,7 @@ extend Rune {
     }
 
     static func fromUtf8(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): (Rune, Int64) {
-        let byte0: UInt8 = arrayGetUnchecked3<UInt8>(arr, startIndex)
+        let byte0: UInt8 = arrayGetUnchecked<UInt8>(arr, startIndex)
         return match {
             case byte0 < HIGH_1_UInt8 => (Rune(byte0), 1)
             case byte0 < HIGH_2_UInt8 => throw IllegalArgumentException("Invalid UTF-8 byte sequence: unexpected continuation byte at index '${startIndex}'.")

@@ -80,7 +80,7 @@ public struct Array<T> {
         exclave {
             this.start = 0
             let raw = rawArrayAllocate2<T>(size)
-            rawArrayInitByValue2(raw, size, repeat)
+            rawArrayInitByValue(raw, size, repeat)
             this.rawptr = raw
             this.len = size
         }
@@ -95,7 +95,7 @@ public struct Array<T> {
             var i: Int64 = 0
             while (i < size) {
                 let v: T @local! = initElement(i)
-                arraySet2<T>(raw, i, v)
+                arraySet<T>(raw, i, v)
                 i = i + 1
             }
             this.rawptr = raw
@@ -113,7 +113,7 @@ public struct Array<T> {
             let raw = rawArrayAllocate3<T>(size)
             var i: Int64 = 0
             while (i < size) {
-                arraySet3<T>(raw, i, initElement(i))
+                arraySet<T>(raw, i, initElement(i))
                 i = i + 1
             }
             this.rawptr = raw
@@ -224,7 +224,7 @@ public struct Array<T> {
                 if (this.len == 0) {
                     return None<T>
                 }
-                Some<T>(arrayGetUnchecked2<T>(this.rawptr, start))
+                Some<T>(arrayGetUnchecked<T>(this.rawptr, start))
             }
         }
     }
@@ -237,7 +237,7 @@ public struct Array<T> {
                 if (this.len == 0) {
                     return None<T>
                 }
-                Some<T>(arrayGetUnchecked3<T>(this.rawptr, start))
+                Some<T>(arrayGetUnchecked<T>(this.rawptr, start))
             }
         }
     }
@@ -250,7 +250,7 @@ public struct Array<T> {
                 if (this.len == 0) {
                     return None<T>
                 }
-                Some<T>(arrayGetUnchecked2<T>(this.rawptr, start + this.len - 1))
+                Some<T>(arrayGetUnchecked<T>(this.rawptr, start + this.len - 1))
             }
         }
     }
@@ -263,7 +263,7 @@ public struct Array<T> {
                 if (this.len == 0) {
                     return None<T>
                 }
-                Some<T>(arrayGetUnchecked3<T>(this.rawptr, start + this.len - 1))
+                Some<T>(arrayGetUnchecked<T>(this.rawptr, start + this.len - 1))
             }
         }
     }
@@ -320,7 +320,7 @@ public struct Array<T> {
             if (UInt64(index) >= UInt64(this.len)) {
                 return None<T>
             }
-            Some<T>(arrayGetUnchecked2<T>(this.rawptr, start + index))
+            Some<T>(arrayGetUnchecked<T>(this.rawptr, start + index))
         }
     }
 
@@ -332,7 +332,7 @@ public struct Array<T> {
             if (UInt64(index) >= UInt64(this.len)) {
                 return None<T>
             }
-            Some<T>(arrayGetUnchecked3<T>(this.rawptr, start + index))
+            Some<T>(arrayGetUnchecked<T>(this.rawptr, start + index))
         }
     }
 
@@ -364,7 +364,7 @@ public struct Array<T> {
         if (UInt64(index) >= UInt64(this.len)) {
             throw IndexOutOfBoundsException(arrayIndexOutOfBoundsExceptionMessage(this.len, index))
         }
-        exclave { arrayGetUnchecked2<T>(this.rawptr, start + index) }
+        exclave { arrayGetUnchecked<T>(this.rawptr, start + index) }
     }
     @Frozen
     @OverflowWrapping
@@ -377,7 +377,7 @@ public struct Array<T> {
         if (UInt64(index) >= UInt64(this.len)) {
             throw IndexOutOfBoundsException(arrayIndexOutOfBoundsExceptionMessage(this.len, index))
         }
-        return arrayGetUnchecked3(this.rawptr, start + index)
+        return arrayGetUnchecked(this.rawptr, start + index)
     }
 
     /**
@@ -400,7 +400,7 @@ public struct Array<T> {
         if (UInt64(index) >= UInt64(this.len)) {
             throw IndexOutOfBoundsException(arrayIndexOutOfBoundsExceptionMessage(this.len, index))
         }
-        exclave { arraySet2<T>(this.rawptr, start + index, value) }
+        exclave { arraySet<T>(this.rawptr, start + index, value) }
     }
 
     /**
@@ -435,7 +435,7 @@ public struct Array<T> {
     @When[env != "ohos"]
     public exclave func fill(this @local!, value: T @local!): Unit {
         for (i in 0..this.len) {
-            arraySetUnchecked2<T>(this.rawptr, this.start + i, value)
+            arraySetUnchecked<T>(this.rawptr, this.start + i, value)
         }
     }
 
@@ -479,7 +479,7 @@ public struct Array<T> {
             throw IllegalArgumentException(arrayInvalidRangeSizeExceptionMessage(value.size, rangeSize))
         }
         exclave {
-            intrinsicBuiltInCopyTo2<T>(value.rawptr, this.rawptr, value.start, this.start + start_, rangeSize)
+            intrinsicBuiltInCopyTo<T>(value.rawptr, this.rawptr, value.start, this.start + start_, rangeSize)
         }
     }
 
@@ -506,9 +506,9 @@ public struct Array<T> {
         var i: Int64 = start
         var j: Int64 = start + len - 1
         while (i < j) {
-            let tmp: T @local! = arrayGetUnchecked2(rawptr, i)
-            arraySetUnchecked2(rawptr, i, arrayGetUnchecked2(rawptr, j))
-            arraySetUnchecked2(rawptr, j, tmp)
+            let tmp: T @local! = arrayGetUnchecked(rawptr, i)
+            arraySetUnchecked(rawptr, i, arrayGetUnchecked(rawptr, j))
+            arraySetUnchecked(rawptr, j, tmp)
             i = i + 1
             j = j - 1
         }
@@ -697,8 +697,8 @@ public struct Array<T> {
             Array<T>()
         } else {
             let newRawPtr = rawArrayAllocate2<T>(len)
-            rawArrayInitByValue2(newRawPtr, len, unsafe { zeroValue2<T>() })
-            intrinsicBuiltInCopyTo2<T>(this.rawptr, newRawPtr, this.start, 0, len)
+            rawArrayInitByValue(newRawPtr, len, unsafe { zeroValue2<T>() })
+            intrinsicBuiltInCopyTo<T>(this.rawptr, newRawPtr, this.start, 0, len)
             Array<T>(newRawPtr, 0, len)
         }
     }
@@ -711,7 +711,7 @@ public struct Array<T> {
                 Array<T>()
             } else {
                 let raw = rawArrayAllocate3<T>(len)
-                intrinsicBuiltInCopyTo3<T>(this.rawptr, raw, this.start, 0, len)
+                intrinsicBuiltInCopyTo<T>(this.rawptr, raw, this.start, 0, len)
                 Array<T>(raw, 0, len)
             }
         }
@@ -779,13 +779,13 @@ public struct Array<T> {
         let newSize: Int64 = rangeCloneSize(start_, end_, step)
         if (step == 1 && newSize != 0) {
             var newArr: Array<T> @local! = Array<T>(newSize, repeat: unsafe { zeroValue2<T>() })
-            intrinsicBuiltInCopyTo2<T>(this.rawptr, newArr.rawptr, this.start + start_, 0, newSize)
+            intrinsicBuiltInCopyTo<T>(this.rawptr, newArr.rawptr, this.start + start_, 0, newSize)
             newArr
         } else {
             var newArr: Array<T> @local! = Array<T>(newSize, repeat: unsafe { zeroValue2<T>() })
             for (i in 0..newSize) {
-                arraySet2<T>(
-                    newArr.rawptr, i, arrayGetUnchecked2<T>(this.rawptr, this.start + start_ + step * i)
+                arraySet<T>(
+                    newArr.rawptr, i, arrayGetUnchecked<T>(this.rawptr, this.start + start_ + step * i)
                 )
             }
             newArr
@@ -842,7 +842,7 @@ public struct Array<T> {
         if (copyLen > this.len - srcStart || copyLen > dst.size - dstStart) {
             throw IndexOutOfBoundsException("Copy length out of bounds: copyLen is '${copyLen}', but available source length is '${this.len - srcStart}' and available destination length is '${dst.size - dstStart}'.")
         }
-        intrinsicBuiltInCopyTo2<T>(this.rawptr, dst.rawptr, this.start + srcStart, dst.start + dstStart, copyLen)
+        intrinsicBuiltInCopyTo<T>(this.rawptr, dst.rawptr, this.start + srcStart, dst.start + dstStart, copyLen)
     }
 
     @Frozen
@@ -866,7 +866,7 @@ public struct Array<T> {
         if (dst.size < this.len) {
             throw IllegalArgumentException("Destination array size '${dst.size}' is less than source array size '${this.len}'.")
         }
-        intrinsicBuiltInCopyTo2<T>(this.rawptr, dst.rawptr, this.start, dst.start, this.len)
+        intrinsicBuiltInCopyTo<T>(this.rawptr, dst.rawptr, this.start, dst.start, this.len)
         }
     }
 
@@ -905,8 +905,8 @@ public struct Array<T> {
             }
             let newSize = this.len + other.len
             let newArr: Array<T> @local! = Array<T>(newSize, repeat: unsafe { zeroValue2<T>() })
-            intrinsicBuiltInCopyTo2<T>(this.rawptr, newArr.rawptr, this.start, 0, this.len)
-            intrinsicBuiltInCopyTo2<T>(other.rawptr, newArr.rawptr, other.start, this.len, other.len)
+            intrinsicBuiltInCopyTo<T>(this.rawptr, newArr.rawptr, this.start, 0, this.len)
+            intrinsicBuiltInCopyTo<T>(other.rawptr, newArr.rawptr, other.start, this.len, other.len)
             newArr
         }
     }
@@ -921,14 +921,14 @@ public struct Array<T> {
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local!, index: Int64): T @local! {
-        exclave { arrayGetUnchecked2<T>(this.rawptr, start + index) }
+        exclave { arrayGetUnchecked<T>(this.rawptr, start + index) }
     }
 
     @When[env != "ohos"]
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local?, index: Int64): T @local? {
-        exclave { arrayGetUnchecked3<T>(this.rawptr, start + index) }
+        exclave { arrayGetUnchecked<T>(this.rawptr, start + index) }
     }
 
     @Frozen
@@ -941,7 +941,7 @@ public struct Array<T> {
     @Frozen
     @OverflowWrapping
     protected exclave unsafe func setUnchecked(this @local!, index: Int64, element: T @local!): Unit {
-        return arraySetUnchecked2(this.rawptr, start + index, element)
+        return arraySetUnchecked(this.rawptr, start + index, element)
     }
 
     @Frozen
@@ -972,9 +972,9 @@ public struct Array<T> {
         if (index1 == index2) {
             return
         }
-        let tmp: T @local! = arrayGetUnchecked2(this.rawptr, start + index1)
-        arraySetUnchecked2(this.rawptr, start + index1, arrayGetUnchecked2(this.rawptr, start + index2))
-        arraySetUnchecked2(this.rawptr, start + index2, tmp)
+        let tmp: T @local! = arrayGetUnchecked(this.rawptr, start + index1)
+        arraySetUnchecked(this.rawptr, start + index1, arrayGetUnchecked(this.rawptr, start + index2))
+        arraySetUnchecked(this.rawptr, start + index2, tmp)
     }
 
     @Frozen
@@ -1035,10 +1035,10 @@ public struct Array<T> {
             }
             let newLen = this.len * n
             let newRawPtr = rawArrayAllocate2<T>(newLen)
-            rawArrayInitByValue2(newRawPtr, newLen, unsafe { zeroValue2<T>() })
+            rawArrayInitByValue(newRawPtr, newLen, unsafe { zeroValue2<T>() })
             var i: Int64 = 0
             while (i < n) {
-                intrinsicBuiltInCopyTo2<T>(this.rawptr, newRawPtr, this.start, this.len * i, this.len)
+                intrinsicBuiltInCopyTo<T>(this.rawptr, newRawPtr, this.start, this.len * i, this.len)
                 i = i + 1
             }
             Array<T>(newRawPtr, 0, newLen)
@@ -1055,12 +1055,12 @@ public struct Array<T> {
     public func map<R>(this @local!, transform: ((T @local!) -> R @local!) @local?): Array<R> @local! {
         exclave {
             let newRawPtr = rawArrayAllocate2<R>(this.len)
-            rawArrayInitByValue2(newRawPtr, this.len, unsafe { zeroValue2<R>() })
+            rawArrayInitByValue(newRawPtr, this.len, unsafe { zeroValue2<R>() })
             var i: Int64 = 0
             while (i < this.len) {
-                let v: T @local! = arrayGetUnchecked2<T>(this.rawptr, start + i)
+                let v: T @local! = arrayGetUnchecked<T>(this.rawptr, start + i)
                 let r: R @local! = transform(v)
-                arraySet2<R>(newRawPtr, i, r)
+                arraySet<R>(newRawPtr, i, r)
                 i = i + 1
             }
             Array<R>(newRawPtr, 0, this.len)
@@ -1108,12 +1108,12 @@ public struct Array<T> {
             }
             let newSize: Int64 = (len - 1) / count + 1
             var newRawPtr = rawArrayAllocate2<T>(newSize)
-            rawArrayInitByValue2(newRawPtr, newSize, unsafe { zeroValue2<T>() })
+            rawArrayInitByValue(newRawPtr, newSize, unsafe { zeroValue2<T>() })
             let oldLastIndex: Int64 = (newSize - 1) * count
             var j: Int64 = newSize - 1
             for (i in oldLastIndex..=0 : -count) {
-                let value: T @local! = arrayGetUnchecked2<T>(this.rawptr, start + i)
-                arraySet2<T>(newRawPtr, j, value)
+                let value: T @local! = arrayGetUnchecked<T>(this.rawptr, start + i)
+                arraySet<T>(newRawPtr, j, value)
                 j--
             }
             Array<T>(newRawPtr, 0, newSize)
@@ -1153,8 +1153,8 @@ public struct Array<T> {
             }
             let newLen = min(count, this.len)
             let newRawPtr = rawArrayAllocate2<T>(newLen)
-            rawArrayInitByValue2(newRawPtr, newLen, unsafe { zeroValue2<T>() })
-            intrinsicBuiltInCopyTo2<T>(this.rawptr, newRawPtr, this.start, 0, newLen)
+            rawArrayInitByValue(newRawPtr, newLen, unsafe { zeroValue2<T>() })
+            intrinsicBuiltInCopyTo<T>(this.rawptr, newRawPtr, this.start, 0, newLen)
             Array<T>(newRawPtr, 0, newLen)
         }
     }
@@ -1197,8 +1197,8 @@ public struct Array<T> {
             }
 
             let newRawPtr = rawArrayAllocate2<T>(newLen)
-            rawArrayInitByValue2(newRawPtr, newLen, unsafe { zeroValue2<T>() })
-            intrinsicBuiltInCopyTo2<T>(this.rawptr, newRawPtr, this.start + count, 0, newLen)
+            rawArrayInitByValue(newRawPtr, newLen, unsafe { zeroValue2<T>() })
+            intrinsicBuiltInCopyTo<T>(this.rawptr, newRawPtr, this.start + count, 0, newLen)
             Array<T>(newRawPtr, 0, newLen)
         }
     }
@@ -1234,13 +1234,13 @@ public struct Array<T> {
                 return Array<T>()
             }
             var newRawPtr = rawArrayAllocate2<T>(this.len)
-            rawArrayInitByValue2(newRawPtr, this.len, unsafe { zeroValue2<T>() })
+            rawArrayInitByValue(newRawPtr, this.len, unsafe { zeroValue2<T>() })
             var t = 0
             var i: Int64 = 0
             while (i < this.len) {
-                let value: T @local! = arrayGetUnchecked2<T>(this.rawptr, start + i)
+                let value: T @local! = arrayGetUnchecked<T>(this.rawptr, start + i)
                 if (predicate(value)) {
-                    arraySet2<T>(newRawPtr, t, value)
+                    arraySet<T>(newRawPtr, t, value)
                     t++
                 }
                 i = i + 1
@@ -1275,7 +1275,7 @@ public struct Array<T> {
             var used: Int64 = 0
             var i: Int64 = 0
             while (i < this.len) {
-                let value: T @local! = arrayGetUnchecked2<T>(this.rawptr, start + i)
+                let value: T @local! = arrayGetUnchecked<T>(this.rawptr, start + i)
                 let part: Array<R> @local! = transform(value)
                 let sz: Int64 = part.len
                 if (sz > 0) {
@@ -1287,11 +1287,11 @@ public struct Array<T> {
                         }
                         let grown: Array<R> @local! = Array<R>(cap, repeat: unsafe { zeroValue2<R>() })
                         if (used > 0) {
-                            intrinsicBuiltInCopyTo2<R>(result.rawptr, grown.rawptr, result.start, 0, used)
+                            intrinsicBuiltInCopyTo<R>(result.rawptr, grown.rawptr, result.start, 0, used)
                         }
                         result = grown
                     }
-                    intrinsicBuiltInCopyTo2<R>(part.rawptr, result.rawptr, part.start, used, sz)
+                    intrinsicBuiltInCopyTo<R>(part.rawptr, result.rawptr, part.start, used, sz)
                     used = need
                 }
                 i = i + 1
@@ -1302,7 +1302,7 @@ public struct Array<T> {
                 // Trim to the logical length so the caller never observes the spare capacity.
                 let exact: Array<R> @local! = Array<R>(used, repeat: unsafe { zeroValue2<R>() })
                 if (used > 0) {
-                    intrinsicBuiltInCopyTo2<R>(result.rawptr, exact.rawptr, result.start, 0, used)
+                    intrinsicBuiltInCopyTo<R>(result.rawptr, exact.rawptr, result.start, 0, used)
                 }
                 exact
             }
@@ -1345,14 +1345,14 @@ public struct Array<T> {
             }
 
             let newRawPtr = rawArrayAllocate2<R>(this.len)
-            rawArrayInitByValue2(newRawPtr, this.len, unsafe { zeroValue2<R>() })
+            rawArrayInitByValue(newRawPtr, this.len, unsafe { zeroValue2<R>() })
             var j = 0
             var i: Int64 = 0
             while (i < this.len) {
-                let value: T @local! = arrayGetUnchecked2<T>(this.rawptr, start + i)
+                let value: T @local! = arrayGetUnchecked<T>(this.rawptr, start + i)
                 let transformed: Option<R> @local! = transform(value)
                 if (let Some(v) <- transformed) {
-                    arraySet2<R>(newRawPtr, j, v)
+                    arraySet<R>(newRawPtr, j, v)
                     j++
                 }
                 i = i + 1
@@ -1392,13 +1392,13 @@ public struct Array<T> {
             }
             let newSize: Int64 = 2 * this.len - 1
             let newRawPtr = rawArrayAllocate2<T>(newSize)
-            rawArrayInitByValue2(newRawPtr, newSize, unsafe { zeroValue2<T>() })
+            rawArrayInitByValue(newRawPtr, newSize, unsafe { zeroValue2<T>() })
 
             for (i in 0..this.len - 1) {
-                arraySet2<T>(newRawPtr, 2*i, arrayGetUnchecked2<T>(this.rawptr, start + i))
-                arraySet2<T>(newRawPtr, 2*i + 1, separator)
+                arraySet<T>(newRawPtr, 2*i, arrayGetUnchecked<T>(this.rawptr, start + i))
+                arraySet<T>(newRawPtr, 2*i + 1, separator)
             }
-            arraySet2<T>(newRawPtr, newSize - 1, arrayGetUnchecked2<T>(this.rawptr, start + this.len - 1))
+            arraySet<T>(newRawPtr, newSize - 1, arrayGetUnchecked<T>(this.rawptr, start + this.len - 1))
             Array<T>(newRawPtr,0,newSize)
         }
     }
@@ -1419,7 +1419,7 @@ public struct Array<T> {
     public exclave func forEach(this @local!, action: ((T @local!) -> Unit) @local?): Unit {
         var i: Int64 = 0
         while (i < this.len) {
-            action(arrayGetUnchecked2<T>(this.rawptr, start + i))
+            action(arrayGetUnchecked<T>(this.rawptr, start + i))
             i = i + 1
         }
     }
@@ -1444,7 +1444,7 @@ public struct Array<T> {
     public func all(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
-            if (!predicate(arrayGetUnchecked3<T>(this.rawptr, start + i))) {
+            if (!predicate(arrayGetUnchecked<T>(this.rawptr, start + i))) {
                 return false
             }
             i = i + 1
@@ -1472,7 +1472,7 @@ public struct Array<T> {
     public func any(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
-            if (predicate(arrayGetUnchecked3<T>(this.rawptr, start + i))) {
+            if (predicate(arrayGetUnchecked<T>(this.rawptr, start + i))) {
                 return true
             }
             i = i + 1
@@ -1500,7 +1500,7 @@ public struct Array<T> {
     public func none(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
-            if (predicate(arrayGetUnchecked3<T>(this.rawptr, start + i))) {
+            if (predicate(arrayGetUnchecked<T>(this.rawptr, start + i))) {
                 return false
             }
             i = i + 1
@@ -1530,7 +1530,7 @@ public struct Array<T> {
             var result: R @local! = initial
             var i: Int64 = 0
             while (i < this.len) {
-                result = operation(result, arrayGetUnchecked2<T>(this.rawptr, start + i))
+                result = operation(result, arrayGetUnchecked<T>(this.rawptr, start + i))
                 i = i + 1
             }
             result
@@ -1674,7 +1674,7 @@ extend<T> Array<T> where T <: Copyable {
         if (UInt64(index) >= UInt64(this.len)) {
             throw IndexOutOfBoundsException(arrayIndexOutOfBoundsExceptionMessage(this.len, index))
         }
-        arraySetUnchecked3<T>(this.rawptr, start + index, value)
+        arraySetUnchecked<T>(this.rawptr, start + index, value)
     }
 
     @Frozen
@@ -1691,13 +1691,13 @@ extend<T> Array<T> where T <: Copyable {
         if (rangeSize != value.size) {
             throw IllegalArgumentException(arrayInvalidRangeSizeExceptionMessage(value.size, rangeSize))
         }
-        intrinsicBuiltInCopyTo3<T>(value.rawptr, this.rawptr, value.start, this.start + start_, rangeSize)
+        intrinsicBuiltInCopyTo<T>(value.rawptr, this.rawptr, value.start, this.start + start_, rangeSize)
     }
 
     @Frozen
     public func fill(this @local?, value: T): Unit {
         for (i in 0..this.len) {
-            arraySet3<T>(this.rawptr, this.start + i, value)
+            arraySet<T>(this.rawptr, this.start + i, value)
         }
     }
 
@@ -1709,7 +1709,7 @@ extend<T> Array<T> where T <: Copyable {
         if (dst.size < this.len) {
             throw IllegalArgumentException("Destination array size '${dst.size}' is less than source array size '${this.len}'.")
         }
-        intrinsicBuiltInCopyTo3<T>(this.rawptr, dst.rawptr, this.start, dst.start, this.len)
+        intrinsicBuiltInCopyTo<T>(this.rawptr, dst.rawptr, this.start, dst.start, this.len)
     }
 
     @Frozen
@@ -1732,7 +1732,7 @@ extend<T> Array<T> where T <: Copyable {
         if (copyLen > this.len - srcStart || copyLen > dst.size - dstStart) {
             throw IndexOutOfBoundsException("Copy length out of bounds: copyLen is '${copyLen}', but available source length is '${this.len - srcStart}' and available destination length is '${dst.size - dstStart}'.")
         }
-        intrinsicBuiltInCopyTo3<T>(this.rawptr, dst.rawptr, this.start + srcStart, dst.start + dstStart, copyLen)
+        intrinsicBuiltInCopyTo<T>(this.rawptr, dst.rawptr, this.start + srcStart, dst.start + dstStart, copyLen)
     }
 
     @Frozen
@@ -1746,9 +1746,9 @@ extend<T> Array<T> where T <: Copyable {
         if (index1 == index2) {
             return
         }
-        let tmp = arrayGetUnchecked3<T>(this.rawptr, this.start + index1)
-        arraySet3<T>(this.rawptr, this.start + index1, arrayGetUnchecked3<T>(this.rawptr, this.start + index2))
-        arraySet3<T>(this.rawptr, this.start + index2, tmp)
+        let tmp = arrayGetUnchecked<T>(this.rawptr, this.start + index1)
+        arraySet<T>(this.rawptr, this.start + index1, arrayGetUnchecked<T>(this.rawptr, this.start + index2))
+        arraySet<T>(this.rawptr, this.start + index2, tmp)
     }
 
     @Frozen
@@ -1757,9 +1757,9 @@ extend<T> Array<T> where T <: Copyable {
         var i: Int64 = this.start
         var j: Int64 = this.start + this.len - 1
         while (i < j) {
-            let tmp = arrayGetUnchecked3<T>(this.rawptr, i)
-            arraySet3<T>(this.rawptr, i, arrayGetUnchecked3<T>(this.rawptr, j))
-            arraySet3<T>(this.rawptr, j, tmp)
+            let tmp = arrayGetUnchecked<T>(this.rawptr, i)
+            arraySet<T>(this.rawptr, i, arrayGetUnchecked<T>(this.rawptr, j))
+            arraySet<T>(this.rawptr, j, tmp)
             i = i + 1
             j = j - 1
         }
@@ -1768,7 +1768,7 @@ extend<T> Array<T> where T <: Copyable {
     @Frozen
     @OverflowWrapping
     protected unsafe func setUnchecked(this @local?, index: Int64, element: T): Unit {
-        arraySetUnchecked3<T>(this.rawptr, this.start + index, element)
+        arraySetUnchecked<T>(this.rawptr, this.start + index, element)
     }
 
     @Frozen
@@ -1778,8 +1778,8 @@ extend<T> Array<T> where T <: Copyable {
                 Array<T>()
             } else {
                 let newRawPtr = rawArrayAllocate2<T>(len)
-                rawArrayInitByValue2(newRawPtr, len, unsafe { zeroValue2<T>() })
-                intrinsicBuiltInCopyTo3<T>(this.rawptr, newRawPtr, this.start, 0, len)
+                rawArrayInitByValue(newRawPtr, len, unsafe { zeroValue2<T>() })
+                intrinsicBuiltInCopyTo<T>(this.rawptr, newRawPtr, this.start, 0, len)
                 Array<T>(newRawPtr, 0, len)
             }
         }
