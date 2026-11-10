@@ -157,13 +157,15 @@ enum LogType {
 #ifndef DEFAULT_MRT_LOG_SANITIZER
 #define DEFAULT_MRT_LOG_SANITIZER 0
 #endif // DEFAULT_MRT_LOG_SANITIZER
+#endif
+
 #ifndef DEFAULT_MRT_LOG_PROMOTE
 #define DEFAULT_MRT_LOG_PROMOTE 0
 #endif // DEFAULT_MRT_LOG_PROMOTE
+
 #ifndef DEFAULT_MRT_LOG_SWEEP
 #define DEFAULT_MRT_LOG_SWEEP 0
 #endif // DEFAULT_MRT_LOG_SWEEP
-#endif
 
 #if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
 long GetEnv(const char* envName, long defaultValue); // do not use directly
