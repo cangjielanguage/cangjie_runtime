@@ -38,6 +38,8 @@ func throwImplicitException(id: Int64, args: CPointer<Unit>): Unit {
         case 3 =>
             var msg = (args as CPointer<UInt8>).getOrThrow()
             throw IncompatiblePackageException(createStrFromCPointer(msg))
+        // LocalRegionOutOfMemoryError is unavailable on OHOS.
+        case 4 => throw OutOfMemoryError()
         case _ => ()
     }
 }

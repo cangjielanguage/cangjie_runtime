@@ -62,6 +62,7 @@ func arraySetUnchecked<T>(rawArr: RawArray<T>, index: Int64, element: T): Unit
 @Intrinsic
 func arraySetUnchecked2<T>(rawArr: RawArray<T> @local!, index: Int64, element: T @local!): Unit
 
+@When[env != "ohos"]
 @Intrinsic
 func arraySetUnchecked3<T>(rawArr: RawArray<T> @local?, index: Int64, element: T @local?): Unit where T <: Copyable
 
@@ -86,5 +87,6 @@ func rawArrayInitByValue<T>(rawArr: RawArray<T>, size: Int64, initValue: T): Uni
 @Intrinsic
 func rawArrayInitByValue2<T>(rawArr: RawArray<T> @local!, size: Int64, initValue: T @local!): Unit
 
+@When[env != "ohos"]
 @Intrinsic
 func rawArrayInitByValue3<T>(rawArr: RawArray<T> @local?, size: Int64, initValue: T @local?): Unit where T <: Copyable
