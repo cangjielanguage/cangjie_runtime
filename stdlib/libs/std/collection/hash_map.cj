@@ -13,9 +13,8 @@
  */
 package std.collection
 
-// Bucket arithmetic: pure Int64 work with no receiver state. The formulas live here once and the
-// `@Frozen` members below forward to them, so the declarations' contract stays intact while the
-// implementation has a single home.
+// Bucket helpers serve the new local-mode overloads. Keep the existing plain `@Frozen` methods'
+// formulas inline so their published callers do not gain new helper dependencies.
 @Frozen
 @OverflowWrapping
 func bucketIndex(hash: Int64, size: Int64): Int64 {
@@ -1183,29 +1182,37 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     @Frozen
     @OverflowWrapping
     public func remove(key: K): Option<V> {
-        let NULL_KEY: K = unsafe { zeroValue<K>() }
-        let NULL_VALUE: V = unsafe { zeroValue<V>() }
         let hash: Int64 = getHash(key.hashCode())
         let index: Int64 = getIndex(hash, buckets.size)
         var bucket: Int64 = buckets[index]
         var pre: Int64 = -1
         while (bucket >= 0) {
-            if (hash == entries[bucket].hash && key == entries[bucket].key) {
-                if (pre < 0) {
-                    buckets[index] = entries[bucket].next
-                } else {
-                    let temp = entries[pre]
-                    entries[pre] = HashMapEntry<K, V>(temp.hash, entries[bucket].next, temp.key, temp.value)
-                }
-                let removeEnt: V = entries[bucket].value
-                entries[bucket] = HashMapEntry<K, V>(-1, freeIndex, NULL_KEY, NULL_VALUE)
-                freeIndex = bucket
-                freeSize++
-                modCount++
-                return Some(removeEnt)
+            // Compare hash by index first so the miss path does not copy the whole entry (K/V).
+            if (hash != entries[bucket].hash) {
+                pre = bucket
+                bucket = entries[bucket].next
+                continue
             }
-            pre = bucket
-            bucket = entries[bucket].next
+            let entry = entries[bucket]
+            if (key != entry.key) {
+                pre = bucket
+                bucket = entry.next
+                continue
+            }
+            let NULL_KEY: K = unsafe { zeroValue<K>() }
+            let NULL_VALUE: V = unsafe { zeroValue<V>() }
+            if (pre < 0) {
+                buckets[index] = entry.next
+            } else {
+                let temp = entries[pre]
+                entries[pre] = HashMapEntry<K, V>(temp.hash, entry.next, temp.key, temp.value)
+            }
+            let removeEnt: V = entry.value
+            entries[bucket] = HashMapEntry<K, V>(-1, freeIndex, NULL_KEY, NULL_VALUE)
+            freeIndex = bucket
+            freeSize++
+            modCount++
+            return Some(removeEnt)
         }
         return None
     }
@@ -1951,7 +1958,7 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     @Frozen
     @OverflowWrapping
     func getIndex(hash: Int64, size: Int64): Int64 {
-        return bucketIndex(hash, size)
+        return hash & (size - 1)
     }
 
     @When[env != "ohos"]
@@ -1979,7 +1986,7 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
     @Frozen
     @OverflowWrapping
     private func getHash(hashCode: Int64): Int64 {
-        return bucketHash(hashCode)
+        return hashCode ^ (hashCode >> 32)
     }
 
     @Frozen

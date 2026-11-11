@@ -1130,7 +1130,6 @@ public class ConcurrentHashMapIterator<K, V> <: Iterator<(K, V)> where K <: Hash
     private var curBucketIndex: Int64 = 0
 
     /* The reference of the bucket in the current iteration */
-    // private var curEntries: Option<ArrayList<KeyValue<K, V>>> = None
     private var curEntries: ?KVList<K, V> = None
 
     /* The index of the arraylist in the 'curEntries' in the current iteration */

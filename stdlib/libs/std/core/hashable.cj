@@ -1125,11 +1125,31 @@ func mix(A: UInt64, B: UInt64) {
 }
 
 @OverflowWrapping
+func r4(arr: RawArray<UInt8>, pos: Int64) {
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos)) << 24) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 1)) << 16) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 2)) << 8) |
+    UInt64(arrayGetUnchecked<UInt8>(arr, pos + 3))
+}
+
+@OverflowWrapping
 func r4(arr: RawArray<UInt8> @local?, pos: Int64) {
     (UInt64(arrayGetUnchecked<UInt8>(arr, pos)) << 24) |
     (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 1)) << 16) |
     (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 2)) << 8) |
     UInt64(arrayGetUnchecked<UInt8>(arr, pos + 3))
+}
+
+@OverflowWrapping
+func r8(arr: RawArray<UInt8>, pos: Int64) {
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos)) << 56) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 1)) << 48) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 2)) << 40) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 3)) << 32) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr,pos + 4)) << 24) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 5)) << 16) |
+    (UInt64(arrayGetUnchecked<UInt8>(arr, pos + 6)) << 8) |
+        UInt64(arrayGetUnchecked<UInt8>(arr, pos + 7))
 }
 
 @OverflowWrapping

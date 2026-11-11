@@ -130,8 +130,7 @@ public struct Array<T> {
         this.len = arraySize(raw)
     }
 
-    // Dispatching the interface members (size / iterator / toArray) on a `Collection<T> @local!` is not
-    // supported by the compiler: match on the concrete type to get the data; other Collection implementations report an explicit error.
+    // This constructor accepts only Array; other Collection implementations are rejected.
     @Frozen
     @When[env != "ohos"]
     init(this @local!, elements: Collection<T> @local!) {
@@ -738,23 +737,12 @@ public struct Array<T> {
         }
 
         let arr: Array<T> = this
-        // Size is ceil(|end_ - start_| / |step|). Computing it from magnitudes
-        // keeps the intermediate arithmetic inside Int64 even when step is
-        // Int64.Max or Int64.Min, where `(end_ - start_ + step - 1) / step`
-        // wraps around and yields a negative size.
-        let span: Int64 = end_ - start_
-        let magnitude: UInt64 = if (span < 0) {
-            UInt64(-span)
+        let offset: Int64 = if (step > 0) {
+            -1
         } else {
-            UInt64(span)
+            1
         }
-        let stride: UInt64 = if (step < 0) {
-            UInt64(-(step + 1)) + 1
-        } else {
-            UInt64(step)
-        }
-        let quotient: UInt64 = magnitude / stride
-        let newSize: Int64 = Int64(quotient + (if (quotient * stride != magnitude) { 1 } else { 0 }))
+        let newSize: Int64 = (end_ - start_ + step + offset) / step
         if (step == 1 && newSize != 0) {
             var newArr: Array<T> = Array<T>(newSize, repeat: unsafe { zeroValue<T>() })
             intrinsicBuiltInCopyTo<T>(this.rawptr, newArr.rawptr, this.start + start_, 0, newSize)
@@ -1081,7 +1069,7 @@ public struct Array<T> {
         }
 
         if (len > 0) {
-            let newSize: Int64 = (len - 1) / count + 1
+            let newSize: Int64 = (len + count - 1) / count
             var newRawPtr = rawArrayAllocate<T>(newSize)
             rawArrayInitByValue(newRawPtr, newSize, unsafe { zeroValue<T>() })
             let oldLastIndex: Int64 = (newSize - 1) * count

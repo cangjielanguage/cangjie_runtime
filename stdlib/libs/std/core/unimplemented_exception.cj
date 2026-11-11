@@ -9,14 +9,9 @@
 package std.core
 
 /**
- * Thrown by local mode adapter default implementations to indicate that a
- * type has not yet provided an explicit `@local!` or `@local?` overload.
- *
- * This exception is the standard fallback for interface-level local mode
- * adaptation (e.g. `ToString.toString(this @local?)`, `Iterable.iterator`,
- * `Iterator.next`). When a concrete type does not override the local-mode
- * method, the default implementation throws `UnimplementedException` so the
- * developer immediately learns which type/method/mode is missing.
+ * Some local-mode adapter defaults use this exception to report that a
+ * concrete type has not provided the required method. For example,
+ * `ToString.toString(this @local?)` throws it when not overridden.
  */
 @When[env != "ohos"]
 public class UnimplementedException <: Exception {

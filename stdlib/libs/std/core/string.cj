@@ -95,8 +95,6 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
         this.length = UInt32(data.len)
     }
 
-    // The compiler does not support dispatching the `size` / `iterator` / `toArray` interface members on
-    // a `Collection<Rune> @local?` receiver: match on the concrete type for the data; other implementations rely on the caller to convert to Array<Rune> first.
     @Frozen
     @OverflowWrapping
     @When[env != "ohos"]
@@ -138,7 +136,6 @@ public struct String <: Collection<Byte> & Comparable<String> & Hashable & ToStr
             if (len > Int64(UInt32.Max)) {
                 throw IllegalArgumentException("The size of String is too large.")
             }
-            // (myData, start, length) = (value, 0u32, UInt32(len))
             myData = value
             start = 0u32
             length = UInt32(len)

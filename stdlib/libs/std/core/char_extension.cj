@@ -160,7 +160,7 @@ extend Rune {
      */
     @OverflowWrapping
     public static func fromUtf8(arr: Array<UInt8>, index: Int64): (Rune, Int64) {
-        if (UInt64(index) >= UInt64(arr.size)) {
+        if (index >= arr.size) {
             throw IllegalArgumentException("Invalid UTF-8 byte sequence: index '${index}' is out of bounds, size is '${arr.size}'.")
         }
         return fromUtf8(arr.rawptr, arr.start + index, arr.start + arr.len)
@@ -173,6 +173,18 @@ extend Rune {
             throw IllegalArgumentException("Invalid UTF-8 byte sequence: index '${index}' is out of bounds, size is '${arr.size}'.")
         }
         return fromUtf8(arr.rawptr, arr.start + index, arr.start + arr.len)
+    }
+
+    static func fromUtf8(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): (Rune, Int64) {
+        let byte0: UInt8 = arrayGetUnchecked<UInt8>(arr, startIndex)
+        return match {
+            case byte0 < HIGH_1_UInt8 => (Rune(byte0), 1)
+            case byte0 < HIGH_2_UInt8 => throw IllegalArgumentException("Invalid UTF-8 byte sequence: unexpected continuation byte at index '${startIndex}'.")
+            case byte0 < HIGH_3_UInt8 => (checkUtf8Of2Bytes(arr, startIndex, endIndex), 2)
+            case byte0 < HIGH_4_UInt8 => (checkUtf8Of3Bytes(arr, startIndex, endIndex), 3)
+            case byte0 < HIGH_5_UInt8 => (checkUtf8Of4Bytes(arr, startIndex, endIndex), 4)
+            case _ => throw IllegalArgumentException("Invalid Unicode scalar value: invalid leading byte '${byte0}' at index '${startIndex}'.")
+        }
     }
 
     static func fromUtf8(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): (Rune, Int64) {
@@ -290,10 +302,7 @@ extend Rune {
         } else {
             throw IllegalArgumentException("Invalid Unicode scalar value: code point exceeds U+10FFFF.")
         }
-        // Compare by subtraction: `index` may be Int64.Max, where adding the character
-        // length would overflow and raise OverflowException instead of the contract's
-        // IllegalArgumentException.
-        if (index > arrSize || lengthOfCharBytes > arrSize - index) {
+        if (lengthOfCharBytes + index > arrSize) {
             throw IllegalArgumentException(
                 "Rune requires '${lengthOfCharBytes}' bytes for UTF-8 encoding, but array has only '${arrSize - index}' bytes available from index '${index}'.")
         }

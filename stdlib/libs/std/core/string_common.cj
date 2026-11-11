@@ -56,6 +56,18 @@ const STRING_C_THRESHOLD = 32
  * U+0080..U+07FF  110xxxxx   10xxxxxx
  *                 C2..DF     80..BF
  */
+func checkUtf8Of2Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 2 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    if ((byte1 & 0x1e) == 0 || (byte2 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 2-byte UTF-8 encoding.")
+    }
+    Rune(((UInt32(byte1) & LOW_5_MASK) << SHIFT_6) | (UInt32(byte2) & LOW_6_MASK))
+}
+
 func checkUtf8Of2Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 2 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
@@ -87,6 +99,34 @@ func checkUtf8Of2BytesWithoutException(arr: RawArray<UInt8>, startIndex: Int64, 
  * U+0800..U+0FFF    E0         A0..BF     80..BF
  * U+1000..U+FFFF    E1..EF     80..BF     80..BF
  */
+func checkUtf8Of3Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 3 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
+    // ensure b2 and b3 start with 0b10
+    if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 3-byte UTF-8 encoding.")
+    }
+
+    // when the first equals E0, second byte cannot less then A0
+    if ((byte1 & 0b1111) == 0 && (byte2 & 0b00100000) == 0) {
+        throw IllegalArgumentException("Invalid UTF-8: overlong encoding at index '${startIndex}' (code point should use 2 bytes, not 3).")
+    }
+
+    // Unicode does not have any characters in the range D800-DFFF
+    if ((byte1 & 0b1111) == 0b1101 && (byte2 & 0b00100000) != 0) {
+        throw IllegalArgumentException("Invalid UTF-8: surrogate code point U+D800-U+DFFF is not allowed at index '${startIndex}'.")
+    }
+
+    let code = ((UInt32(byte1) & LOW_4_MASK) << SHIFT_12) |
+                ((UInt32(byte2) & LOW_6_MASK) << SHIFT_6) |
+                (UInt32(byte3) & LOW_6_MASK)
+    Rune(code)
+}
+
 func checkUtf8Of3Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 3 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
@@ -148,6 +188,40 @@ func checkUtf8Of3BytesWithoutException(arr: RawArray<UInt8>, startIndex: Int64, 
  * U+40000..U+FFFFF  F1..F3     80..BF     80..BF    80..BF
  * U+100000..U10FFFF F4         80..8F     80..BF    80..BF
  */
+func checkUtf8Of4Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 4 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 4 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
+    let byte4 = arrayGetUnchecked<UInt8>(arr, startIndex + 3)
+    if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 || (byte4 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 4-byte UTF-8 encoding.")
+    }
+
+    // byte 1 cannot bigger then 0xF4
+    if ((byte1 & 0b111) > 0b100) {
+        throw IllegalArgumentException("Invalid UTF-8: code point at index '${startIndex}' exceeds Unicode maximum U+10FFFF.")
+    }
+
+    // in the range of U+10000..U+3FFFF, when b1 equals 0xF0, b2 should not less then 0x90
+    if ((byte1 & 0b111) == 0 && (byte2 & 0b00110000) == 0) {
+        throw IllegalArgumentException("Invalid UTF-8: overlong encoding at index '${startIndex}' (code point should use 3 bytes, not 4).")
+    }
+
+    // in the range of U+100000..U10FFFF, when b1 equals 0xF4, b2 no bigger then 8F
+    if ((byte1 & 0b111) == 0b100 && (byte2 & 0b00110000) != 0) {
+        throw IllegalArgumentException("Invalid UTF-8: code point at index '${startIndex}' exceeds Unicode maximum U+10FFFF.")
+    }
+    let code = ((UInt32(byte1) & LOW_3_MASK) << SHIFT_18) |
+                ((UInt32(byte2) & LOW_6_MASK) << SHIFT_12) |
+                ((UInt32(byte3) & LOW_6_MASK) << SHIFT_6) |
+                (UInt32(byte4) & LOW_6_MASK)
+    Rune(code)
+}
+
 func checkUtf8Of4Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 4 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 4 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
