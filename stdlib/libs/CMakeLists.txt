@@ -66,7 +66,24 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND AND NOT TRIPLE STREQUAL "arm-linux-ohos" AND
     target_link_libraries(${libname} cangjie-std-objectpoolFFI-objs)
     target_link_libraries(${libname} cangjie-std-runtimeFFI-objs)
     target_link_libraries(${libname} cangjie-std-regexFFI)
-    target_link_libraries(${libname} ${pcre2_lib})
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        # stdFFI is installed under CANGJIE_HOME/lib/, which envsetup.sh does
+        # not export via LD_LIBRARY_PATH. It used to rely on the shipped
+        # libpcre2-8.so.0 in runtime/lib/<triple>/ being reachable through that
+        # variable; that library now lives in the pcre2/ subdirectory
+        # (issue 2932/3519), so link pcre2 statically here instead.
+        # --exclude-libs keeps the pcre2 symbols private to libstdFFI.so
+        # (no export, no clash with the dynamic copy loaded by
+        # libcangjie-std-regex.so). Other platforms keep the original
+        # dynamic linking: their loaders have no LD_LIBRARY_PATH-style
+        # global search path, so the dependency resolves within their
+        # own delivery layout.
+        target_link_libraries(${libname}
+            ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.a
+            -Wl,--exclude-libs=libpcre2-8.a)
+    else()
+        target_link_libraries(${libname} ${pcre2_lib})
+    endif()
     add_dependencies(${libname} modify_typetemplate_object)
     target_link_libraries(${libname} m)
     if(CANGJIE_BUILD_STDLIB_WITH_COVERAGE)

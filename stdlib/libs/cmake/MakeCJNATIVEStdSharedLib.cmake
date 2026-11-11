@@ -279,7 +279,21 @@ function(make_cangjie_lib target_name)
         # All shared libraries of standard library are placed in the same location. Adding $ORIGIN into RPATH so
         # standard libraries can find each other.
         if(NOT CMAKE_SKIP_RPATH AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-            list(APPEND flags_to_compile ${LINKER_OPTION_PREFIX}--disable-new-dtags ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            if(target_name STREQUAL "std-regex" AND NOT OHOS)
+                # pcre2 is shipped under the pcre2/ subdirectory (issue 2932/3519):
+                # the shipped libpcre2-8.so.0 no longer sits in runtime/lib/<triple>/,
+                # so std-regex needs its own RPATH entry to locate the subdirectory.
+                # $ORIGIN stays as the last entry so a flattened layout (all libs
+                # copied into one directory) still works.
+                list(APPEND flags_to_compile
+                    ${LINKER_OPTION_PREFIX}--disable-new-dtags
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN/pcre2"
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            else()
+                list(APPEND flags_to_compile
+                    ${LINKER_OPTION_PREFIX}--disable-new-dtags
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            endif()
         endif()
         if(DARWIN)
             list(APPEND flags_to_compile -install_name "@rpath/libcangjie-${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -377,13 +391,26 @@ function(make_cangjie_lib target_name)
         install(FILES ${target_lib_full_name} DESTINATION runtime/lib/${output_cj_lib_dir})
         if(target_name STREQUAL "std-regex" AND NOT OHOS)
             # On OHOS, libpcre2.z.so is provided by the ROM; do not ship libpcre2-8.so.
-            file(GLOB PCRE2_DYNAMIC_LIB
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/bin/libpcre2-8.dll
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.*dylib
-            )
-            message("PCRE2_DYNAMIC_LIB: ${PCRE2_DYNAMIC_LIB}")
-            install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
+            # Linux keeps the untouched pcre2 files (links + real file) in a
+            # subdirectory: runtime/lib/<triple>/ itself is exported via
+            # LD_LIBRARY_PATH by envsetup.sh, and a libpcre2-8.so.0 there
+            # shadows the distribution's system library for every system
+            # program; std-regex reaches the subdirectory via its own RPATH.
+            # Other platforms keep the original flat layout: their loaders
+            # have no LD_LIBRARY_PATH-style global search path (OHOS uses the
+            # ROM-provided libpcre2.z.so and ships no pcre2 file at all).
+            if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+                file(GLOB PCRE2_DYNAMIC_LIB
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
+                )
+                install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir}/pcre2)
+            else()
+                file(GLOB PCRE2_DYNAMIC_LIB
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/bin/libpcre2-8.dll
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.*dylib
+                )
+                install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
+            endif()
         endif()
     endif()
 endfunction()
