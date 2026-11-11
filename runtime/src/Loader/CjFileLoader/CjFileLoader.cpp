@@ -66,6 +66,11 @@ BaseFile* CJFileLoader::CreateFileRefFromAddr(Uptr fileMetaAddr)
         isGetBinInfoSuccess = Os::Loader::GetBinaryInfoFromAddress(reinterpret_cast<void*>(fileMetaAddr), &binInfo);
     }
     CHECK(isGetBinInfoSuccess != 0);
+#if defined(__ANDROID__)
+    // Normalize the container path used to name the BaseFile. Keep
+    // GetBinaryInfoFromAddress untouched for unwinding/signal paths.
+    Os::Loader::CanonicalizeModulePath(reinterpret_cast<void*>(fileMetaAddr), &binInfo);
+#endif
     BaseFile* file = BaseFile::CreateCJFile(FileType::C_FILE, CString(binInfo.filePathName), fileMetaAddr);
     if (file == nullptr) {
         return nullptr;
