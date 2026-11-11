@@ -158,7 +158,6 @@ make_cangjie_lib(
     DEPENDS cangjie${BACKEND_TYPE}ObjectPool cangjie-std-objectpoolFFI
     CANGJIE_STD_LIB_DEPENDS
         std-core
-        std-sync
         std-collection.concurrent
     OBJECTS ${output_cj_object_dir}/std/objectpool.o
     FLAGS -lcangjie-std-objectpoolFFI)
@@ -210,9 +209,6 @@ if(NOT DARWIN)
             std-core
             std-collection
             std-sync
-            std-overflow
-            std-time
-            std-sort
             std-fs
         CANGJIE_STD_LIB_INDIRECT_DEPENDS
             std-math
@@ -287,7 +283,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-convert
-        std-math
         std-collection
         std-io
         std-binary
@@ -325,7 +320,6 @@ make_cangjie_lib(
         std-core
         std-io
         std-sync
-        std-sort
     OBJECTS ${output_cj_object_dir}/std/console.o
     FLAGS ${ENV_FFI_LINK_FLAG} ${EXCLUDE_ENV_FFI_OPTION})
 
@@ -355,7 +349,6 @@ make_cangjie_lib(
         std-fs
         std-io
         std-time
-        std-sort
         std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/process.o
@@ -377,7 +370,6 @@ make_cangjie_lib(
         std-fs
         std-io
         std-sync
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/env.o
     FLAGS ${ENV_FFI_LINK_FLAG} ${PROCESS_FFI_LINK_FLAG} ${EXCLUDE_ENV_FFI_OPTION} ${EXCLUDE_PROCESS_FFI_OPTION})
@@ -412,7 +404,7 @@ endif()
 make_cangjie_lib(
     std-regex IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Regex cangjie-std-regexFFIwithoutPCRE2
-    CANGJIE_STD_LIB_DEPENDS std-core std-collection std-sort std-sync
+    CANGJIE_STD_LIB_DEPENDS std-core std-collection std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/regex.o $<TARGET_OBJECTS:cangjie-std-regexFFIwithoutPCRE2-objs>
     FLAGS ${pcre2_lib})
@@ -470,10 +462,8 @@ make_cangjie_lib(
     std-overflow
     std-collection
     std-sort
-    std-time
     std-io
     std-sync
-    std-math
     OBJECTS ${output_cj_object_dir}/std/net.o
     FORCE_LINK_ARCHIVES
         cangjie-std-netFFI
@@ -548,7 +538,6 @@ make_cangjie_lib(
         std-sort
         std-sync
         std-random
-        std-math
         std-math.numeric
     OBJECTS ${output_cj_object_dir}/std/database.sql.o)
 add_library(cangjie-std-database.sql STATIC ${output_cj_object_dir}/std/database.sql.o)
@@ -619,7 +608,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS
         std-math
     OBJECTS ${output_cj_object_dir}/std/ast.o
@@ -667,7 +655,6 @@ make_cangjie_lib(
         std-collection
         std-collection.concurrent
         std-io
-        std-argopt
         std-runtime
         std-fs
         std-time
@@ -676,7 +663,6 @@ make_cangjie_lib(
         std-unittest.prop_test
         std-unittest.common
         std-unittest.diff
-        std-unittest.mock.internal
         std-unittest.mock
         std-process
         std-env
@@ -699,9 +685,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-convert
         std-random
-        std-sort
         std-unittest.common
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/unittest.prop_test.o)
@@ -717,7 +701,6 @@ make_cangjie_lib(
         std-core
         std-collection
         std-convert
-        std-sort
         std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/unittest.common.o)
@@ -731,9 +714,6 @@ make_cangjie_lib(
     DEPENDS cangjie${BACKEND_TYPE}UnittestDiff
     CANGJIE_STD_LIB_DEPENDS
         std-core
-        std-sync
-        std-sort
-        std-fs
         std-collection
         std-convert
         std-math
@@ -751,7 +731,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math std-time std-overflow std-unicode
     OBJECTS ${output_cj_object_dir}/std/unittest.mock.internal.o)
 
@@ -766,7 +745,6 @@ make_cangjie_lib(
         std-core
         std-collection
         std-sync
-        std-sort
         std-fs
         std-unittest.common
         std-unittest.mock.internal
@@ -783,8 +761,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
         std-sync
         std-ast
         std-unicode
@@ -800,12 +776,8 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-sync
         std-ast
         std-convert
-        std-unicode
         std-deriving.api
     OBJECTS ${output_cj_object_dir}/std/deriving.resolve.o
 )
@@ -819,12 +791,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-convert
         std-ast
-        std-sync
-        std-unicode
         std-deriving.api
         std-deriving.resolve
     OBJECTS ${output_cj_object_dir}/std/deriving.impl.o
@@ -839,12 +806,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-convert
         std-ast
-        std-sync
-        std-unicode
         std-deriving.api
         std-deriving.resolve
     OBJECTS ${output_cj_object_dir}/std/deriving.builtins.o
@@ -897,16 +859,10 @@ if(NOT CMAKE_CROSSCOMPILING OR MINGW OR OHOS)
         CANGJIE_STD_LIB_DEPENDS
             std-core
             std-collection
-            std-sort
-            std-math
-            std-convert
             std-ast
-            std-sync
-            std-unicode
             std-deriving.api
             std-deriving.impl
             std-deriving.builtins
-            std-deriving.resolve
         OBJECTS ${output_cj_object_dir}/std/deriving.o
     )
     add_library(cangjie-std-deriving STATIC ${output_cj_object_dir}/std/deriving.o)
