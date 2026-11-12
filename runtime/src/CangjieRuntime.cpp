@@ -281,11 +281,13 @@ void CangjieRuntime::Fini()
     CheckAndFini<WinModuleManager>(winModuleManager);
 #endif
     CheckAndFini<ObjectManager>(objectManager);
+    // Free loader/type-info metadata before the heap, so the LSan leak check in heap
+    // teardown does not report it (e.g. MTableDesc::mTable) as leaked.
+    loaderManager->Fini();
+    typeInfoManager->Fini();
     CheckAndFini<HeapManager>(heapManager);
     CheckAndFini<ExceptionManager>(exceptionManager);
     CheckAndFini<StackManager>(stackManager);
-    loaderManager->Fini();
-    typeInfoManager->Fini();
     CheckAndFini<MutatorManager>(mutatorManager);
     CheckAndFini<ConcurrencyModel>(concurrencyModel);
 #if defined(__linux__) || defined(hongmeng) || defined(__APPLE__)
