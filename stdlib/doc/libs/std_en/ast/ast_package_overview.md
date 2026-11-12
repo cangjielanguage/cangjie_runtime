@@ -75,6 +75,7 @@ The Cangjie ast package provides `Macro With Context` related functions for obta
 | [EnumDecl](./ast_package_api/ast_package_classes.md#class-enumdecl) | Represents `Enum` definition nodes. |
 | [EnumPattern](./ast_package_api/ast_package_classes.md#class-enumpattern) | Represents enum pattern nodes. |
 | [ExceptTypePattern](./ast_package_api/ast_package_classes.md#class-excepttypepattern) | Represents nodes used in exception pattern states. |
+| [ExclaveExpr](./ast_package_api/ast_package_classes.md#class-exclaveexpr) | Represents `exclave` block expression nodes. |
 | [Expr](./ast_package_api/ast_package_classes.md#class-expr) | Parent class of all expression nodes, inheriting from `Node`. |
 | [ExtendDecl](./ast_package_api/ast_package_classes.md#class-extenddecl) | Represents extension definition nodes. |
 | [FeatureId](./ast_package_api/ast_package_classes.md#class-featureid) | Represents a feature name node. |
@@ -103,6 +104,7 @@ The Cangjie ast package provides `Macro With Context` related functions for obta
 | [MacroExpandParam](./ast_package_api/ast_package_classes.md#class-macroexpandparam) | Represents macro call nodes. |
 | [MacroMessage](./ast_package_api/ast_package_classes.md#class-macromessage) | Records messages sent by inner macros. |
 | [MainDecl](./ast_package_api/ast_package_classes.md#class-maindecl) | Represents `main` function definition nodes. |
+| [ModalInfo](./ast_package_api/ast_package_classes.md#class-modalinfo) | Represents modal type nodes, that is, the `@ ~local`, `@ local?`, or `@ local!` in source code. |
 | [MatchCase](./ast_package_api/ast_package_classes.md#class-matchcase) | Represents `case` nodes in `match` expressions. |
 | [MatchExpr](./ast_package_api/ast_package_classes.md#class-matchexpr) | Represents pattern-matching expressions. |
 | [MemberAccess](./ast_package_api/ast_package_classes.md#class-memberaccess) | Represents member access expressions. |
@@ -133,6 +135,7 @@ The Cangjie ast package provides `Macro With Context` related functions for obta
 | [SubscriptExpr](./ast_package_api/ast_package_classes.md#class-subscriptexpr) | Represents index access expressions. |
 | [SynchronizedExpr](./ast_package_api/ast_package_classes.md#class-synchronizedexpr) | Represents `synchronized` expressions. |
 | [ThisType](./ast_package_api/ast_package_classes.md#class-thistype) | Represents `This` type nodes. |
+| [ThisParam](./ast_package_api/ast_package_classes.md#class-thisparam) | Represents the explicit `this` parameter nodes of functions or constructors. |
 | [ThrowExpr](./ast_package_api/ast_package_classes.md#class-throwexpr) | Represents `throw` expression nodes. |
 | [Tokens](./ast_package_api/ast_package_classes.md#class-tokens) | A type that encapsulates `Token` sequences. |
 | [TokensIterator](./ast_package_api/ast_package_classes.md#class-tokensiterator) | Implements iterator functionality for `Tokens`. |
@@ -160,6 +163,7 @@ The Cangjie ast package provides `Macro With Context` related functions for obta
 
 | Enumeration Name | Functionality |
 | --------------------------------- | ---------------------------------- |
+| [ASTMode](./ast_package_api/ast_package_enums.md#enum-astmode) | Represents the local mode carried by modal AST nodes. |
 | [DiagReportLevel](./ast_package_api/ast_package_enums.md#enum-diagreportlevel) | Indicates the information level of error reporting interface, supporting `ERROR` and `WARNING` levels. |
 | [ImportKind](./ast_package_api/ast_package_enums.md#enum-importkind) | Represents the type of import statements, including single import, alias import, full import, and multiple imports. |
 | [TokenKind](./ast_package_api/ast_package_enums.md#enum-tokenkind) | Represents all lexical structures in Cangjie compilation, including symbols, keywords, identifiers, line breaks, etc. |

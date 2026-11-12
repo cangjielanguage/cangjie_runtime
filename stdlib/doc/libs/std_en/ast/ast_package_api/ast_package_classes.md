@@ -853,6 +853,21 @@ Exceptions:
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not "(".
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type after the constructor call in the [CallExpr](ast_package_classes.md#class-callexpr) node, that is, the local modal type, such as `@ local!` in `C() @ local!`.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+
+> **Note:**
+>
+> The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options. When no mode is annotated, this property is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object (that is, [isEmpty](ast_package_classes.md#func-isempty) returns `true`).
+<!--DelEnd_sink-->
 ### prop rParen
 
 ```cangjie
@@ -2077,6 +2092,98 @@ Parameters:
 
 - v: [Visitor](ast_package_classes.md#class-visitor) - An instance of the [Visitor](ast_package_classes.md#class-visitor) type.
 
+<!--Del_sink-->
+## class ExclaveExpr
+
+```cangjie
+public class ExclaveExpr <: Expr {
+    public init()
+    public init(inputs: Tokens)
+}
+```
+
+Function: Represents an `exclave` expression node, that is, the `exclave { ... }` block expression.
+
+> **Note:**
+>
+> The `exclave` expression is related to the local mode. The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options.
+
+Parent Type:
+
+- [Expr](#class-expr)
+
+### prop block
+
+```cangjie
+public mut prop block: Block
+```
+
+Function: Gets or sets the block in the [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) node.
+
+Type: [Block](ast_package_classes.md#class-block)
+
+### prop keyword
+
+```cangjie
+public mut prop keyword: Token
+```
+
+Function: Gets or sets the `exclave` keyword in the [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) node.
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the `exclave` keyword.
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) object.
+
+### init(Tokens)
+
+```cangjie
+public init(inputs: Tokens)
+```
+
+Function: Constructs an [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) object.
+
+Parameters:
+
+- inputs: [Tokens](ast_package_classes.md#class-tokens) - the lexical unit collection ([Tokens](ast_package_classes.md#class-tokens)) used to construct the [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) object.
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the input [Tokens](ast_package_classes.md#class-tokens) cannot be constructed as an [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) node.
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+Function: Converts the current syntax tree node into the [Tokens](ast_package_classes.md#class-tokens) type.
+
+Return Value:
+
+- [Tokens](ast_package_classes.md#class-tokens) - the converted [Tokens](ast_package_classes.md#class-tokens) node.
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+Function: Traverses the current syntax tree node and its child nodes. To terminate the traversal of child nodes early, override the `visit` function and call the `breakTraverse` function. See [Custom Visitor Function for Traversing AST Objects Example](../ast_samples/traverse.md).
+
+Parameters:
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - An instance of [Visitor](ast_package_classes.md#class-visitor) type.
+<!--DelEnd_sink-->
 ## class Expr
 
 ```cangjie
@@ -2814,6 +2921,21 @@ Exceptions:
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not "(".
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Purpose: Gets or sets the modal type before the function keyword of the [FuncDecl](ast_package_classes.md#class-funcdecl) node, that is, the local modal type, such as `@ local?` in the nested function definition `@ local? func length(): Int64 { ... }`. It is different from the modal type written after a parameter type or return type: only nested functions support annotating a mode before the `func` keyword, which is used to declare that the nested function can capture outer non-`Copyable` variables of `@ local?`.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+
+> **Note:**
+>
+> The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options. When no mode is annotated, this property is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+<!--DelEnd_sink-->
 ### prop overloadOp
 
 ```cangjie
@@ -2838,6 +2960,17 @@ Exceptions:
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not ")".
 
+<!--Del_sink-->
+### prop thisParam
+
+```cangjie
+public mut prop thisParam: Option<ThisParam>
+```
+
+Purpose: Gets or sets the explicit `this` parameter of the [FuncDecl](ast_package_classes.md#class-funcdecl) node, that is, `this @ local!` in the parameter list of a member function or constructor. When no `this` parameter is declared, this property is `None`.
+
+Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[ThisParam](ast_package_classes.md#class-thisparam)>
+<!--DelEnd_sink-->
 ### init()
 
 ```cangjie
@@ -5494,6 +5627,109 @@ Parameters:
 
 - v: [Visitor](ast_package_classes.md#class-visitor) - An instance of [Visitor](ast_package_classes.md#class-visitor) type.
 
+<!--Del_sink-->
+## class ModalInfo
+
+```cangjie
+public class ModalInfo {}
+```
+
+Function: Represents a modal type node, that is, the `@ ~local`, `@ local?`, or `@ local!` annotation in source code.
+
+A [ModalInfo](ast_package_classes.md#class-modalinfo) node stores the tokens contained in the annotation (the `@` operator, the `local` identifier, and the mode marker `~`/`!`/`?`) and the corresponding mode value of [ASTMode](ast_package_enums.md#enum-astmode). A modal type can be attached to nodes such as type nodes ([TypeNode](ast_package_classes.md#class-typenode)), [CallExpr](ast_package_classes.md#class-callexpr), [PrimitiveTypeExpr](ast_package_classes.md#class-primitivetypeexpr), [FuncDecl](ast_package_classes.md#class-funcdecl), and [ThisParam](ast_package_classes.md#class-thisparam).
+
+> **Note:**
+>
+> The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options.
+
+### prop at
+
+```cangjie
+public mut prop at: Token
+```
+
+Function: Gets or sets the `@` operator in the [ModalInfo](ast_package_classes.md#class-modalinfo) node.
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the "@" operator.
+
+### prop local
+
+```cangjie
+public mut prop local: Token
+```
+
+Function: Gets or sets the `local` identifier in the [ModalInfo](ast_package_classes.md#class-modalinfo) node.
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not an identifier, or its value is not "local".
+
+### prop marker
+
+```cangjie
+public mut prop marker: Token
+```
+
+Function: Gets or sets the mode marker in the [ModalInfo](ast_package_classes.md#class-modalinfo) node, that is, `~` in `@ ~local`, `!` in `@ local!`, or `?` in `@ local?`.
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the "~", "!", or "?" operator.
+
+### prop mode
+
+```cangjie
+public mut prop mode: ASTMode
+```
+
+Function: Gets or sets the mode of the [ModalInfo](ast_package_classes.md#class-modalinfo) node.
+
+Type: [ASTMode](ast_package_enums.md#enum-astmode)
+
+### func isEmpty()
+
+```cangjie
+public func isEmpty(): Bool
+```
+
+Function: Determines whether the current [ModalInfo](ast_package_classes.md#class-modalinfo) node has no mode annotated.
+
+Return Value:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - `true` if no mode is annotated (the mode is `MODAL_NONE`), otherwise `false`.
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+Function: Converts the current syntax tree node into the [Tokens](ast_package_classes.md#class-tokens) type. Returns empty [Tokens](ast_package_classes.md#class-tokens) when no mode is annotated.
+
+Return Value:
+
+- [Tokens](ast_package_classes.md#class-tokens) - the converted [Tokens](ast_package_classes.md#class-tokens) node.
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+Function: Traverses the current syntax tree node and its child nodes. This node has no child nodes. It is not visited when no mode is annotated (that is, [isEmpty](#func-isempty) returns `true`). If `breakTraverse` is called during the visit, the stop request does not affect the traversal of the owner's other child nodes.
+
+Parameters:
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - An instance of [Visitor](ast_package_classes.md#class-visitor) type.
+<!--DelEnd_sink-->
 ## class MatchCase
 
 ```cangjie
@@ -7023,6 +7259,17 @@ Function: Gets or sets the primitive type keyword in the [PrimitiveTypeExpr](ast
 
 Type: [Token](ast_package_structs.md#struct-token)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type in the [PrimitiveTypeExpr](ast_package_classes.md#class-primitivetypeexpr) node, that is, the local modal type, such as `@ local!` in `Int64 @ local!`. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### init()
 
 ```cangjie
@@ -8729,6 +8976,112 @@ Parameters:
 
 - v: [Visitor](ast_package_classes.md#class-visitor) - An instance of the [Visitor](ast_package_classes.md#class-visitor) type.
 
+<!--Del_sink-->
+## class ThisParam
+
+```cangjie
+public class ThisParam <: Decl {
+    public init(inputs: Tokens)
+    public init()
+}
+```
+
+Function: Represents the explicit `this` parameter node of a function or constructor, that is, `this @ local!` in the parameter list of a member function or constructor.
+
+> **Note:**
+>
+> The `this` parameter is related to the local mode. The local mode is an experimental feature and requires both the `--experimental` and `--enable-local-mode` compiler options.
+
+Parent Type:
+
+- [Decl](#class-decl)
+
+### prop comma
+
+```cangjie
+public mut prop comma: Token
+```
+
+Function: Gets or sets the parameter separator "," in the [ThisParam](ast_package_classes.md#class-thisparam) node, which may be a lexical unit of [ILLEGAL](ast_package_enums.md#illegal).
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not ",".
+
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type on `this` in the [ThisParam](ast_package_classes.md#class-thisparam) node, that is, `@ local!` in `this @ local!`.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+
+### prop this
+
+```cangjie
+public mut prop `this`: Token
+```
+
+Function: Gets or sets the `this` keyword in the [ThisParam](ast_package_classes.md#class-thisparam) node.
+
+Type: [Token](ast_package_structs.md#struct-token)
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the "this" keyword.
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ThisParam](ast_package_classes.md#class-thisparam) object.
+
+### init(Tokens)
+
+```cangjie
+public init(inputs: Tokens)
+```
+
+Function: Constructs a [ThisParam](ast_package_classes.md#class-thisparam) object.
+
+Parameters:
+
+- inputs: [Tokens](ast_package_classes.md#class-tokens) - the lexical unit collection ([Tokens](ast_package_classes.md#class-tokens)) used to construct the [ThisParam](ast_package_classes.md#class-thisparam) object.
+
+Exceptions:
+
+- [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the input [Tokens](ast_package_classes.md#class-tokens) cannot be constructed as a [ThisParam](ast_package_classes.md#class-thisparam) node.
+
+### func toTokens()
+
+```cangjie
+public func toTokens(): Tokens
+```
+
+Function: Converts the current syntax tree node into the [Tokens](ast_package_classes.md#class-tokens) type.
+
+Return Value:
+
+- [Tokens](ast_package_classes.md#class-tokens) - the converted [Tokens](ast_package_classes.md#class-tokens) node.
+
+### func traverse(Visitor)
+
+```cangjie
+public func traverse(v: Visitor): Unit
+```
+
+Function: Traverses the current syntax tree node and its child nodes. To terminate the traversal of child nodes early, override the `visit` function and call the `breakTraverse` function. See [Custom Visitor Function for Traversing AST Objects Example](../ast_samples/traverse.md).
+
+Parameters:
+
+- v: [Visitor](ast_package_classes.md#class-visitor) - An instance of [Visitor](ast_package_classes.md#class-visitor) type.
+<!--DelEnd_sink-->
 ## class ThisType
 
 ```cangjie
@@ -10056,6 +10409,17 @@ Exceptions:
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the ":" operator.
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop typeParameterName
 
 ```cangjie
@@ -10106,6 +10470,19 @@ Returns:
 
 - [String](../../core/core_package_api/core_package_structs.md#struct-string) - The formatted output content.
 
+<!--Del_sink-->
+### func modalTokens()
+
+```cangjie
+protected func modalTokens(): Tokens
+```
+
+Function: Gets the [Tokens](ast_package_classes.md#class-tokens) sequence corresponding to the modal annotation at the end of the type node, for subclasses to append at the end of their [toTokens](#func-totokens) implementation. Returns an empty [Tokens](ast_package_classes.md#class-tokens) when the type node has no trailing modal annotation.
+
+Returns:
+
+- [Tokens](ast_package_classes.md#class-tokens) - The [Tokens](ast_package_classes.md#class-tokens) sequence corresponding to the modal annotation at the end of the type node.
+<!--DelEnd_sink-->
 ## class TypePattern
 
 ```cangjie
@@ -11092,6 +11469,18 @@ Parameters:
 
 - _: [ExceptTypePattern](ast_package_classes.md#class-excepttypepattern) - The node being traversed of type [ExceptTypePattern](ast_package_classes.md#class-excepttypepattern).
 
+### func visit(ExclaveExpr)
+
+```cangjie
+protected open func visit(_: ExclaveExpr): Unit
+```
+
+Function: Defines the operation when visiting a node, requires override.
+
+Parameters:
+
+- _: [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) - The node being traversed of type [ExclaveExpr](ast_package_classes.md#class-exclaveexpr).
+
 ### func visit(Expr)
 
 ```cangjie
@@ -11441,6 +11830,18 @@ Parameters:
 
 - _: [MemberAccess](ast_package_classes.md#class-memberaccess) - The node being traversed of type [MemberAccess](ast_package_classes.md#class-memberaccess).
 
+### func visit(ModalInfo)
+
+```cangjie
+protected open func visit(_: ModalInfo): Unit
+```
+
+Function: Defines the operation when visiting a node, requires override.
+
+Parameters:
+
+- _: [ModalInfo](ast_package_classes.md#class-modalinfo) - The node being traversed of type [ModalInfo](ast_package_classes.md#class-modalinfo).
+
 ### func visit(Modifier)
 
 ```cangjie
@@ -11752,6 +12153,18 @@ Purpose: Defines the operation when visiting a node, requires override.
 Parameters:
 
 - _: [SynchronizedExpr](ast_package_classes.md#class-synchronizedexpr) - The node being traversed of type [SynchronizedExpr](ast_package_classes.md#class-synchronizedexpr).
+
+### func visit(ThisParam)
+
+```cangjie
+protected open func visit(_: ThisParam): Unit
+```
+
+Function: Defines the operation when visiting a node, requires override.
+
+Parameters:
+
+- _: [ThisParam](ast_package_classes.md#class-thisparam) - The node being traversed of type [ThisParam](ast_package_classes.md#class-thisparam).
 
 ### func visit(ThisType)
 
