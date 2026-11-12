@@ -348,6 +348,42 @@ Output:
 Is deque empty: true
 ```
 
+### func isEmpty()
+
+```cangjie
+public func isEmpty(): Bool
+```
+
+Function: Checks if this deque is empty.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if empty, otherwise `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let deque1 = ArrayDeque<Int64>()
+    let deque2 = ArrayDeque<Int64>()
+    deque2.addLast(1)
+    
+    println("Is deque1 empty: ${deque1.isEmpty()}")  // true
+    println("Is deque2 empty: ${deque2.isEmpty()}")  // false
+    return 0
+}
+```
+
+Output:
+
+```text
+Is deque1 empty: true
+Is deque2 empty: false
+```
+
 ### func iterator()
 
 ```cangjie
@@ -386,42 +422,6 @@ Output:
 1
 2
 3
-```
-
-### func isEmpty()
-
-```cangjie
-public func isEmpty(): Bool
-```
-
-Function: Checks if this deque is empty.
-
-Returns:
-
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if empty, otherwise `false`.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let deque1 = ArrayDeque<Int64>()
-    let deque2 = ArrayDeque<Int64>()
-    deque2.addLast(1)
-    
-    println("Is deque1 empty: ${deque1.isEmpty()}")  // true
-    println("Is deque2 empty: ${deque2.isEmpty()}")  // false
-    return 0
-}
-```
-
-Output:
-
-```text
-Is deque1 empty: true
-Is deque2 empty: false
 ```
 
 ### func removeFirst()
@@ -667,41 +667,6 @@ Parent Types:
 
 - [List](./collection_package_interface.md#interface-listt)\<T>
 
-### prop size
-
-```cangjie
-public prop size: Int64
-```
-
-Function: Returns the number of elements in this [ArrayList](collection_package_class.md#class-arraylistt).
-
-Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64)
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = ArrayList<Int64>()
-    println("Initial size: ${list.size}")  // 0
-    
-    list.add(1)
-    list.add(2)
-    println("Size after adding 2 elements: ${list.size}")  // 2
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Initial size: 0
-Size after adding 2 elements: 2
-```
-
 ### prop capacity
 
 ```cangjie
@@ -738,6 +703,48 @@ Output:
 Initial capacity: 16
 Capacity after adding 17 elements: 24
 ```
+
+<!--Del_sink-->
+
+### prop capacity
+
+```cangjie
+public prop capacity: Int64 @local?
+```
+
+Function: Returns the capacity of this [ArrayList](collection_package_class.md#class-arraylistt).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(16) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    println("cap>=16: ${list.capacity >= 16}")
+}
+```
+
+Output:
+
+```text
+cap>=16: true
+```
+
+<!--DelEnd_sink-->
 
 ### prop first
 
@@ -778,6 +785,96 @@ First element: Some(1)
 First element of empty list: None
 ```
 
+<!--Del_sink-->
+
+### prop first
+
+```cangjie
+public prop first: ?T @local!
+```
+
+Function: Returns the first element of this [ArrayList](collection_package_class.md#class-arraylistt), or None if there is no such element.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: ?T @local!
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    let f = list.first
+    match (f) {
+        case Some(v) => println("first=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+first=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### prop first
+
+```cangjie
+public prop first: ?T @local?
+```
+
+Function: Returns the first element of this [ArrayList](collection_package_class.md#class-arraylistt), or None if there is no such element.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: ?T @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>(16) @local!
+    a.add(1)
+    let v: ArrayList<Int64> @local? = a
+    v
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let f = list.first
+    match (f) {
+        case Some(v) => println("first=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+first=1
+```
+
+<!--DelEnd_sink-->
+
 ### prop last
 
 ```cangjie
@@ -816,6 +913,170 @@ Output:
 Last element: Some(2)
 Last element of empty list: None
 ```
+
+<!--Del_sink-->
+
+### prop last
+
+```cangjie
+public prop last: ?T @local!
+```
+
+Function: Returns the last element of this [ArrayList](collection_package_class.md#class-arraylistt), or None if there is no such element.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: ?T @local!
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    let l = list.last
+    match (l) {
+        case Some(v) => println("last=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+last=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### prop last
+
+```cangjie
+public prop last: ?T @local?
+```
+
+Function: Returns the last element of this [ArrayList](collection_package_class.md#class-arraylistt), or None if there is no such element.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: ?T @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>(16) @local!
+    a.add(1)
+    let v: ArrayList<Int64> @local? = a
+    v
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let l = list.last
+    match (l) {
+        case Some(v) => println("last=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+last=1
+```
+
+<!--DelEnd_sink-->
+
+### prop size
+
+```cangjie
+public prop size: Int64
+```
+
+Function: Returns the number of elements in this [ArrayList](collection_package_class.md#class-arraylistt).
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = ArrayList<Int64>()
+    println("Initial size: ${list.size}")  // 0
+    
+    list.add(1)
+    list.add(2)
+    println("Size after adding 2 elements: ${list.size}")  // 2
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Initial size: 0
+Size after adding 2 elements: 2
+```
+
+<!--Del_sink-->
+
+### prop size
+
+```cangjie
+public prop size: Int64 @local?
+```
+
+Function: Returns the number of elements in this [ArrayList](collection_package_class.md#class-arraylistt).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+
+<!--DelEnd_sink-->
 
 ### init()
 
@@ -968,6 +1229,329 @@ List contents: [0, 1, 4, 9, 16]
 List size: 5
 ```
 
+<!--Del_sink-->
+
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Constructs an empty dynamic array.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, capacity: Int64)
+```
+
+Function: Constructs a dynamic array with capacity `capacity`.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- capacity: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The capacity of the dynamic array.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `capacity` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local? = ArrayList<Int64>(16) @local!
+    println("cap>=16: ${list.capacity >= 16}")
+}
+```
+
+Output:
+
+```text
+cap>=16: true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Int64, ((Int64) -> T @local!) @local?)
+
+```cangjie
+public exclave init(this @local!, size: Int64, initElement: ((Int64) -> T @local!) @local?)
+```
+
+Function: Constructs a dynamic array of size `size`, with elements computed by the initialization function.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The size of the dynamic array.
+- initElement: (([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) -> T @local!) @local? - The initialization function whose return value type is `T @local!`.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `size` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>(3) { index => index * 2 }
+    println("size=${list.size} v2=${list[2]}")
+}
+```
+
+Output:
+
+```text
+size=3 v2=4
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Collection\<T> @local!)
+
+```cangjie
+public exclave init(this @local!, elements: Collection<T> @local!)
+```
+
+Function: Constructs a dynamic array from the collection.
+
+When the dynamic type of the input collection is [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt), its underlying storage is copied directly; for other types, the elements are obtained through the collection's `toArray(this @local!)`, and if that type does not override this method, the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used and an exception is thrown (see the exceptions description).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- elements: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> @local! - The collection from which the dynamic array is constructed.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the dynamic type of the input collection is not [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt) and its type does not override `toArray(this @local!)` (the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let src: Array<Int64> @local! = [1, 2, 3]
+    let coll: Collection<Int64> @local! = src
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>(coll)
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+size=3
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Array\<T> @local?)
+
+```cangjie
+public exclave init(this @local?, elements: Array<T> @local?)
+```
+
+Function: Constructs a dynamic array from an array.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- elements: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> @local? - The array from which the dynamic array is constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 2, 3]
+    let sharedSrc: Array<Int64> @local? = src
+    let list: ArrayList<Int64> @local? = ArrayList<Int64>(sharedSrc) @local?
+    list
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+size=3
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Int64, ((Int64) -> T @local?) @local?)
+
+```cangjie
+public exclave init(this @local?, size: Int64, initElement: ((Int64) -> T @local?) @local?)
+```
+
+Function: Constructs an [ArrayList](collection_package_class.md#class-arraylistt) with the specified initial number of elements and the specified rule function. The resulting list is bound to the current local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The number of elements to initialize.
+- initElement: (([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) -> T @local?) @local? - The initialization function.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if `size` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local? = ArrayList<Int64>(3, { index => index * 2 }) @local?
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+size=3
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Collection\<T> @local?)
+
+```cangjie
+public exclave init(this @local?, elements: Collection<T> @local?)
+```
+
+Function: Constructs an [ArrayList](collection_package_class.md#class-arraylistt) containing all elements of the specified collection. The elements are arranged in the order returned by the collection's iterator.
+
+The new list is constructed in the caller's context; the `@local?` signature does not guarantee whether the result and the input collection have the same allocation region. When the dynamic type of the input collection is [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt), its underlying storage is copied directly; for other types, the elements are obtained through the collection's `toArray(this @local?)`, and if that type does not override this method, the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used and an exception is thrown (see the exceptions description).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- elements: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> @local? - The input collection.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the dynamic type of the input collection is not [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt) and its type does not override `toArray(this @local?)` (the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeList(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 2, 3]
+    let sharedSrc: Collection<Int64> @local? = src
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(sharedSrc) @local?
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeList()
+    println("size=${list.size}")
+    println("first=${list[0]}")
+}
+```
+
+Output:
+
+```text
+size=3
+first=1
+```
+
+<!--DelEnd_sink-->
+
 ### static func of(Array\<T>)
 
 ```cangjie
@@ -1012,44 +1596,6 @@ Output:
 Array: [1, 2, 3, 4, 5]
 List: [1, 2, 3, 4, 5]
 List size: 5
-```
-
-### func add(T)
-
-```cangjie
-public func add(element: T): Unit
-```
-
-Function: Appends the specified element to the end of this [ArrayList](collection_package_class.md#class-arraylistt).
-
-Parameters:
-
-- element: T - The element to append, of type T.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = ArrayList<Int64>()
-    list.add(1)
-    list.add(2)
-    list.add(3)
-    
-    println("List contents: ${list}")  // [1, 2, 3]
-    println("List size: ${list.size}")  // 3
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-List content: [1, 2, 3]
-List size: 3
 ```
 
 ### func add(Collection\<T>)
@@ -1098,51 +1644,6 @@ Output:
 ```text
 List contents: [1, 2, 3, 4, 5]
 List size: 5
-```
-
-### func add(T, Int64)
-
-```cangjie
-public func add(element: T, at!: Int64): Unit
-```
-
-Function: Inserts the specified element at the specified position in this [ArrayList](collection_package_class.md#class-arraylistt).
-
-Parameters:
-
-- element: T - The element of type T to be inserted.
-- at!: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The target index for insertion.
-
-Exceptions:
-
-- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when 'at' is out of bounds.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = ArrayList<Int64>()
-    list.add(1)
-    list.add(3)
-    
-    // Insert element 2 at index 1
-    list.add(2, at: 1)
-    
-    println("List contents: ${list}")  // [1, 2, 3]
-    println("List size: ${list.size}")  // 3
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-List contents: [1, 2, 3]
-List size: 3
 ```
 
 ### func add(Collection\<T>, Int64)
@@ -1196,6 +1697,294 @@ List contents: [1, 2, 3, 4, 5]
 List size: 5
 ```
 
+### func add(T)
+
+```cangjie
+public func add(element: T): Unit
+```
+
+Function: Appends the specified element to the end of this [ArrayList](collection_package_class.md#class-arraylistt).
+
+Parameters:
+
+- element: T - The element to append, of type T.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = ArrayList<Int64>()
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    
+    println("List contents: ${list}")  // [1, 2, 3]
+    println("List size: ${list.size}")  // 3
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+List contents: [1, 2, 3]
+List size: 3
+```
+
+### func add(T, Int64)
+
+```cangjie
+public func add(element: T, at!: Int64): Unit
+```
+
+Function: Inserts the specified element at the specified position in this [ArrayList](collection_package_class.md#class-arraylistt).
+
+Parameters:
+
+- element: T - The element of type T to be inserted.
+- at!: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The target index for insertion.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when 'at' is out of bounds.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = ArrayList<Int64>()
+    list.add(1)
+    list.add(3)
+    
+    // Insert element 2 at index 1
+    list.add(2, at: 1)
+    
+    println("List contents: ${list}")  // [1, 2, 3]
+    println("List size: ${list.size}")  // 3
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+List contents: [1, 2, 3]
+List size: 3
+```
+
+<!--Del_sink-->
+
+### func add(Collection\<T>)
+
+```cangjie
+public exclave func add(this @local!, all!: Collection<T> @local!): Unit
+```
+
+Function: Appends all elements of the specified collection to the end of the current list.
+
+The function traverses the input collection in iterator order and inserts all elements at the tail of the current list. When the dynamic type of the input collection is [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt), its backing storage is copied directly; other types obtain their elements through `toArray(this @local!)` on the input collection, and a type that does not override that method falls back to the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface and throws (see Exceptions).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> @local! - The collection of elements to insert.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the dynamic type of the input collection is not [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt) and its type does not override `toArray(this @local!)` (the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    let more: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    more.add(3)
+    more.add(4)
+    list.add(all: more)
+    println("size=${list.size}")
+    println("last=${list[3]}")
+}
+```
+
+Output:
+
+```text
+size=4
+last=4
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func add(Collection\<T>, Int64)
+
+```cangjie
+public exclave func add(this @local!, all!: Collection<T> @local!, at!: Int64): Unit
+```
+
+Function: Inserts all elements of the specified collection into this list, starting at the specified position.
+
+The function traverses the input collection in iterator order and inserts all elements at the specified position; elements originally at or after that position are shifted backward. When the dynamic type of the input collection is [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt), its backing storage is read directly; other types obtain their elements through `toArray(this @local!)` on the input collection, and a type that does not override that method falls back to the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface and throws (see Exceptions).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> @local! - The collection of T-type elements to insert.
+- at!: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The target index at which to insert the collection.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `at` is out of range.
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the dynamic type of the input collection is not [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt) and its type does not override `toArray(this @local!)` (the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(5)
+    let more: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    more.add(2)
+    more.add(3)
+    more.add(4)
+    list.add(all: more, at: 1)
+    println("size=${list.size}")
+    println("at1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+size=5
+at1=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func add(T)
+
+```cangjie
+public exclave func add(this @local!, element: T @local!): Unit
+```
+
+Function: Appends the specified element to the end of the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- element: T @local! - The element to insert, of type T.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    println("size=${list.size}")
+    println("last=${list[1]}")
+}
+```
+
+Output:
+
+```text
+size=2
+last=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func add(T, Int64)
+
+```cangjie
+public exclave func add(this @local!, element: T @local!, at!: Int64): Unit
+```
+
+Function: Inserts the specified element at the specified position in the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- element: T @local! - The T-type element to insert.
+- at!: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The target index at which to insert the element.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `at` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(3)
+    list.add(2, at: 1)
+    println("size=${list.size}")
+    println("at1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+size=3
+at1=2
+```
+
+<!--DelEnd_sink-->
+
 ### func all((T) -> Bool)
 
 ```cangjie
@@ -1203,7 +1992,6 @@ public func all(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether all elements in this [ArrayList](collection_package_class.md#class-arraylistt) satisfy the given condition.
-
 
 > **Note：**
 >
@@ -1216,6 +2004,57 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all elements satisfy the condition, otherwise false.
 
+<!--Del_sink-->
+
+### func all((T) -> Bool)
+
+```cangjie
+public func all(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool
+```
+
+Function: Checks whether all elements in the current list satisfy the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((T @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all elements in the list satisfy the condition; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [2, 4, 6]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let r = list.all({e => e % 2 == 0})
+    println("allEven=${r}")
+}
+```
+
+Output:
+
+```text
+allEven=true
+```
+
+<!--DelEnd_sink-->
+
 ### func any((T) -> Bool)
 
 ```cangjie
@@ -1223,7 +2062,6 @@ public func any(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether any element in this [ArrayList](collection_package_class.md#class-arraylistt) satisfies the given condition.
-
 
 > **Note：**
 >
@@ -1235,6 +2073,57 @@ Parameters:
 Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if any element satisfies the condition.
+
+<!--Del_sink-->
+
+### func any((T) -> Bool)
+
+```cangjie
+public func any(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool
+```
+
+Function: Checks whether any element in the current list satisfies the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((T @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether any element satisfies the condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 3, 4]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let r = list.any({e => e % 2 == 0})
+    println("hasEven=${r}")
+}
+```
+
+Output:
+
+```text
+hasEven=true
+```
+
+<!--DelEnd_sink-->
 
 ### func clear()
 
@@ -1278,6 +2167,50 @@ List contents after clearing: []
 List size after clearing: 0
 Is list empty: true
 ```
+
+<!--Del_sink-->
+
+### func clear()
+
+```cangjie
+public exclave func clear(this @local!): Unit
+```
+
+Function: Removes all elements from the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.clear()
+    println("Size after clearing: ${list.size}")
+    println("isEmpty: ${list.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+Size after clearing: 0
+isEmpty: true
+```
+
+<!--DelEnd_sink-->
 
 ### func clone()
 
@@ -1327,13 +2260,111 @@ Modified original list: [1, 2, 3, 4]
 Cloned list remains unchanged: [1, 2, 3]
 ```
 
+<!--Del_sink-->
+
+### func clone()
+
+```cangjie
+public exclave func clone(this @local!): ArrayList<T> @local!
+```
+
+Function: Returns a copy (shallow copy) of the current list instance. The new list is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt)\<T>.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    let cloned: ArrayList<Int64> @local! = list.clone()
+    list.add(3)
+    println("Cloned list size: ${cloned.size}")
+    println("Cloned list last element: ${cloned[1]}")
+}
+```
+
+Output:
+
+```text
+Cloned list size: 2
+Cloned list last element: 2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func clone()
+
+```cangjie
+public exclave func clone(this @local?): ArrayList<T> @local?
+```
+
+Function: Returns a copy (shallow copy) of this [ArrayList](collection_package_class.md#class-arraylistt) instance. The copy is constructed at the caller's side as a new list whose backing array is a clone of the current list's backing array, with element references shared with the original list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local? - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeList(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>() @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeList()
+    let cloned: ArrayList<Int64> @local? = list.clone()
+    println("size=${cloned.size}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+
+<!--DelEnd_sink-->
+
 ### func filter((T) -> Bool)
+
 ```cangjie
 public func filter(predicate: (T) -> Bool): ArrayList<T>
 ```
 
 Function: Returns a new [ArrayList](collection_package_class.md#class-arraylistt)\<T> containing elements that satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -1346,6 +2377,57 @@ Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<T> - A new collection containing elements that satisfy the condition.
 
+<!--Del_sink-->
+
+### func filter((T) -> Bool)
+
+```cangjie
+public exclave func filter(this @local!, predicate: ((T @local?) -> Bool) @local?): ArrayList<T> @local!
+```
+
+Function: Filters the elements of the current list that satisfy the condition and returns a new list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- predicate: ((T @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - Returns a new list of the elements satisfying the filter condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    let evens: ArrayList<Int64> @local! = list.filter({e => e % 2 == 0})
+    println("size=${evens.size}")
+    println("first=${evens[0]}")
+}
+```
+
+Output:
+
+```text
+size=2
+first=2
+```
+
+<!--DelEnd_sink-->
+
 ### func filterMap\<R>((T) -> ?R)
 
 ```cangjie
@@ -1353,7 +2435,6 @@ public func filterMap<R>(transform: (T) -> ?R): ArrayList<R>
 ```
 
 Function: Performs both filtering and mapping operations, returning a new [ArrayList](collection_package_class.md#class-arraylistt).
-
 
 > **Note：**
 >
@@ -1366,6 +2447,68 @@ Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<R> - A new filtered and mapped [ArrayList](collection_package_class.md#class-arraylistt).
 
+<!--Del_sink-->
+
+### func filterMap\<R>((T) -> ?R)
+
+```cangjie
+public exclave func filterMap<R>(this @local!, transform: ((T @local!) -> Option<R> @local!) @local?): ArrayList<R> @local!
+```
+
+Function: Performs the filter and map operations on the elements of the current list at the same time and returns a new list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- transform: ((T @local!) -> ?R @local!) @local? - The given mapping function. A return value of Some means the filter predicate is true; otherwise, it means false.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<R> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) after filtering and mapping.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func keepPositive(e: Int64 @local!): Option<Int64> @local! {
+    if (e > 0) {
+        Some(e)
+    } else {
+        None
+    }
+}
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(-2)
+    list.add(-1)
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    let positives: ArrayList<Int64> @local! = list.filterMap<Int64>(keepPositive)
+    println("size=${positives.size}")
+    println("first=${positives[0]}")
+    println("last=${positives[1]}")
+}
+```
+
+Output:
+
+```text
+size=2
+first=1
+last=2
+```
+
+<!--DelEnd_sink-->
+
 ### func flatMap\<R>((T) -> ArrayList\<R>)
 
 ```cangjie
@@ -1373,7 +2516,6 @@ public func flatMap<R>(transform: (T) -> ArrayList<R>): ArrayList<R>
 ```
 
 Function: Applies a transform closure to each element of this [ArrayList](collection_package_class.md#class-arraylistt), where the closure returns a new [ArrayList](collection_package_class.md#class-arraylistt), then flattens and concatenates all returned ArrayLists into a single result [ArrayList](collection_package_class.md#class-arraylistt).
-
 
 > **Note：**
 >
@@ -1386,6 +2528,64 @@ Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<R> - A new "mapped" and "flattened" [ArrayList](collection_package_class.md#class-arraylistt).
 
+<!--Del_sink-->
+
+### func flatMap\<R>((T) -> ArrayList\<R>)
+
+```cangjie
+public exclave func flatMap<R>(this @local!, transform: ((T @local!) -> ArrayList<R> @local!) @local?): ArrayList<R> @local!
+```
+
+Function: Applies the transform function to each element of the current list, flattens and concatenates the transform results into a new list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- transform: ((T @local!) -> [ArrayList](collection_package_class.md#class-arraylistt)\<R> @local!) @local? - The given mapping function.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<R> @local! - A new [ArrayList](collection_package_class.md#class-arraylistt) after being mapped and flattened.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makePair(e: Int64 @local!): ArrayList<Int64> @local! {
+    let arr: Array<Int64> @local! = [e, e * e]
+    let result: ArrayList<Int64> @local! = ArrayList<Int64>(arr) @local!
+    result
+}
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    let flat: ArrayList<Int64> @local! = list.flatMap<Int64>(makePair)
+    println("size=${flat.size}")
+    println("first=${flat[0]}")
+    println("last=${flat[5]}")
+}
+```
+
+Output:
+
+```text
+size=6
+first=1
+last=9
+```
+
+<!--DelEnd_sink-->
+
 ### func fold\<R>(R, (R, T) -> R)
 
 ```cangjie
@@ -1393,7 +2593,6 @@ public func fold<R>(initial: R, operation: (R, T) -> R): R
 ```
 
 Function: Accumulates values starting from the specified initial value, processing elements from left to right.
-
 
 > **Note：**
 >
@@ -1407,6 +2606,56 @@ Returns:
 
 - R - The final accumulated value.
 
+<!--Del_sink-->
+
+### func fold\<R>(R, (R, T) -> R)
+
+```cangjie
+public exclave func fold<R>(this @local!, initial: R @local!, operation: ((R @local!, T @local!) -> R @local!) @local?): R @local!
+```
+
+Function: Folds the elements of the current list from left to right using the specified initial value and returns the final calculated value. The value is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- initial: R @local! - The given initial value of type R.
+- operation: ((R @local!, T @local!) -> R @local!) @local? - The given calculation function.
+
+Returns:
+
+- R @local! - Returns the final calculated value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    let product = list.fold(1) {acc, e => acc * e}
+    println("product=${product}")
+}
+```
+
+Output:
+
+```text
+product=24
+```
+
+<!--DelEnd_sink-->
+
 ### func forEach((T) -> Unit)
 
 ```cangjie
@@ -1414,7 +2663,6 @@ public func forEach(action: (T) -> Unit): Unit
 ```
 
 Function: Performs the given action on each element.
-
 
 > **Note：**
 >
@@ -1469,6 +2717,109 @@ Output:
 Element at index 1: Some(20)
 Element at index 5: None
 ```
+
+<!--Del_sink-->
+
+### func get(Int64)
+
+```cangjie
+public exclave func get(this @local!, index: Int64): ?T @local!
+```
+
+Function: Gets the element at position `index` in the current list. The return value is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- index: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index of the element to get.
+
+Returns:
+
+- ?T @local! - Gets the element corresponding to the index, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont). If the index is out of range, None is returned.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(10)
+    let g = list.get(0)
+    match (g) {
+        case Some(v) => println("g=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+g=10
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func get(Int64)
+
+```cangjie
+public exclave func get(this @local?, index: Int64): ?T @local?
+```
+
+Function: Gets the element at position `index` in the current list. Returns None when the index is out of bounds; otherwise returns an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont) wrapping the element at that position. The returned [Option](../../core/core_package_api/core_package_enums.md#enum-optiont) is constructed at the caller's side and is not bound to the same allocation region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- index: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index of the element to get.
+
+Returns:
+
+- ?T @local? - Gets the element corresponding to the index, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont). If the index is out of range, None is returned.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [10, 20]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let g = list.get(1)
+    match (g) {
+        case Some(v) => println("g=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+g=20
+```
+
+<!--DelEnd_sink-->
 
 ### func getRawArray()
 
@@ -1556,7 +2907,6 @@ public func intersperse(separator: T): ArrayList<T>
 
 Function: Returns a new [ArrayList](collection_package_class.md#class-arraylistt) with the given element inserted between every two existing elements.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -1567,6 +2917,58 @@ Parameters:
 Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<T> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+<!--Del_sink-->
+
+### func intersperse(T)
+
+```cangjie
+public exclave func intersperse(this @local!, separator: T @local!): ArrayList<T> @local!
+```
+
+Function: Returns a new list with the given separator element inserted between every two elements of the current list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- separator: T @local! - The given separator element.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    let ret: ArrayList<Int64> @local! = list.intersperse(0)
+    println("size=${ret.size}")
+    println("at1=${ret[1]}")
+    println("last=${ret[4]}")
+}
+```
+
+Output:
+
+```text
+size=5
+at1=0
+last=3
+```
+
+<!--DelEnd_sink-->
 
 ### func isEmpty()
 
@@ -1604,6 +3006,54 @@ Output:
 Is empty list empty: true
 Is non-empty list empty: false
 ```
+
+<!--Del_sink-->
+
+### func isEmpty()
+
+```cangjie
+public func isEmpty(this @local?): Bool
+```
+
+Function: Checks whether this [ArrayList](collection_package_class.md#class-arraylistt) is empty.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the list is empty; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(8) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    println("isEmpty=${list.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+isEmpty=true
+```
+
+<!--DelEnd_sink-->
 
 ### func iterator()
 
@@ -1647,6 +3097,108 @@ Output:
 3
 ```
 
+<!--Del_sink-->
+
+### func iterator()
+
+```cangjie
+public exclave func iterator(this @local!): Iterator<T> @local!
+```
+
+Function: Gets an iterator over the current list. The iterator is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> @local! - The iterator of the list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    let it: Iterator<Int64> @local! = list.iterator()
+    let first = it.next()
+    if (let Some(v) <- first) {
+        println("first=${v}")
+    }
+}
+```
+
+Output:
+
+```text
+first=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func iterator()
+
+```cangjie
+public exclave func iterator(this @local?): Iterator<T> @local?
+```
+
+Function: Gets an iterator over the current list. The iterator instance is newly constructed at the caller's side, holds a reference to the current list, and returns elements one by one according to the list's current content.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> @local? - The iterator of the list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>(8) @local!
+    a.add(7)
+    let v: ArrayList<Int64> @local? = a
+    v
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let it: Iterator<Int64> @local? = list.iterator()
+    let first = it.next()
+    if (let Some(v) <- first) {
+        println("first=${v}")
+    }
+}
+```
+
+Output:
+
+```text
+first=7
+```
+
+<!--DelEnd_sink-->
+
 ### func map\<R>((T) -> R)
 
 ```cangjie
@@ -1654,7 +3206,6 @@ public func map<R>(transform: (T) -> R): ArrayList<R>
 ```
 
 Function: Applies a transformation to this [ArrayList](collection_package_class.md#class-arraylistt) and returns a new [ArrayList](collection_package_class.md#class-arraylistt).
-
 
 > **Note：**
 >
@@ -1667,6 +3218,56 @@ Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<R> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
 
+<!--Del_sink-->
+
+### func map\<R>((T) -> R)
+
+```cangjie
+public exclave func map<R>(this @local!, transform: ((T @local!) -> R @local!) @local?): ArrayList<R> @local!
+```
+
+Function: Applies the transform function to each element of the current list and returns a new list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- transform: ((T @local!) -> R @local!) @local? - The given mapping function.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<R> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    let squared: ArrayList<Int64> @local! = list.map<Int64>({e => e * e})
+    println("size=${squared.size}")
+    println("last=${squared[2]}")
+}
+```
+
+Output:
+
+```text
+size=3
+last=9
+```
+
+<!--DelEnd_sink-->
+
 ### func none((T) -> Bool)
 
 ```cangjie
@@ -1674,7 +3275,6 @@ public func none(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether none of the elements in the [ArrayList](collection_package_class.md#class-arraylistt) satisfy the given condition.
-
 
 > **Note：**
 >
@@ -1687,6 +3287,57 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether none of the elements in the current [ArrayList](collection_package_class.md#class-arraylistt) satisfy the condition.
 
+<!--Del_sink-->
+
+### func none((T) -> Bool)
+
+```cangjie
+public func none(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool
+```
+
+Function: Checks whether none of the elements in the current list satisfy the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((T @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether none of the elements in the current [ArrayList](collection_package_class.md#class-arraylistt) satisfy the condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 3, 5]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let r = list.none({e => e % 2 == 0})
+    println("noneEven=${r}")
+}
+```
+
+Output:
+
+```text
+noneEven=true
+```
+
+<!--DelEnd_sink-->
+
 ### func reduce((T, T) -> T)
 
 ```cangjie
@@ -1694,7 +3345,6 @@ public func reduce(operation: (T, T) -> T): Option<T>
 ```
 
 Function: Computes from left to right using the first element as the initial value.
-
 
 > **Note：**
 >
@@ -1706,6 +3356,59 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T> - Returns the computation result.
+
+<!--Del_sink-->
+
+### func reduce((T, T) -> T)
+
+```cangjie
+public exclave func reduce(this @local!, operation: ((T @local!, T @local!) -> T @local!) @local?): Option<T> @local!
+```
+
+Function: Uses the first element as the initial value and folds the elements of the current list from left to right, returning the final calculated value. The value is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- operation: ((T @local!, T @local!) -> T @local!) @local? - The given calculation function.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T> @local! - Returns the calculation result.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    list.add(5)
+    let max = list.reduce({a, e => if (a > e) { a } else { e }})
+    match (max) {
+        case Some(v) => println("max=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+max=5
+```
+
+<!--DelEnd_sink-->
 
 ### func remove(Int64)
 
@@ -1758,6 +3461,60 @@ List after removal: [1, 3]
 List size after removal: 2
 ```
 
+<!--Del_sink-->
+
+### func remove(Int64)
+
+```cangjie
+public exclave func remove(this @local!, at!: Int64): T @local!
+```
+
+Function: Removes the element at the specified position in the current list and returns the removed element. The element is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- at!: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index of the element to be removed.
+
+Returns:
+
+- T @local! - The removed element.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `at` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    let removed = list.remove(at: 1)
+    println("removed=${removed}")
+    println("size=${list.size}")
+}
+```
+
+Output:
+
+```text
+removed=2
+size=2
+```
+
+<!--DelEnd_sink-->
+
 ### func remove(Range\<Int64>)
 
 ```cangjie
@@ -1809,6 +3566,60 @@ List after removal: [0, 3, 4, 5]
 List size after removal: 4
 ```
 
+<!--Del_sink-->
+
+### func remove(Range\<Int64>)
+
+```cangjie
+public exclave func remove(this @local!, range: Range<Int64>): Unit
+```
+
+Function: Removes all elements within the specified [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) from the current list. If the effective start is greater than or equal to the effective end, no removal is performed.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - If the parameter `range` is a [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) instance constructed using the [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor: when `hasEnd` is false, the `end` value takes no effect and is unaffected by the `isClosed` value passed at construction; the removed range extends from `start` to the end of the current list.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- range: [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet)\<[Int64](../../core/core_package_api/core_package_intrinsics.md#int64)> - The range of elements to be removed.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the step of `range` is not equal to 1.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the effective range is non-empty and `start` or `end` is less than 0, or `end` is greater than the length of the [ArrayList](collection_package_class.md#class-arraylistt).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    list.remove(1..3)
+    println("size=${list.size}")
+    println("at1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+size=3
+at1=3
+```
+
+<!--DelEnd_sink-->
+
 ### func removeIf((T) -> Bool)
 
 ```cangjie
@@ -1856,6 +3667,57 @@ Output:
 List after removing evens: [1, 3, 5]
 List size after removal: 3
 ```
+
+<!--Del_sink-->
+
+### func removeIf((T) -> Bool)
+
+```cangjie
+public exclave func removeIf(this @local!, predicate: ((T @local!) -> Bool) @local?): Unit
+```
+
+Function: Removes all elements of the current list that satisfy the given lambda expression or function.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- predicate: ((T @local!) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The condition passed to decide removal.
+
+Exceptions:
+
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when elements are added to, removed from, or modified in the list within `predicate`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.removeIf({e => e % 2 == 0})
+    println("size=${list.size}")
+    println("first=${list[0]}")
+}
+```
+
+Output:
+
+```text
+size=2
+first=1
+```
+
+<!--DelEnd_sink-->
 
 ### func reserve(Int64)
 
@@ -1949,6 +3811,135 @@ Before reversal: [0, 1, 2, 3]
 After reversal: [3, 2, 1, 0]
 ```
 
+<!--Del_sink-->
+
+### func reverse()
+
+```cangjie
+public exclave func reverse(this @local!): Unit
+```
+
+Function: Reverses the order of the elements in the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.reverse()
+    println("first=${list[0]}")
+    println("last=${list[3]}")
+}
+```
+
+Output:
+
+```text
+first=3
+last=0
+```
+
+<!--DelEnd_sink-->
+
+### func skip(Int64)
+
+```cangjie
+public func skip(count: Int64): ArrayList<T>
+```
+
+Function: Skips a specified number of elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+Throws an exception when count is less than or equal to 0. When count equals 0, it effectively skips no elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt) containing all elements of the source [ArrayList](collection_package_class.md#class-arraylistt). When count is greater than 0 but less than the size of the source [ArrayList](collection_package_class.md#class-arraylistt), it skips the first count elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt) containing the remaining elements. When count is greater than or equal to the size of the [ArrayList](collection_package_class.md#class-arraylistt), it returns an empty [ArrayList](collection_package_class.md#class-arraylistt).
+
+> **Note：**
+>
+> Unsupported platform：OpenHarmony
+Parameters:
+
+- count: [Int64](core_package_intrinsics.md#int64) - The number of elements to skip.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) with the specified number of elements skipped.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when count < 0.
+
+<!--Del_sink-->
+
+### func skip(Int64)
+
+```cangjie
+public exclave func skip(this @local!, count: Int64): ArrayList<T> @local!
+```
+
+Function: Skips the specified number of elements of the current list and returns a new list. The result is bound to the same local region as the current list.
+
+When `count` is 0, no element is skipped and a new list containing all elements of the source list is returned. When `count` is greater than 0 and less than the size of the source list, the first `count` elements are skipped and a new list containing the remaining elements is returned. When `count` is greater than or equal to the size of the list, an empty list is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- count: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The number of elements to skip.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) with the specified number of elements skipped.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `count` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    let skipped: ArrayList<Int64> @local! = list.skip(3)
+    println("size=${skipped.size}")
+    println("first=${skipped[0]}")
+}
+```
+
+Output:
+
+```text
+size=2
+first=3
+```
+
+<!--DelEnd_sink-->
+
 ### func slice(Range\<Int64>)
 
 ```cangjie
@@ -2010,31 +4001,116 @@ Sliced list: [1, 2, 3]
 Sliced list size: 3
 ```
 
-### func skip(Int64)
+<!--Del_sink-->
+
+### func slice(Range\<Int64>)
 
 ```cangjie
-public func skip(count: Int64): ArrayList<T>
+public exclave func slice(this @local!, range: Range<Int64>): ArrayList<T> @local!
 ```
 
-Function: Skips a specified number of elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+Function: Gets a sublist slice of the current list. The slice is bound to the same local region as the current list.
 
-Throws an exception when count is less than or equal to 0. When count equals 0, it effectively skips no elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt) containing all elements of the source [ArrayList](collection_package_class.md#class-arraylistt). When count is greater than 0 but less than the size of the source [ArrayList](collection_package_class.md#class-arraylistt), it skips the first count elements and returns a new [ArrayList](collection_package_class.md#class-arraylistt) containing the remaining elements. When count is greater than or equal to the size of the [ArrayList](collection_package_class.md#class-arraylistt), it returns an empty [ArrayList](collection_package_class.md#class-arraylistt).
-
-
-> **Note：**
+> **Note:**
 >
-> Unsupported platform：OpenHarmony
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
 Parameters:
 
-- count: [Int64](core_package_intrinsics.md#int64) - The number of elements to skip.
+- this @local! - The current `@local!` instance on which the method is called.
+- range: [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet)\<[Int64](../../core/core_package_api/core_package_intrinsics.md#int64)> - The range of the slice; its step must be 1.
 
 Returns:
 
-- [ArrayList](collection_package_class.md#class-arraylistt)\<T> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) with the specified number of elements skipped.
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - The sliced list.
 
 Exceptions:
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when count < 0.
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `range.[step](collection_package_function.md#func-steptint64)` is not equal to 1.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown if `range` exceeds the list boundary.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    let r: Range<Int64> = 0..2
+    let sl: ArrayList<Int64> @local! = list.slice(r)
+    println("sl=${sl.size}")
+}
+```
+
+Output:
+
+```text
+sl=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func slice(Range\<Int64>)
+
+```cangjie
+public exclave func slice(this @local?, range: Range<Int64>): ArrayList<T> @local?
+```
+
+Function: Gets a sublist slice of the current list. The slice is a new [ArrayList](collection_package_class.md#class-arraylistt) constructed at the caller's side; its elements are copies of the elements of the current list within the range, and it is not bound to the same allocation region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- range: [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet)\<[Int64](../../core/core_package_api/core_package_intrinsics.md#int64)> - The range of the slice; its step must be 1.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local? - The sliced list.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `range.[step](collection_package_function.md#func-steptint64)` is not equal to 1.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown if `range` exceeds the list boundary.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 2, 3]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let r: Range<Int64> = 0..2
+    let sl: ArrayList<Int64> @local? = list.slice(r)
+    println("sl=${sl.size}")
+}
+```
+
+Output:
+
+```text
+sl=2
+```
+
+<!--DelEnd_sink-->
 
 ### func sortBy((T, T) -> Ordering) <sup>(deprecated)</sup>
 
@@ -2152,6 +4228,7 @@ After stable sorting: [4, 3, 2, 1]
 ```
 
 ### func step(Int64)
+
 ```cangjie
 public func step(count: Int64): ArrayList<T>
 ```
@@ -2159,7 +4236,6 @@ public func step(count: Int64): ArrayList<T>
 Function: Extracts elements from the [ArrayList](collection_package_class.md#class-arraylistt) at specified intervals and returns a new [ArrayList](collection_package_class.md#class-arraylistt).
 
 Throws an exception when count is less than or equal to 0.
-
 
 > **Note：**
 >
@@ -2176,7 +4252,67 @@ Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when count <= 0.
 
+<!--Del_sink-->
+
+### func step(Int64)
+
+```cangjie
+public exclave func step(this @local!, count: Int64): ArrayList<T> @local!
+```
+
+Function: Extracts elements from the current list at the specified interval and returns a new list. The result is bound to the same local region as the current list.
+
+Throws an exception when `count` is less than or equal to 0.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- count: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The selected interval.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - A new [ArrayList](collection_package_class.md#class-arraylistt) containing all elements extracted from the source list at the interval.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `count` is less than or equal to 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    list.add(5)
+    let stepped: ArrayList<Int64> @local! = list.step(2)
+    println("size=${stepped.size}")
+    println("last=${stepped[2]}")
+}
+```
+
+Output:
+
+```text
+size=3
+last=4
+```
+
+<!--DelEnd_sink-->
+
 ### func take(Int64)
+
 ```cangjie
 public func take(count: Int64): ArrayList<T>
 ```
@@ -2184,7 +4320,6 @@ public func take(count: Int64): ArrayList<T>
 Function: Takes a specified number of elements from the array and returns a new array.
 
 Throws an exception when count is less than or equal to 0. When count equals 0, no elements are taken, and an empty array is returned. When count is greater than 0 but less than the size of the source array, the first count elements are taken and returned in a new array. When count is greater than or equal to the size of the array, all elements are taken and returned in a new array.
-
 
 > **Note：**
 >
@@ -2200,6 +4335,64 @@ Returns:
 Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when count < 0.
+
+<!--Del_sink-->
+
+### func take(Int64)
+
+```cangjie
+public exclave func take(this @local!, count: Int64): ArrayList<T> @local!
+```
+
+Function: Takes the specified number of elements from the current list and returns a new list. The result is bound to the same local region as the current list.
+
+When `count` is 0, no element is taken and an empty list is returned. When `count` is greater than 0 and less than the size of the source list, the first `count` elements are taken and a new list containing these elements is returned. When `count` is greater than or equal to the size of the list, all elements are taken and a new list containing all elements of the source list is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- count: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The number of elements to take.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) containing the specified number of elements taken from the list.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `count` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(0)
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    list.add(4)
+    let taken: ArrayList<Int64> @local! = list.take(3)
+    println("size=${taken.size}")
+    println("last=${taken[2]}")
+}
+```
+
+Output:
+
+```text
+size=3
+last=2
+```
+
+<!--DelEnd_sink-->
 
 ### func toArray()
 
@@ -2244,6 +4437,100 @@ List: [0, 1, 2, 3]
 Array: [0, 1, 2, 3]
 Array size: 4
 ```
+
+<!--Del_sink-->
+
+### func toArray()
+
+```cangjie
+public exclave func toArray(this @local!): Array<T> @local!
+```
+
+Function: Converts the current list into an array. The array is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> @local! - The converted `@local!` array.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    let arr: Array<Int64> @local! = list.toArray()
+    println("arr=${arr.size}")
+}
+```
+
+Output:
+
+```text
+arr=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func toArray()
+
+```cangjie
+public exclave func toArray(this @local?): Array<T> @local?
+```
+
+Function: Converts this list into an array. The returned array is newly constructed at the caller's side, contains all elements of the current list, and is not bound to the same allocation region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> @local? - The converted `@local?` array.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeList(): ArrayList<Int64> @local? {
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>() @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeList()
+    let arr: Array<Int64> @local? = list.toArray()
+    println("size=${arr.size}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+
+<!--DelEnd_sink-->
 
 ### operator func [](Int64)
 
@@ -2298,6 +4585,110 @@ Modified element at index 1: 25
 Modified list: [10, 25, 30]
 ```
 
+<!--Del_sink-->
+
+### operator func \[](Int64)
+
+```cangjie
+public exclave operator func [](this @local!, index: Int64): T @local!
+```
+
+Function: Gets the element at position `index` in the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- index: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index of the element to get.
+
+Returns:
+
+- T @local! - The value of the element at the index position.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `index` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(10)
+    list.add(20)
+    println("idx1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+idx1=20
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### operator func \[](Int64)
+
+```cangjie
+public exclave operator func [](this @local?, index: Int64): T @local?
+```
+
+Function: Gets the element at position `index` in the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- index: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index of the element to get.
+
+Returns:
+
+- T @local? - The value of the element at the index position.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `index` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [10, 20]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    println("idx1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+idx1=20
+```
+
+<!--DelEnd_sink-->
+
 ### operator func [](Int64, T)
 
 ```cangjie
@@ -2346,6 +4737,54 @@ List before modification: [10, 20, 30]
 List after modification: [10, 25, 30]
 Element at index 1: 25
 ```
+
+<!--Del_sink-->
+
+### operator func \[](Int64, T)
+
+```cangjie
+public exclave operator func [](this @local!, index: Int64, value!: T @local!): Unit
+```
+
+Function: Operator overload. Replaces the element at the specified position in the current list with the specified value via the subscript operator.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- index: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The index to set.
+- value!: T @local! - The T-type value to set.
+
+Exceptions:
+
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `index` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(10)
+    list.add(20)
+    list[1] = 25
+    println("at1=${list[1]}")
+}
+```
+
+Output:
+
+```text
+at1=25
+```
+
+<!--DelEnd_sink-->
 
 ### operator func [](Range\<Int64>)
 
@@ -2409,6 +4848,115 @@ Sliced list: [1, 2, 3]
 Sliced list size: 3
 ```
 
+<!--Del_sink-->
+
+### operator func \[](Range\<Int64>)
+
+```cangjie
+public exclave operator func [](this @local!, range: Range<Int64>): ArrayList<T> @local!
+```
+
+Function: Gets a sublist slice of the current list. The slice is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- range: [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet)\<[Int64](../../core/core_package_api/core_package_intrinsics.md#int64)> - The range of the slice; its step must be 1.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local! - The sliced list.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `range.[step](collection_package_function.md#func-steptint64)` is not equal to 1.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `range` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    list.add(1)
+    let r: Range<Int64> = 0..1
+    let sl: ArrayList<Int64> @local! = list[r]
+    println("sl=${sl.size}")
+}
+```
+
+Output:
+
+```text
+sl=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### operator func \[](Range\<Int64>)
+
+```cangjie
+public exclave operator func [](this @local?, range: Range<Int64>): ArrayList<T> @local?
+```
+
+Function: Gets a sublist slice of the current list. The slice is a new [ArrayList](collection_package_class.md#class-arraylistt) constructed at the caller's side; its elements are copies of the elements of the current list within the range, and it is not bound to the same allocation region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- range: [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet)\<[Int64](../../core/core_package_api/core_package_intrinsics.md#int64)> - The range of the slice; its step must be 1.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<T> @local? - The sliced list.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `range.[step](collection_package_function.md#func-steptint64)` is not equal to 1.
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `range` is out of range.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeLocal(): ArrayList<Int64> @local? {
+    let src: Array<Int64> @local! = [1, 2, 3]
+    let a: ArrayList<Int64> @local? = ArrayList<Int64>(src) @local!
+    a
+}
+
+main() {
+    let list: ArrayList<Int64> @local? = makeLocal()
+    let r: Range<Int64> = 0..2
+    let sl: ArrayList<Int64> @local? = list[r]
+    println("sl=${sl.size}")
+}
+```
+
+Output:
+
+```text
+sl=2
+```
+
+<!--DelEnd_sink-->
+
 ### extend\<T> ArrayList\<T>
 
 ```cangjie
@@ -2429,6 +4977,56 @@ Returns:
 
 - [ArrayList](collection_package_class.md#class-arraylistt)\<([Int64](../../core/core_package_api/core_package_intrinsics.md#int64), T)> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt) with indices.
 
+<!--Del_sink-->
+
+#### func enumerate()
+
+```cangjie
+public exclave func enumerate(this @local!): ArrayList<(Int64, T)> @local!
+```
+
+Function: Gets a new indexed list of the current list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<([Int64](../../core/core_package_api/core_package_intrinsics.md#int64), T)> @local! - The new `@local!` list with indexes.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list: ArrayList<String> @local! = ArrayList<String>() @local!
+    list.add("apple")
+    let enumerated: ArrayList<(Int64, String)> @local! = list.enumerate()
+    let pair = enumerated[0]
+    println("size=${enumerated.size}")
+    println("first idx=${pair[0]}")
+    println("first val=${pair[1]}")
+}
+```
+
+Output:
+
+```text
+size=1
+first idx=0
+first val=apple
+```
+
+<!--DelEnd_sink-->
+
 #### func zip\<R>(ArrayList\<R>)
 
 ```cangjie
@@ -2436,7 +5034,6 @@ public func zip<R>(other: ArrayList<R>): ArrayList<(T, R)>
 ```
 
 Function: Merges two [ArrayList](collection_package_class.md#class-arraylistt)s into a new [ArrayList](collection_package_class.md#class-arraylistt) (length determined by the shorter [ArrayList](collection_package_class.md#class-arraylistt)).
-
 
 > **Note：**
 >
@@ -2448,7 +5045,60 @@ Parameters:
 
 Returns:
 
-- [ArrayList](collection_package_class.md#class-arraylistt)\<(T, R)> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).### extend\<T> ArrayList\<T> <: Equatable\<ArrayList\<T>> where T <: Equatable\<T>
+- [ArrayList](collection_package_class.md#class-arraylistt)\<(T, R)> - Returns a new [ArrayList](collection_package_class.md#class-arraylistt).
+
+<!--Del_sink-->
+
+#### func zip\<R>(ArrayList\<R>)
+
+```cangjie
+public exclave func zip<R>(this @local!, other: ArrayList<R> @local!): ArrayList<(T, R)> @local!
+```
+
+Function: Pairs the elements of the current list with the elements of the list referenced by `other` position by position and returns a new list. The result is bound to the same local region as the current list.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: [ArrayList](collection_package_class.md#class-arraylistt)\<R> @local! - The other `@local!` list to pair with.
+
+Returns:
+
+- [ArrayList](collection_package_class.md#class-arraylistt)\<(T, R)> @local! - The new `@local!` list after pairing.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    a.add(1)
+    let b: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    b.add(2)
+    let zipped: ArrayList<(Int64, Int64)> @local! = a.zip(b)
+    println("size=${zipped.size}")
+    let (x, y) = zipped[0]
+    println("first=(${x}, ${y})")
+}
+```
+
+Output:
+
+```text
+size=1
+first=(1, 2)
+```
+
+<!--DelEnd_sink-->
+
+### extend\<T> ArrayList\<T> <: Equatable\<ArrayList\<T>> where T <: Equatable\<T>
 
 ```cangjie
 extend<T> ArrayList<T> <: Equatable<ArrayList<T>> where T <: Equatable<T>
@@ -2459,6 +5109,151 @@ Function: Extends the [ArrayList](./collection_package_class.md#class-arraylistt
 Parent Types:
 
 - [Equatable](../../core/core_package_api/core_package_interfaces.md#interface-equatablet)\<[ArrayList](#class-arraylistt)\<T>>
+
+#### func contains(T)
+
+```cangjie
+public func contains(element: T): Bool
+```
+
+Function: Determines whether the current array contains the specified element `element`.
+
+Parameters:
+
+- element: T - The element to search for.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the array contains the specified element, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = ArrayList<Int64>()
+    list.add(1)
+    list.add(2)
+    list.add(3)
+    
+    println("List contains element 2: ${list.contains(2)}")  // true
+    println("List contains element 5: ${list.contains(5)}")  // false
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+List contains element 2: true
+List contains element 5: false
+```
+
+#### operator func !=(ArrayList\<T>)
+
+```cangjie
+public operator func !=(that: ArrayList<T>): Bool
+```
+
+Function: Determines whether the current instance is not equal to the [ArrayList](./collection_package_class.md#class-arraylistt) instance pointed to by the parameter.
+
+Parameters:
+
+- that: [ArrayList](./collection_package_class.md#class-arraylistt)\<T> - The object to be compared.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list1 = ArrayList<Int64>()
+    list1.add(1)
+    list1.add(2)
+    list1.add(3)
+    
+    let list2 = ArrayList<Int64>()
+    list2.add(1)
+    list2.add(2)
+    
+    let list3 = ArrayList<Int64>()
+    list3.add(1)
+    list3.add(2)
+    list3.add(3)
+    
+    println("list1 != list2: ${list1 != list2}")  // true
+    println("list1 != list3: ${list1 != list3}")  // false
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+list1 != list2: true
+list1 != list3: false
+```
+
+<!--Del_sink-->
+
+#### operator func !=(ArrayList\<T>)
+
+```cangjie
+public operator func !=(this @local?, other: ArrayList<T> @local?): Bool
+```
+
+Function: Checks whether the current instance is unequal to the specified [ArrayList](./collection_package_class.md#class-arraylistt) instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [ArrayList](./collection_package_class.md#class-arraylistt)\<T> @local? - The other `@local?` instance to compare with the current instance.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if unequal; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    a.add(5)
+    let b: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    b.add(6)
+    let c: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    c.add(5)
+    let aq: ArrayList<Int64> @local? = a
+    println("ne1=${aq != b}")
+    println("ne2=${aq != c}")
+}
+```
+
+Output:
+
+```text
+ne1=true
+ne2=false
+```
+
+<!--DelEnd_sink-->
 
 #### operator func ==(ArrayList\<T>)
 
@@ -2513,21 +5308,31 @@ list1 == list2: true
 list1 == list3: false
 ```
 
-#### operator func !=(ArrayList\<T>)
+<!--Del_sink-->
+
+#### operator func ==(ArrayList\<T>)
 
 ```cangjie
-public operator func !=(that: ArrayList<T>): Bool
+public operator func ==(this @local?, other: ArrayList<T> @local?): Bool
 ```
 
-Function: Determines whether the current instance is not equal to the [ArrayList](./collection_package_class.md#class-arraylistt) instance pointed to by the parameter.
+Function: Checks whether the current instance is equal to the specified [ArrayList](./collection_package_class.md#class-arraylistt) instance.
+
+Two lists are equal when every element in them is equal.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
-- that: [ArrayList](./collection_package_class.md#class-arraylistt)\<T> - The object to be compared.
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [ArrayList](./collection_package_class.md#class-arraylistt)\<T> @local? - The other `@local?` instance to compare with the current instance.
 
 Returns:
 
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if equal; otherwise, returns false.
 
 Example:
 
@@ -2536,75 +5341,23 @@ Example:
 import std.collection.*
 
 main() {
-    let list1 = ArrayList<Int64>()
-    list1.add(1)
-    list1.add(2)
-    list1.add(3)
-    
-    let list2 = ArrayList<Int64>()
-    list2.add(1)
-    list2.add(2)
-    
-    let list3 = ArrayList<Int64>()
-    list3.add(1)
-    list3.add(2)
-    list3.add(3)
-    
-    println("list1 != list2: ${list1 != list2}")  // true
-    println("list1 != list3: ${list1 != list3}")  // false
-    
-    return 0
+    let a: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    a.add(5)
+    let b: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    b.add(5)
+    let aq: ArrayList<Int64> @local? = a
+    let bq: ArrayList<Int64> @local? = b
+    println("eq=${aq == bq}")
 }
 ```
 
-Execution Result:
+Output:
 
 ```text
-list1 != list2: true
-list1 != list3: false
+eq=true
 ```
 
-#### func contains(T)
-
-```cangjie
-public func contains(element: T): Bool
-```
-
-Function: Determines whether the current array contains the specified element `element`.
-
-Parameters:
-
-- element: T - The element to search for.
-
-Returns:
-
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the array contains the specified element, otherwise false.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = ArrayList<Int64>()
-    list.add(1)
-    list.add(2)
-    list.add(3)
-    
-    println("List contains element 2: ${list.contains(2)}")  // true
-    println("List contains element 5: ${list.contains(5)}")  // false
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-List contains element 2: true
-List contains element 5: false
-```
+<!--DelEnd_sink-->
 
 ### extend\<T> ArrayList\<T> <: SortExtension where T <: Comparable\<T> <sup>(deprecated)</sup>
 
@@ -3119,50 +5872,6 @@ Size after clearing: 0
 Is empty after clearing: true
 ```
 
-### func iterator()
-
-```cangjie
-public func iterator(): Iterator<T>
-```
-
-Function: Gets an iterator for elements in this queue in front-to-back order.
-
-Returns:
-
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - An iterator for the elements.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let queue = ArrayQueue<Int64>()
-    
-    // Add elements
-    queue.add(1)
-    queue.add(2)
-    queue.add(3)
-    
-    // Iterate through queue
-    let iter = queue.iterator()
-    println(iter.next())
-    println(iter.next())
-    println(iter.next())
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Some(1)
-Some(2)
-Some(3)
-```
-
 ### func isEmpty()
 
 ```cangjie
@@ -3205,6 +5914,50 @@ Output:
 Is empty queue empty: true
 Is queue empty after adding: false
 Is queue empty after removing: true
+```
+
+### func iterator()
+
+```cangjie
+public func iterator(): Iterator<T>
+```
+
+Function: Gets an iterator for elements in this queue in front-to-back order.
+
+Returns:
+
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - An iterator for the elements.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let queue = ArrayQueue<Int64>()
+    
+    // Add elements
+    queue.add(1)
+    queue.add(2)
+    queue.add(3)
+    
+    // Iterate through queue
+    let iter = queue.iterator()
+    println(iter.next())
+    println(iter.next())
+    println(iter.next())
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Some(1)
+Some(2)
+Some(3)
 ```
 
 ### func peek()
@@ -3308,9 +6061,12 @@ public func reserve(additional: Int64): Unit
 Function: Increases the capacity of this queue.
 
 Expands the queue by additional size. No expansion occurs when:
+
 1. additional ≤ 0
 2. Remaining capacity ≥ additional
+
 When expansion is needed, the new capacity will be the maximum between:
+
 1. Original capacity × 1.5 (rounded down)
 2. additional + used capacity
 
@@ -3552,7 +6308,7 @@ Initial size: 0
 Size after adding elements: 2
 ```
 
-### func init()
+### init()
 
 ```cangjie
 public init()
@@ -3586,7 +6342,7 @@ Initial capacity: 8
 Is empty: true
 ```
 
-### func init(Int64)
+### init(Int64)
 
 ```cangjie
 public init(capacity: Int64)
@@ -4057,158 +6813,6 @@ Stack string: [3, 2, 1]
 String length: 9
 ```
 
-## class HashMapIterator\<K, V> where K <: Hashable & Equatable\<K>
-
-```cangjie
-public class HashMapIterator<K, V> <: Iterator<(K, V)> where K <: Hashable & Equatable<K> {
-    public init(map: HashMap<K, V>)
-}
-```
-
-Function: This class primarily implements the iterator functionality for [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
-
-Parent Types:
-
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<(K, V)>
-
-### init(HashMap\<K, V>)
-
-```cangjie
-public init(map: HashMap<K, V>)
-```
-
-Function: Creates an instance of [HashMapIterator](collection_package_class.md#class-hashmapiteratork-v-where-k--hashable--equatablek)\<K, V>.
-
-Parameters:
-
-- map: [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> - The input [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V>.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create a HashMap
-    let map = HashMap<String, Int64>()
-    map["one"] = 1
-    map["two"] = 2
-    map["three"] = 3
-    
-    // Create HashMapIterator using HashMap
-    let iterator = HashMapIterator<String, Int64>(map)
-    
-    println("HashMapIterator created successfully")
-    return 0
-}
-```
-
-Output:
-
-```text
-HashMapIterator created successfully
-```
-
-### func next()
-
-```cangjie
-public func next(): ?(K, V)
-```
-
-Function: Returns the next element in the iterator.
-
-Returns:
-
-- ?(K, V) - The next element in the iterator, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont).
-
-Exceptions:
-
-- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects unsynchronized concurrent modifications.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create a HashMap
-    let map = HashMap<String, Int64>()
-    map["one"] = 1
-    map["two"] = 2
-    map["three"] = 3
-    
-    // Create iterator and get the first element
-    let iterator = HashMapIterator<String, Int64>(map)
-    let firstElement = iterator.next()
-    
-    if (firstElement.isSome()) {
-        println("Successfully retrieved element")
-    } else {
-        println("No elements")
-    }
-    return 0
-}
-```
-
-Output:
-
-```text
-Successfully retrieved element
-```
-
-### func remove()
-
-```cangjie
-public func remove(): Option<(K, V)>
-```
-
-Function: Removes the element returned by the next function of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) iterator. This function can only be called once per call to next.
-
-Returns:
-
-- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)> - The removed element.
-
-Exceptions:
-
-- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects unsynchronized concurrent modifications.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create a HashMap
-    let map = HashMap<String, Int64>()
-    map["one"] = 1
-    map["two"] = 2
-    
-    // Create iterator, retrieve and remove element
-    let iterator = HashMapIterator<String, Int64>(map)
-    let element = iterator.next()  // First call next to get element
-    let removed = iterator.remove()  // Then call remove to delete element
-    
-    if (element.isSome()) {
-        println("Successfully retrieved element")
-    }
-    
-    if (removed.isSome()) {
-        println("Successfully removed element")
-    }
-    return 0
-}
-```
-
-Output:
-
-```text
-Successfully retrieved element
-Successfully removed element
-```
-
 ## class HashMap\<K, V> where K <: Hashable & Equatable\<K>
 
 ```cangjie
@@ -4269,6 +6873,48 @@ Initial capacity: 16
 Specified capacity: 32
 ```
 
+<!--Del_sink-->
+
+### prop capacity
+
+```cangjie
+public prop capacity: Int64 @local?
+```
+
+Function: Returns the capacity of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local? = HashMap<Int64, Int64>(32) @local!
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("cap>=32: ${map.capacity >= 32}")
+}
+```
+
+Output:
+
+```text
+cap>=32: true
+```
+
+<!--DelEnd_sink-->
+
 ### prop size
 
 ```cangjie
@@ -4307,6 +6953,49 @@ Output:
 Initial size: 0
 Size after adding elements: 2
 ```
+
+<!--Del_sink-->
+
+### prop size
+
+```cangjie
+public prop size: Int64 @local?
+```
+
+Function: Returns the number of key-value pairs in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local?
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
 
 ### init()
 
@@ -4528,6 +7217,435 @@ HashMap size: 3
 Value for key 'second': 10
 ```
 
+<!--Del_sink-->
+
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) with the default initial capacity.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    println("empty=${map.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+empty=true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Array\<(K, V)> @local!)
+
+```cangjie
+public exclave init(this @local!, elements: Array<(K, V)> @local!)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified array of key-value pairs. The capacity of the constructed [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) depends on the input array, and it resides in the same local region as the array.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- elements: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<(K, V)> @local! - The array of key-value pairs used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let arr: Array<(Int64, Int64)> @local! = [(1, 10), (2, 20)]
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>(arr) @local!
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Array\<(K, V)> @local?)
+
+```cangjie
+public exclave init(this @local?, elements: Array<(K, V)> @local?)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified array of key-value pairs. This `@local?` form does not support an array as the element source; the call throws an exception immediately. Use the `@local!` overload.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- elements: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<(K, V)> @local? - The array of key-value pairs used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - This `@local?` form does not support an array as the element source; the call throws this exception. Use the `@local!` overload.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let arr: Array<(Int64, Int64)> @local! = [(1, 10)]
+    let sharedArr: Array<(Int64, Int64)> @local? = arr
+    let m: HashMap<Int64, Int64> @local? = HashMap<Int64, Int64>(sharedArr) @local?
+    m
+}
+
+main() {
+    try {
+        let map: HashMap<Int64, Int64> @local? = makeMap()
+        println("size=${map.size}")
+    } catch (e: IllegalArgumentException) {
+        println("caught IllegalArgumentException")
+    }
+}
+```
+
+Output:
+
+```text
+caught IllegalArgumentException
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Collection\<(K, V)> @local!)
+
+```cangjie
+public exclave init(this @local!, elements: Collection<(K, V)> @local!)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified collection of key-value pairs. The constructed [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) resides in the same local region as the input collection.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- elements: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<(K, V)> @local! - The collection of key-value pairs used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the dynamic type of the input collection is not [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt) or [ArrayList](collection_package_class.md#class-arraylistt) and its type does not override `toArray(this @local!)` (the default implementation of the [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) interface is used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let pairs: ArrayList<(Int64, Int64)> @local! = ArrayList<(Int64, Int64)>() @local!
+    pairs.add((1, 10))
+    pairs.add((2, 20))
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>(pairs) @local!
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Collection\<(K, V)> @local?)
+
+```cangjie
+public exclave init(this @local?, elements: Collection<(K, V)> @local?)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified collection of key-value pairs.
+
+The new map is constructed only when the actual dynamic type of the input collection is [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V>, by copying its bucket table and entry storage (together with the internal counters); the new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) is constructed at the caller's side and is independent of the original map. Other dynamic types (including [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt), [ArrayList](collection_package_class.md#class-arraylistt), and other types satisfying [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)) do not support this construction, and the call throws an exception immediately (see the exceptions description).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- elements: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<(K, V)> @local? - The collection of key-value pairs used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the actual dynamic type of the input collection is not [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V>.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let base: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    base.add(1, 10)
+    let shared: Collection<(Int64, Int64)> @local? = base
+    let m: HashMap<Int64, Int64> @local? = HashMap<Int64, Int64>(shared) @local?
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, capacity: Int64)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) with the specified capacity.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- capacity: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The capacity of the hash table.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `capacity` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>(32) @local!
+    println("cap>=32: ${map.capacity >= 32}")
+}
+```
+
+Output:
+
+```text
+cap>=32: true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Int64, (Int64) -> (K, V) @local!)
+
+```cangjie
+public exclave init(this @local!, size: Int64, initElement: (Int64) -> (K, V) @local!)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified number of elements `size` and the rule function. The constructed [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) is bound to the current local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The number of key-value pairs to initialize.
+- initElement: ([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) -> (K, V) @local! - The rule function used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if `size` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>(2) { index => (index, index * 10) }
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, Int64, (Int64) -> (K, V) @local?)
+
+```cangjie
+public exclave init(this @local?, size: Int64, initElement: (Int64) -> (K, V) @local?)
+```
+
+Function: Constructs a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from the specified number of elements `size` and the rule function. This `@local?` form does not support construction through an initialization function; the call throws an exception immediately. Use the `@local!` overload.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The number of key-value pairs to initialize.
+- initElement: ([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) -> (K, V) @local? - The rule function used to initialize the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - This `@local?` form does not support construction with an initializing function; the call throws this exception. Use the `@local!` overload.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local? = HashMap<Int64, Int64>(2, { index => (index, index * 10) }) @local?
+    m
+}
+
+main() {
+    try {
+        let map: HashMap<Int64, Int64> @local? = makeMap()
+        println("size=${map.size}")
+    } catch (e: IllegalArgumentException) {
+        println("caught IllegalArgumentException")
+    }
+}
+```
+
+Output:
+
+```text
+caught IllegalArgumentException
+```
+
+<!--DelEnd_sink-->
+
+### func add(Collection\<(K, V)>)
+
+```cangjie
+public func add(all!: Collection<(K, V)>): Unit
+```
+
+Function: Inserts a collection of new key-value pairs into the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) in the order of the elements' iterator.
+
+For keys already present in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), the existing values will be replaced by the new values.
+
+Parameters:
+
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<(K, V)> - The collection of key-value pairs to add to the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashMap
+    let map = HashMap<String, Int64>()
+    map["a"] = 1
+
+    // Create collection to add
+    let newElements = ArrayList<(String, Int64)>([("b", 2), ("c", 3), ("a", 10)])
+
+    println("Size before adding collection: ${map.size}")  // 1
+    println("Value for 'a' before adding collection: ${map["a"]}")  // 1
+
+    // Add key-value pair collection
+    map.add(all: newElements)
+
+    println("Size after adding collection: ${map.size}")  // 3
+    println("Value for 'a' after adding collection: ${map["a"]}")  // 10
+
+    return 0
+}
+```
+
+Output:
+
+```text
+Size before adding collection: 1
+Value for 'a' before adding collection: 1
+Size after adding collection: 3
+Value for 'a' after adding collection: 10
+```
+
 ### func add(K, V)
 
 ```cangjie
@@ -4581,19 +7699,29 @@ Old value for replaced key 'first': 100
 Current value for 'first': 200
 ```
 
+<!--Del_sink-->
+
 ### func add(Collection\<(K, V)>)
 
 ```cangjie
-public func add(all!: Collection<(K, V)>): Unit
+public exclave func add(this @local!, all!: Collection<(K, V)> @local!)
 ```
 
-Function: Inserts a collection of new key-value pairs into the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) in the order of the elements' iterator.
+Function: Puts the new collection of key-value pairs into this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) in the iterator order of the input collection. For keys already present in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), their values are replaced by the new values.
 
-For keys already present in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), the existing values will be replaced by the new values.
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
-- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<(K, V)> - The collection of key-value pairs to add to the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+- this @local! - The current `@local!` instance on which the method is called.
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<(K, V)> @local! - The collection of key-value pairs to add to the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown when the dynamic type of the input collection does not override `iterator(this @local!)`, or its iterator does not override `next(this @local!)` (the interface default implementations are used).
 
 Example:
 
@@ -4602,34 +7730,81 @@ Example:
 import std.collection.*
 
 main() {
-    // Create HashMap
-    let map = HashMap<String, Int64>()
-    map["a"] = 1
-    
-    // Create collection to add
-    let newElements = ArrayList<(String, Int64)>([("b", 2), ("c", 3), ("a", 10)])
-    
-    println("Size before adding collection: ${map.size}")  // 1
-    println("Value for 'a' before adding collection: ${map["a"]}")  // 1
-    
-    // Add key-value pair collection
-    map.add(all: newElements)
-    
-    println("Size after adding collection: ${map.size}")  // 3
-    println("Value for 'a' after adding collection: ${map["a"]}")  // 10
-    
-    return 0
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    let pairs: ArrayList<(Int64, Int64)> @local! = ArrayList<(Int64, Int64)>() @local!
+    pairs.add((1, 10))
+    pairs.add((2, 20))
+    map.add(all: pairs)
+    println("size=${map.size}")
 }
 ```
 
 Output:
 
 ```text
-Size before adding collection: 1
-Value for 'a' before adding collection: 1
-Size after adding collection: 3
-Value for 'a' after adding collection: 10
+size=2
 ```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func add(K, V)
+
+```cangjie
+public exclave func add(this @local!, key: K @local!, value: V @local!): Option<V> @local!
+```
+
+Function: Adds a key-value pair to the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+If the key already exists, the old value is replaced by the new value and the old value is returned; if the key does not exist, the key-value pair is added and None is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local! - The key to add.
+- value: V @local! - The value to add.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> @local! - If the key already exists, the old value is returned; if the key does not exist, None is returned.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    let r1: Option<Int64> @local! = map.add(1, 100)
+    let r2: Option<Int64> @local! = map.add(1, 200)
+    println("size=${map.size}")
+    match (r1) {
+        case Some(v) => println("r1=${v}")
+        case None => println("r1=None")
+    }
+    match (r2) {
+        case Some(v) => println("r2=${v}")
+        case None => println("r2=None")
+    }
+}
+```
+
+Output:
+
+```text
+size=1
+r1=None
+r2=100
+```
+
+<!--DelEnd_sink-->
 
 ### func all((K, V) -> Bool)
 
@@ -4638,7 +7813,6 @@ public func all(predicate: (K, V) -> Bool): Bool
 ```
 
 Function: Determines whether all key-value pairs in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfy the given condition.
-
 
 > **Note：**
 >
@@ -4651,6 +7825,57 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all key-value pairs satisfy the condition; otherwise, returns false.
 
+<!--Del_sink-->
+
+### func all((K, V) -> Bool)
+
+```cangjie
+public func all(this @local?, predicate: ((K @local?, V @local?) -> Bool) @local?): Bool
+```
+
+Function: Checks whether all key-value pairs in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfy the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((K @local?, V @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all key-value pairs in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfy the condition; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 10)
+    m.add(2, 20)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("r=${map.all({k, v => v > 5})}")
+}
+```
+
+Output:
+
+```text
+r=true
+```
+
+<!--DelEnd_sink-->
+
 ### func any((K, V) -> Bool)
 
 ```cangjie
@@ -4658,7 +7883,6 @@ public func any(predicate: (K, V) -> Bool): Bool
 ```
 
 Function: Determines whether any key-value pair in the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfies the given condition.
-
 
 > **Note：**
 >
@@ -4670,6 +7894,57 @@ Parameters:
 Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether any key-value pair satisfies the condition.
+
+<!--Del_sink-->
+
+### func any((K, V) -> Bool)
+
+```cangjie
+public func any(this @local?, predicate: ((K @local?, V @local?) -> Bool) @local?) : Bool
+```
+
+Function: Checks whether any key-value pair in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfies the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((K @local?, V @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether any key-value pair satisfies the condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 10)
+    m.add(2, 20)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("r=${map.any({k, v => v > 5})}")
+}
+```
+
+Output:
+
+```text
+r=true
+```
+
+<!--DelEnd_sink-->
 
 ### func clear()
 
@@ -4713,6 +7988,47 @@ Is empty before clearing: false
 Size after clearing: 0
 Is empty after clearing: true
 ```
+
+<!--Del_sink-->
+
+### func clear()
+
+```cangjie
+public exclave func clear(this @local!)
+```
+
+Function: Clears all key-value pairs from this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    map.clear()
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+
+<!--DelEnd_sink-->
 
 ### func clone()
 
@@ -4762,21 +8078,28 @@ Original HashMap size after modification: 2
 Cloned HashMap size after modification: 3
 ```
 
-### func contains(K)
+<!--Del_sink-->
+
+### func clone()
 
 ```cangjie
-public func contains(key: K): Bool
+public exclave func clone(this @local!): HashMap<K, V> @local!
 ```
 
-Function: Determines whether the map contains a mapping for the specified key.
+Function: Clones this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The clone is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
-- key: K - The key to check.
+- this @local! - The current `@local!` instance on which the method is called.
 
 Returns:
 
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the key exists; otherwise, returns false.
+- [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> @local! - Returns a [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
 
 Example:
 
@@ -4785,28 +8108,20 @@ Example:
 import std.collection.*
 
 main() {
-    // Create HashMap
-    let map = HashMap<String, Int64>()
-    map["apple"] = 1
-    map["banana"] = 2
-    
-    // Check if specified keys exist
-    let hasApple = map.contains("apple")
-    let hasOrange = map.contains("orange")
-    
-    println("Contains key 'apple': ${hasApple}")  // true
-    println("Contains key 'orange': ${hasOrange}")  // false
-    
-    return 0
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let cloned: HashMap<Int64, Int64> @local! = map.clone()
+    println("size=${cloned.size}")
 }
 ```
 
 Output:
 
 ```text
-Contains key 'apple': true
-Contains key 'orange': false
+size=1
 ```
+
+<!--DelEnd_sink-->
 
 ### func contains(Collection\<K>)
 
@@ -4857,6 +8172,163 @@ Contains keys [a, b]: true
 Contains keys [a, d]: false
 ```
 
+### func contains(K)
+
+```cangjie
+public func contains(key: K): Bool
+```
+
+Function: Determines whether the map contains a mapping for the specified key.
+
+Parameters:
+
+- key: K - The key to check.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the key exists; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashMap
+    let map = HashMap<String, Int64>()
+    map["apple"] = 1
+    map["banana"] = 2
+    
+    // Check if specified keys exist
+    let hasApple = map.contains("apple")
+    let hasOrange = map.contains("orange")
+    
+    println("Contains key 'apple': ${hasApple}")  // true
+    println("Contains key 'orange': ${hasOrange}")  // false
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Contains key 'apple': true
+Contains key 'orange': false
+```
+
+<!--Del_sink-->
+
+### func contains(Collection\<K>)
+
+```cangjie
+public func contains(this @local?, all!: Collection<K> @local?): Bool
+```
+
+Function: Checks whether this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) contains mappings for all keys in the specified collection.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<K> @local? - The collection of keys to check.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all are contained; otherwise, returns false.
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown when the dynamic type of the input collection does not override `iterator(this @local?)`, or its iterator does not override `next(this @local?)` (the interface default implementations are used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let keys: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    keys.add(1)
+    keys.add(2)
+    println("all=${map.contains(all: keys)}")
+}
+```
+
+Output:
+
+```text
+all=false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func contains(K)
+
+```cangjie
+public func contains(this @local?, key: K @local?): Bool
+```
+
+Function: Checks whether the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) contains the mapping for the specified key.
+
+The hash and equality checks of the key both use the `@local?` overrides of type K (the Hashable/Equatable adaptation layer).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- key: K @local? - The key to check.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the mapping for the key exists; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let k: Int64 @local? = 1
+    let c = map.contains(k)
+    println("c=${c}")
+}
+```
+
+Output:
+
+```text
+c=true
+```
+
+<!--DelEnd_sink-->
+
 ### func entryView(K)
 
 ```cangjie
@@ -4905,13 +8377,119 @@ Found key 'key1' with value: 100
 Modified value for key 'key1': 150
 ```
 
+<!--Del_sink-->
+
+### func entryView(K)
+
+```cangjie
+public exclave func entryView(this @local!, key: K @local!): MapEntryView<K, V> @local!
+```
+
+Function: Returns a reference view of the element for the specified key in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). If the specified key is not contained, an empty reference view is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local! - The key whose view is to be obtained.
+
+Returns:
+
+- [MapEntryView](collection_package_interface.md#interface-mapentryviewk-v)\<K, V> @local! - A reference view.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let view: MapEntryView<Int64, Int64> @local! = map.entryView(1)
+    println("hasValue=${view.value.isSome()}")
+}
+```
+
+Output:
+
+```text
+hasValue=true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func entryView(K)
+
+```cangjie
+public exclave func entryView(this @local?, key: K @local!): MapEntryView<K, V> @local?
+```
+
+Function: The `@local?` form of `entryView` is currently unavailable. Calling it throws [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- key: K @local! - The key whose view is to be obtained.
+
+Returns:
+
+- [MapEntryView](collection_package_interface.md#interface-mapentryviewk-v)\<K, V> @local? - The declared return type. The current implementation throws an exception and does not return a result.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - This form of `entryView` is unavailable on a `@local?` receiver; the call throws this exception.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let k: Int64 @local! = 1
+    try {
+        map.entryView(k)
+        println("view obtained")
+    } catch (e: UnimplementedException) {
+        println("caught UnimplementedException")
+    }
+}
+```
+
+Output:
+
+```text
+caught UnimplementedException
+```
+
+<!--DelEnd_sink-->
+
 ### func filter((K, V) -> Bool)
+
 ```cangjie
 public func filter(predicate: (K, V) -> Bool): HashMap<K, V>
 ```
 
 Function: Returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> containing key-value pairs that satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -4924,6 +8502,53 @@ Returns:
 
 - [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> - A new collection containing key-value pairs that satisfy the predicate.
 
+<!--Del_sink-->
+
+### func filter((K, V) -> Bool)
+
+```cangjie
+public exclave func filter(this @local!, predicate: ((K @local?, V @local?) -> Bool) @local?): HashMap<K, V> @local!
+```
+
+Function: Returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) consisting of the key-value pairs of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) that satisfy the filter condition. The result is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- predicate: ((K @local?, V @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> @local! - Returns a new collection of the key-value pairs satisfying the filter condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 10)
+    map.add(2, 20)
+    let filtered: HashMap<Int64, Int64> @local! = map.filter({k, v => v > 10})
+    println("size=${filtered.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
 ### func fold\<R>(R, (R, K, V) -> R)
 
 ```cangjie
@@ -4931,7 +8556,6 @@ public func fold<R>(initial: R, operation: (R, K, V) -> R): R
 ```
 
 Function: Accumulates values starting from the given initial value, processing from left to right.
-
 
 > **Note：**
 >
@@ -4945,6 +8569,54 @@ Returns:
 
 - R - The final accumulated value.
 
+<!--Del_sink-->
+
+### func fold\<R>(R, (R, K, V) -> R)
+
+```cangjie
+public exclave func fold<R>(this @local!, initial: R @local!, operation: ((R @local!, K @local?, V @local?) -> R @local!) @local?): R @local!
+```
+
+Function: Folds this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from left to right using the specified initial value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- initial: R @local! - The given initial value of type R.
+- operation: ((R @local!, K @local?, V @local?) -> R @local!) @local? - The given calculation function.
+
+Returns:
+
+- R @local! - Returns the final calculated value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 10)
+    map.add(2, 20)
+    let sum: Int64 @local! = map.fold<Int64>(0) {acc, k, v => acc + v}
+    println("sum=${sum}")
+}
+```
+
+Output:
+
+```text
+sum=30
+```
+
+<!--DelEnd_sink-->
+
 ### func forEach((K, V) -> Unit)
 
 ```cangjie
@@ -4953,13 +8625,58 @@ public func forEach(action: (K, V) -> Unit): Unit
 
 Function: Performs the given action on each key-value pair.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
 Parameters:
 
 - action: (K, V) -> [Unit](../../core/core_package_api/core_package_intrinsics.md#unit) - The given action function.
+
+<!--Del_sink-->
+
+### func forEach((K, V) -> Unit)
+
+```cangjie
+public func forEach(this @local?, action: ((K @local?, V @local?) -> Unit) @local?)
+```
+
+Function: Executes the action function once for each key-value pair in the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- action: ((K @local?, V @local?) -> [Unit](../../core/core_package_api/core_package_intrinsics.md#unit)) @local? - The function passed in, executed for each key-value pair.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    map.forEach({k, v => println("k=${k} v=${v}")})
+}
+```
+
+Output:
+
+```text
+k=1 v=100
+```
+
+<!--DelEnd_sink-->
 
 ### func get(K)
 
@@ -5012,6 +8729,109 @@ Value for key 'name': 100
 Key 'height' does not exist
 ```
 
+<!--Del_sink-->
+
+### func get(K)
+
+```cangjie
+public exclave func get(this @local!, key: K @local?): ?V @local!
+```
+
+Function: Gets the value corresponding to the specified key in the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - A known defect exists in the current version: when K is a type containing reference members such as String, calling `get` after adding elements may trigger the runtime write-barrier defect and abnormally abort the process. Please refer to the actual behavior of the SDK version, or use alternatives such as `contains` / `forEach`.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local? - The key to get.
+
+Returns:
+
+- ?V @local! - The value corresponding to the specified key, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont). If the key does not exist, None is returned.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    match (map.get(1)) {
+        case Some(v) => println("v=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+v=100
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func get(K)
+
+```cangjie
+public exclave func get(this @local?, key: K @local?): Option<V> @local?
+```
+
+Function: Returns the value mapped to the specified key in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). If the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) contains no mapping for the specified key, [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V>.None is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- key: K @local? - The input key.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> @local? - The value corresponding to the key, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let k: Int64 @local? = 1
+    match (map.get(k)) {
+        case Some(v) => println("v=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+v=100
+```
+
+<!--DelEnd_sink-->
+
 ### func isEmpty()
 
 ```cangjie
@@ -5056,6 +8876,50 @@ Is empty HashMap empty: true
 Is empty after adding elements: false
 Is empty after clearing: true
 ```
+
+<!--Del_sink-->
+
+### func isEmpty()
+
+```cangjie
+public func isEmpty(this @local?): Bool
+```
+
+Function: Checks whether the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) is empty. Returns true if it is; otherwise, returns false.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) is empty.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    println("isEmpty=${map.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+isEmpty=false
+```
+
+<!--DelEnd_sink-->
 
 ### func iterator()
 
@@ -5107,6 +8971,107 @@ Output:
 Number of elements iterated: 3
 ```
 
+<!--Del_sink-->
+
+### func iterator()
+
+```cangjie
+public exclave func iterator(this @local!): HashMapIterator<K, V> @local!
+```
+
+Function: Returns an iterator over this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The iterator is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [HashMapIterator](collection_package_class.md#class-hashmapiteratork-v-where-k--hashable--equatablek)\<K, V> @local! - Returns the iterator of the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let it: HashMapIterator<Int64, Int64> @local! = map.iterator()
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func iterator()
+
+```cangjie
+public exclave func iterator(this @local?): HashMapIterator<K, V> @local?
+```
+
+Function: Returns an iterator over this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The iterator instance is newly constructed at the caller's side and holds a reference to the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [HashMapIterator](collection_package_class.md#class-hashmapiteratork-v-where-k--hashable--equatablek)\<K, V> @local? - Returns the iterator of the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let it: HashMapIterator<Int64, Int64> @local? = map.iterator()
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+```
+
+<!--DelEnd_sink-->
+
 ### func keys()
 
 ```cangjie
@@ -5153,6 +9118,101 @@ Number of keys: 3
 Contains key 'b'
 ```
 
+<!--Del_sink-->
+
+### func keys()
+
+```cangjie
+public exclave func keys(this @local!): EquatableCollection<K> @local!
+```
+
+Function: Returns all keys of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and stores them in a keys container bound to the same local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [EquatableCollection](collection_package_interface.md#interface-equatablecollectiont)\<K> @local! - Holds all returned keys.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let ks: EquatableCollection<Int64> @local! = map.keys()
+    println("has1=${ks.contains(1)}")
+}
+```
+
+Output:
+
+```text
+has1=true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func keys()
+
+```cangjie
+public exclave func keys(this @local?): EquatableCollection<K> @local?
+```
+
+Function: Returns all keys of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The returned keys container is newly constructed at the caller's side, holds a reference to the current map, and subsequent modifications to the map are reflected in the container's size and containment checks.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [EquatableCollection](collection_package_interface.md#interface-equatablecollectiont)\<K> @local? - Holds all returned keys.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let ks: EquatableCollection<Int64> @local? = map.keys()
+    println("has1=${ks.contains(1)}")
+}
+```
+
+Output:
+
+```text
+has1=true
+```
+
+<!--DelEnd_sink-->
+
 ### func mapValues\<R>((K, V) -> R)
 
 ```cangjie
@@ -5160,7 +9220,6 @@ public func mapValues<R>(transform: (K, V) -> R): HashMap<K, R>
 ```
 
 Function: Transforms this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
-
 
 > **Note：**
 >
@@ -5181,7 +9240,6 @@ public func mapValues<R>(transform: (V) -> R): HashMap<K, R>
 
 Function: Transforms this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -5193,6 +9251,110 @@ Returns:
 
 - [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, R> - A new transformed HashMap.
 
+<!--Del_sink-->
+
+### func mapValues\<R>((K, V) -> R)
+
+```cangjie
+public exclave func mapValues<R>(this @local!, transform: ((K @local?, V @local?) -> R @local!) @local?): HashMap<K, R> @local!
+```
+
+Function: Maps this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The result is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- transform: ((K @local?, V @local?) -> R @local!) @local? - The given mapping function.
+
+Returns:
+
+- [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, R> @local! - Returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 10)
+    map.add(2, 20)
+    let doubled: HashMap<Int64, Int64> @local! = map.mapValues<Int64>({k, v => v * 2})
+    println("size=${doubled.size}")
+    match (doubled.get(1)) {
+        case Some(v) => println("v=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+size=2
+v=20
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func mapValues\<R>((V) -> R)
+
+```cangjie
+public exclave func mapValues<R>(this @local!, transform: ((V @local?) -> R @local!) @local?): HashMap<K, R> @local!
+```
+
+Function: Applies the transform function to each value of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The result is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- transform: ((V @local?) -> R @local!) @local? - The given mapping function.
+
+Returns:
+
+- [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, R> @local! - Returns a new [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 10)
+    map.add(2, 20)
+    let doubled: HashMap<Int64, Int64> @local! = map.mapValues<Int64>({v => v * 2})
+    println("size=${doubled.size}")
+    match (doubled.get(1)) {
+        case Some(v) => println("v=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+size=2
+v=20
+```
+
+<!--DelEnd_sink-->
+
 ### func none((K, V) -> Bool)
 
 ```cangjie
@@ -5200,7 +9362,6 @@ public func none(predicate: (K, V) -> Bool): Bool
 ```
 
 Function: Returns true if no key-value pairs satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -5213,6 +9374,57 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether no key-value pairs satisfy the condition.
 
+<!--Del_sink-->
+
+### func none((K, V) -> Bool)
+
+```cangjie
+public func none(this @local?, predicate: ((K @local?, V @local?) -> Bool) @local?) : Bool
+```
+
+Function: Checks whether none of the key-value pairs in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfy the condition.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- predicate: ((K @local?, V @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The given condition.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether none of the key-value pairs in the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) satisfy the condition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 10)
+    m.add(2, 20)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    println("r=${map.none({k, v => v > 15})}")
+}
+```
+
+Output:
+
+```text
+r=false
+```
+
+<!--DelEnd_sink-->
+
 ### func reduce((V, V) -> V)
 
 ```cangjie
@@ -5220,7 +9432,6 @@ public func reduce(operation: (V, V) -> V): Option<V>
 ```
 
 Function: Accumulates values using the first value as initial value, processing from left to right.
-
 
 > **Note：**
 >
@@ -5232,6 +9443,56 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> - The result of accumulation.
+
+<!--Del_sink-->
+
+### func reduce((V, V) -> V)
+
+```cangjie
+public exclave func reduce(this @local!, operation: ((V @local!, V @local?) -> V @local!) @local?): Option<V> @local!
+```
+
+Function: Reduces the values of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) from left to right, using the first value as the initial value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- operation: ((V @local!, V @local?) -> V @local!) @local? - The given calculation function.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> @local! - Returns the calculation result.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 10)
+    map.add(2, 20)
+    let sum: Option<Int64> @local! = map.reduce({a, b => a + b})
+    match (sum) {
+        case Some(v) => println("sum=${v}")
+        case None => println("empty")
+    }
+}
+```
+
+Output:
+
+```text
+sum=30
+```
+
+<!--DelEnd_sink-->
 
 ### func remove(Collection\<K>)
 
@@ -5342,6 +9603,107 @@ Key 'w' doesn't exist, returns None
 Size after removal: 2
 ```
 
+<!--Del_sink-->
+
+### func remove(Collection\<K>)
+
+```cangjie
+public exclave func remove(this @local!, all!: Collection<K> @local?)
+```
+
+Function: Removes the mappings for the keys in the specified collection from this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), if present.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<K> @local? - The collection of keys to remove.
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown when the dynamic type of the input collection does not override `iterator(this @local?)`, or its iterator does not override `next(this @local?)` (the interface default implementations are used).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    map.add(2, 200)
+    let keys: ArrayList<Int64> @local! = ArrayList<Int64>() @local!
+    keys.add(1)
+    map.remove(all: keys)
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func remove(K)
+
+```cangjie
+public exclave func remove(this @local!, key: K @local?): Option<V> @local!
+```
+
+Function: Removes the mapping for the specified key from this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), if present.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local? - The key to remove.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> @local! - The value corresponding to the key removed from the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont). If the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) does not contain the key, None is returned.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    map.add(2, 200)
+    let removed: Option<Int64> @local! = map.remove(1)
+    match (removed) {
+        case Some(v) => println("removed=${v}")
+        case None => println("removed=None")
+    }
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+removed=100
+size=1
+```
+
+<!--DelEnd_sink-->
+
 ### func removeIf((K, V) -> Bool)
 
 ```cangjie
@@ -5399,6 +9761,53 @@ Size after removal: 2
 Key 'b' still exists with value: 2
 ```
 
+<!--Del_sink-->
+
+### func removeIf((K, V) -> Bool)
+
+```cangjie
+public exclave func removeIf(this @local!, predicate: ((K @local?, V @local?) -> Bool) @local?)
+```
+
+Function: Passes a lambda expression and deletes the corresponding key-value pairs in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) if the condition is satisfied. The function traverses the entire [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), so all key-value pairs satisfying `predicate(K, V) == true` are deleted.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- predicate: ((K @local?, V @local?) -> [Bool](../../core/core_package_api/core_package_intrinsics.md#bool)) @local? - The lambda expression used for the test.
+
+Exceptions:
+
+- [ConcurrentModificationException](./collection_package_exception.md#class-concurrentmodificationexception) - Thrown when executing `predicate` structurally modifies the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) (adds or removes key-value pairs).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    map.add(2, 200)
+    map.removeIf({k, v => v > 100})
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
 ### func reserve(Int64)
 
 ```cangjie
@@ -5408,10 +9817,12 @@ public func reserve(additional: Int64): Unit
 Function: Expands the current [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
 
 Expands the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) by the specified `additional` size. No expansion occurs if:
+
 - `additional` ≤ 0
 - The remaining capacity of [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) ≥ `additional`
 
 When expansion is needed, the new capacity is set to the maximum of:
+
 1. Original capacity × 1.5 (rounded down)
 2. `additional` + used capacity
 
@@ -5460,6 +9871,47 @@ Capacity after reservation: 24
 Capacity after adding elements: 36
 Size after adding elements: 30
 ```
+
+<!--Del_sink-->
+
+### func reserve(Int64)
+
+```cangjie
+public exclave func reserve(this @local!, additional: Int64)
+```
+
+Function: Expands the capacity of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) by the specified size.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- additional: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The size to reserve.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.reserve(20)
+    println("cap>=20: ${map.capacity >= 20}")
+}
+```
+
+Output:
+
+```text
+cap>=20: true
+```
+
+<!--DelEnd_sink-->
 
 ### func toArray()
 
@@ -5510,6 +9962,109 @@ Key: b, Value: 2
 Key: c, Value: 3
 ```
 
+<!--Del_sink-->
+
+### func toArray()
+
+```cangjie
+public exclave func toArray(this @local!): Array<(K, V)> @local!
+```
+
+Function: Constructs and returns an array containing the key-value pairs of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The array is bound to the same local region as the current map.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<(K, V)> @local! - The array containing all key-value pairs in the container.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let arr: Array<(Int64, Int64)> @local! = map.toArray()
+    println("size=${arr.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func toArray()
+
+```cangjie
+public exclave func toArray(this @local?): Array<(K, V)> @local?
+```
+
+Function: The `@local?` form of `toArray` is currently unavailable. Calling it throws [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<(K, V)> @local? - The declared return type. The current implementation throws an exception and does not return a result.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - This form of `toArray` is unavailable on a `@local?` receiver; the call throws this exception.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    try {
+        map.toArray()
+        println("array obtained")
+    } catch (e: UnimplementedException) {
+        println("caught UnimplementedException")
+    }
+}
+```
+
+Output:
+
+```text
+caught UnimplementedException
+```
+
+<!--DelEnd_sink-->
+
 ### func values()
 
 ```cangjie
@@ -5559,18 +10114,28 @@ All values:
 30
 ```
 
-### operator func \[](K, V)
+<!--Del_sink-->
+
+### func values()
 
 ```cangjie
-public operator func [](key: K, value!: V): Unit
+public exclave func values(this @local!): Collection<V> @local!
 ```
 
-Function: Operator overload for add method. If the key exists, the new value overwrites the old one; if the key doesn't exist, the key-value pair is added.
+Function: Returns the values contained in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) and stores them in a values container bound to the same local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
-- key: K - The key to evaluate.
-- value!: V - The value to set.
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<V> @local! - Holds all returned values.
 
 Example:
 
@@ -5579,32 +10144,70 @@ Example:
 import std.collection.*
 
 main() {
-    // Create HashMap
-    let map = HashMap<String, Int64>()
-    
-    // Use [] operator to set key-value pairs
-    map["first"] = 100
-    map["second"] = 200
-    
-    println("Size after setting: ${map.size}")  // 2
-    
-    // Overwrite existing key
-    map["first"] = 150
-    
-    println("Value of 'first' after overwrite: ${map["first"]}")  // 150
-    println("Value of 'second': ${map["second"]}")  // 200
-    
-    return 0
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let vs: Collection<Int64> @local! = map.values()
+    println("empty=${vs.isEmpty()}")
 }
 ```
 
 Output:
 
 ```text
-Size after setting: 2
-Value of 'first' after overwrite: 150
-Value of 'second': 200
+empty=false
 ```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func values()
+
+```cangjie
+public exclave func values(this @local?): Collection<V> @local?
+```
+
+Function: Returns the values contained in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek). The returned values container is newly constructed at the caller's side, holds a reference to the current map, and subsequent modifications to the map are reflected in the container's size and iteration results.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<V> @local? - Holds all returned values.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let vs: Collection<Int64> @local? = map.values()
+    println("empty=${vs.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+empty=false
+```
+
+<!--DelEnd_sink-->
 
 ### operator func \[](K)
 
@@ -5655,6 +10258,202 @@ Output:
 Value of key 'data1': 100
 Value of key 'data2': 200
 ```
+
+### operator func \[](K, V)
+
+```cangjie
+public operator func [](key: K, value!: V): Unit
+```
+
+Function: Operator overload for add method. If the key exists, the new value overwrites the old one; if the key doesn't exist, the key-value pair is added.
+
+Parameters:
+
+- key: K - The key to evaluate.
+- value!: V - The value to set.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashMap
+    let map = HashMap<String, Int64>()
+    
+    // Use [] operator to set key-value pairs
+    map["first"] = 100
+    map["second"] = 200
+    
+    println("Size after setting: ${map.size}")  // 2
+    
+    // Overwrite existing key
+    map["first"] = 150
+    
+    println("Value of 'first' after overwrite: ${map["first"]}")  // 150
+    println("Value of 'second': ${map["second"]}")  // 200
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Size after setting: 2
+Value of 'first' after overwrite: 150
+Value of 'second': 200
+```
+
+<!--Del_sink-->
+
+### operator func \[](K)
+
+```cangjie
+public exclave operator func [](this @local!, key: K @local?): V @local!
+```
+
+Function: Operator overload of the get method. If the key exists, the value corresponding to the key is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local? - The value passed for the check.
+
+Returns:
+
+- V @local! - The value corresponding to the key.
+
+Exceptions:
+
+- [NoneValueException](../../core/core_package_api/core_package_exceptions.md#class-nonevalueexception) - Thrown if the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) does not contain the key.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let k: Int64 @local! = 1
+    let v: Int64 @local! = map[k]
+    println("v=${v}")
+}
+```
+
+Output:
+
+```text
+v=100
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### operator func \[](K, V)
+
+```cangjie
+public exclave operator func [](this @local!, key: K @local!, value!: V @local!): Unit
+```
+
+Function: Operator overload of the add method. If the key exists, the new value overwrites the old value; if the key does not exist, this key-value pair is added.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- key: K @local! - The value passed for the check.
+- value!: V @local! - The value to set.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    let k: Int64 @local! = 1
+    map[k] = 100
+    println("size=${map.size}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### operator func [](K)
+
+```cangjie
+public exclave operator func [](this @local?, key: K @local?): V @local?
+```
+
+Function: Operator overload of the get method. If the key exists in this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek), the value corresponding to the key is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- key: K @local? - The key to look up.
+
+Returns:
+
+- V @local? - The value corresponding to the key.
+
+Exceptions:
+
+- [NoneValueException](../../core/core_package_api/core_package_exceptions.md#class-nonevalueexception) - Thrown if the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) does not contain the key.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let k: Int64 @local? = 1
+    println("v=${map[k]}")
+}
+```
+
+Output:
+
+```text
+v=100
+```
+
+<!--DelEnd_sink-->
 
 ### extend\<K, V> HashMap\<K, V> <: Equatable\<HashMap\<K, V>> where V <: Equatable\<V>
 
@@ -5722,6 +10521,57 @@ Output:
 map1 == map2: true
 map1 == map3: false
 ```
+
+<!--Del_sink-->
+
+#### operator func ==(HashMap\<K, V>)
+
+```cangjie
+public operator func ==(this @local?, right: HashMap<K, V> @local?): Bool
+```
+
+Function: Checks whether this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) is equal to the specified [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- right: [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> @local? - The [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) to compare with.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if equal; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let other: HashMap<Int64, Int64> @local? = makeMap()
+    println("eq=${map == other}")
+}
+```
+
+Output:
+
+```text
+eq=true
+```
+
+<!--DelEnd_sink-->
 
 #### operator func !=(HashMap\<K, V>)
 
@@ -5832,6 +10682,422 @@ String representation of empty collection: []
 String representation of HashMap: [(apple, 5), (banana, 3), (orange, 8)]
 ```
 
+<!--Del_sink-->
+
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts all key-value pairs of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) into a string.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let s: String @local! = map.toString()
+    println("s=${s}")
+}
+```
+
+Output:
+
+```text
+s=[(1, 100)]
+```
+
+<!--DelEnd_sink-->
+
+## class HashMapIterator\<K, V> where K <: Hashable & Equatable\<K>
+
+```cangjie
+public class HashMapIterator<K, V> <: Iterator<(K, V)> where K <: Hashable & Equatable<K> {
+    public init(map: HashMap<K, V>)
+}
+```
+
+Function: This class primarily implements the iterator functionality for [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+Parent Types:
+
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<(K, V)>
+
+### init(HashMap\<K, V>)
+
+```cangjie
+public init(map: HashMap<K, V>)
+```
+
+Function: Creates an instance of [HashMapIterator](collection_package_class.md#class-hashmapiteratork-v-where-k--hashable--equatablek)\<K, V>.
+
+Parameters:
+
+- map: [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> - The input [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V>.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create a HashMap
+    let map = HashMap<String, Int64>()
+    map["one"] = 1
+    map["two"] = 2
+    map["three"] = 3
+    
+    // Create HashMapIterator using HashMap
+    let iterator = HashMapIterator<String, Int64>(map)
+    
+    println("HashMapIterator created successfully")
+    return 0
+}
+```
+
+Output:
+
+```text
+HashMapIterator created successfully
+```
+
+<!--Del_sink-->
+
+### init(this @local!, HashMap\<K, V> @local!)
+
+```cangjie
+public exclave init(this @local!, map: HashMap<K, V> @local!)
+```
+
+Function: Creates an iterator instance from the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- map: [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> @local! - The `@local!` hash table passed in.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let it: HashMapIterator<Int64, Int64> @local! = HashMapIterator<Int64, Int64>(map) @local!
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local?, HashMap\<K, V> @local?)
+
+```cangjie
+public exclave init(this @local?, map: HashMap<K, V> @local?)
+```
+
+Function: Creates an iterator instance from the [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+- map: [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek)\<K, V> @local? - The `@local?` hash table passed in.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let it: HashMapIterator<Int64, Int64> @local? = HashMapIterator<Int64, Int64>(map) @local?
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+```
+
+<!--DelEnd_sink-->
+
+### func next()
+
+```cangjie
+public func next(): ?(K, V)
+```
+
+Function: Returns the next element in the iterator.
+
+Returns:
+
+- ?(K, V) - The next element in the iterator, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont).
+
+Exceptions:
+
+- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects unsynchronized concurrent modifications.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create a HashMap
+    let map = HashMap<String, Int64>()
+    map["one"] = 1
+    map["two"] = 2
+    map["three"] = 3
+    
+    // Create iterator and get the first element
+    let iterator = HashMapIterator<String, Int64>(map)
+    let firstElement = iterator.next()
+    
+    if (firstElement.isSome()) {
+        println("Successfully retrieved element")
+    } else {
+        println("No elements")
+    }
+    return 0
+}
+```
+
+Output:
+
+```text
+Successfully retrieved element
+```
+
+<!--Del_sink-->
+
+### func next()
+
+```cangjie
+public exclave func next(this @local!): ?(K, V) @local!
+```
+
+Function: Returns the next element in the current iterator.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- ?(K, V) @local! - The next element in the iterator, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont).
+
+Exceptions:
+
+- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects an unsynchronized concurrent modification.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    map.add(1, 100)
+    let it: HashMapIterator<Int64, Int64> @local! = map.iterator()
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+    match (it.next()) {
+        case Some(p) => println("second=(${p[0]}, ${p[1]})")
+        case None => println("end")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+end
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func next()
+
+```cangjie
+public exclave func next(this @local?): ?(K, V) @local?
+```
+
+Function: Returns the next element in the current iterator.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- ?(K, V) @local? - The next element in the iterator, wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont).
+
+Exceptions:
+
+- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects an unsynchronized concurrent modification.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeMap(): HashMap<Int64, Int64> @local? {
+    let m: HashMap<Int64, Int64> @local! = HashMap<Int64, Int64>() @local!
+    m.add(1, 100)
+    m
+}
+
+main() {
+    let map: HashMap<Int64, Int64> @local? = makeMap()
+    let it: HashMapIterator<Int64, Int64> @local? = map.iterator()
+    match (it.next()) {
+        case Some(p) => println("first=(${p[0]}, ${p[1]})")
+        case None => println("empty")
+    }
+    match (it.next()) {
+        case Some(p) => println("second=(${p[0]}, ${p[1]})")
+        case None => println("end")
+    }
+}
+```
+
+Output:
+
+```text
+first=(1, 100)
+end
+```
+
+<!--DelEnd_sink-->
+
+### func remove()
+
+```cangjie
+public func remove(): Option<(K, V)>
+```
+
+Function: Removes the element returned by the next function of this [HashMap](collection_package_class.md#class-hashmapk-v-where-k--hashable--equatablek) iterator. This function can only be called once per call to next.
+
+Returns:
+
+- [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)> - The removed element.
+
+Exceptions:
+
+- [ConcurrentModificationException](collection_package_exception.md#class-concurrentmodificationexception) - Thrown when the function detects unsynchronized concurrent modifications.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create a HashMap
+    let map = HashMap<String, Int64>()
+    map["one"] = 1
+    map["two"] = 2
+    
+    // Create iterator, retrieve and remove element
+    let iterator = HashMapIterator<String, Int64>(map)
+    let element = iterator.next()  // First call next to get element
+    let removed = iterator.remove()  // Then call remove to delete element
+    
+    if (element.isSome()) {
+        println("Successfully retrieved element")
+    }
+    
+    if (removed.isSome()) {
+        println("Successfully removed element")
+    }
+    return 0
+}
+```
+
+Output:
+
+```text
+Successfully retrieved element
+Successfully removed element
+```
+
 ## class HashSet\<T> where T <: Hashable & Equatable\<T>
 
 ```cangjie
@@ -5855,6 +11121,51 @@ Elements in [HashSet](collection_package_class.md#class-hashsett-where-t--hashab
 Parent Types:
 
 - [Set](collection_package_interface.md#interface-sett)\<T>
+
+### prop capacity
+
+```cangjie
+public prop capacity: Int64
+```
+
+Function: Returns the internal array capacity of this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
+
+> **Note:**
+>
+> The capacity does not necessarily equal the size of the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
+
+Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create a default HashSet
+    let set = HashSet<String>()
+    println("Default capacity: ${set.capacity}")  // 16
+    
+    // Create a HashSet with specified capacity
+    let set2 = HashSet<String>(32)
+    println("Specified capacity: ${set2.capacity}")  // 32
+    
+    // Capacity remains unchanged after adding elements
+    set.add("test")
+    println("Capacity after adding elements: ${set.capacity}")  // 16
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Default capacity: 16
+Specified capacity: 32
+Capacity after adding elements: 16
+```
 
 ### prop size
 
@@ -5894,54 +11205,6 @@ Output:
 ```text
 Initial size: 0
 Size after adding elements: 2
-```
-
-### init(Int64, (Int64) -> T)
-
-```cangjie
-public init(size: Int64, initElement: (Int64) -> T)
-```
-
-Function: Constructs a [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) using the specified size and initialization function. The capacity of the constructed [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) is influenced by the size parameter.
-
-Parameters:
-
-- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - Number of elements in the initialization function.
-- initElement: ([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) ->T - Initialization function rule.
-
-Exceptions:
-
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if size is less than 0.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create HashSet using size and initialization function
-    let set = HashSet<String>(3, {index => 
-        let fruits = ["apple", "banana", "orange"]
-        return fruits[index]
-    })
-    
-    println("HashSet size: ${set.size}")  // 3
-    
-    // Check if element exists
-    if (set.contains("banana")) {
-        println("Contains 'banana'")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-HashSet size: 3
-Contains 'banana'
 ```
 
 ### init()
@@ -6125,6 +11388,181 @@ Is empty: false
 Default capacity HashSet: 16
 ```
 
+### init(Int64, (Int64) -> T)
+
+```cangjie
+public init(size: Int64, initElement: (Int64) -> T)
+```
+
+Function: Constructs a [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) using the specified size and initialization function. The capacity of the constructed [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) is influenced by the size parameter.
+
+Parameters:
+
+- size: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - Number of elements in the initialization function.
+- initElement: ([Int64](../../core/core_package_api/core_package_intrinsics.md#int64)) ->T - Initialization function rule.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if size is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashSet using size and initialization function
+    let set = HashSet<String>(3, {index => 
+        let fruits = ["apple", "banana", "orange"]
+        return fruits[index]
+    })
+    
+    println("HashSet size: ${set.size}")  // 3
+    
+    // Check if element exists
+    if (set.contains("banana")) {
+        println("Contains 'banana'")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+HashSet size: 3
+Contains 'banana'
+```
+
+<!--Del_sink-->
+
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Constructs an empty [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) with an initial capacity of 16.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    println("empty=${set.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+empty=true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, capacity: Int64)
+```
+
+Function: Constructs a [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) with the specified capacity.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- capacity: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The capacity of the set.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `capacity` is less than 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>(32) @local!
+    println("empty=${set.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+empty=true
+```
+
+<!--DelEnd_sink-->
+
+### func add(Collection\<T>)
+
+```cangjie
+public func add(all!: Collection<T>): Unit
+```
+
+Function: Adds all elements from the specified [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) to this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet). Existing elements will not be added.
+
+Parameters:
+
+- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> - The collection of elements to add.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashSet
+    let set = HashSet<String>()
+    set.add("existing")
+    
+    // Create collection of elements to add
+    let newElements = ArrayList<String>(["apple", "banana", "existing", "orange"])
+    
+    println("Size before adding collection: ${set.size}")  // 1
+    
+    // Add element collection
+    set.add(all: newElements)
+    
+    println("Size after adding collection: ${set.size}")  // 4
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Size before adding collection: 1
+Size after adding collection: 4
+```
+
 ### func add(T)
 
 ```cangjie
@@ -6173,17 +11611,29 @@ Result of adding 'apple' again: false
 Set size: 1
 ```
 
-### func add(Collection\<T>)
+<!--Del_sink-->
+
+### func add(T)
 
 ```cangjie
-public func add(all!: Collection<T>): Unit
+public exclave func add(this @local!, element: T @local!): Bool
 ```
 
-Function: Adds all elements from the specified [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont) to this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet). Existing elements will not be added.
+Function: Adds an element to the current [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet). If the element does not exist in the set, it is added and true is returned; otherwise, false is returned.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
-- all!: [Collection](../../core/core_package_api/core_package_interfaces.md#interface-collectiont)\<T> - The collection of elements to add.
+- this @local! - The current `@local!` instance on which the method is called.
+- element: T @local! - The element to add.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the element does not exist and is successfully added; otherwise, returns false.
 
 Example:
 
@@ -6192,30 +11642,67 @@ Example:
 import std.collection.*
 
 main() {
-    // Create HashSet
-    let set = HashSet<String>()
-    set.add("existing")
-    
-    // Create collection of elements to add
-    let newElements = ArrayList<String>(["apple", "banana", "existing", "orange"])
-    
-    println("Size before adding collection: ${set.size}")  // 1
-    
-    // Add element collection
-    set.add(all: newElements)
-    
-    println("Size after adding collection: ${set.size}")  // 4
-    
-    return 0
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    let added = set.add(5)
+    println("added=${added}")
+    println("has5=${set.contains(5)}")
 }
 ```
 
 Output:
 
 ```text
-Size before adding collection: 1
-Size after adding collection: 4
+added=true
+has5=true
 ```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+### func add(HashSet\<T>)
+
+```cangjie
+public exclave func add(this @local!, all!: HashSet<T> @local!): Unit
+```
+
+Function: Adds all elements of the specified [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) to this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet). Elements that already exist are not added.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- all!: [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet)\<T> @local! - The set of elements to add.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    set.add(1)
+    let other: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    other.add(2)
+    set.add(all: other)
+    println("has1=${set.contains(1)}")
+    println("has2=${set.contains(2)}")
+}
+```
+
+Output:
+
+```text
+has1=true
+has2=true
+```
+
+<!--DelEnd_sink-->
 
 ### func all((T) -> Bool)
 
@@ -6224,7 +11711,6 @@ public func all(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether all elements in the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) satisfy the given condition.
-
 
 > **Note：**
 >
@@ -6236,6 +11722,7 @@ Parameters:
 Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if all elements satisfy the condition; otherwise, returns false.
+
 ### func any((T) -> Bool)
 
 ```cangjie
@@ -6243,7 +11730,6 @@ public func any(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether there exists any element in the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) that satisfies the given condition.
-
 
 > **Note：**
 >
@@ -6255,51 +11741,6 @@ Parameters:
 Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Whether any element satisfies the condition.
-
-### prop capacity
-
-```cangjie
-public prop capacity: Int64
-```
-
-Function: Returns the internal array capacity of this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
-
-> **Note:**
->
-> The capacity does not necessarily equal the size of the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
-
-Type: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64)
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create a default HashSet
-    let set = HashSet<String>()
-    println("Default capacity: ${set.capacity}")  // 16
-    
-    // Create a HashSet with specified capacity
-    let set2 = HashSet<String>(32)
-    println("Specified capacity: ${set2.capacity}")  // 32
-    
-    // Capacity remains unchanged after adding elements
-    set.add("test")
-    println("Capacity after adding elements: ${set.capacity}")  // 16
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Default capacity: 16
-Specified capacity: 32
-Capacity after adding elements: 16
-```
 
 ### func clear()
 
@@ -6392,66 +11833,6 @@ Original HashSet size after modification: 2
 Cloned HashSet size after modification: 3
 ```
 
-### func contains(T)
-
-```cangjie
-public func contains(element: T): Bool
-```
-
-Function: Determines whether the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) contains the specified element.
-
-Parameters:
-
-- element: T - The specified element.
-
-Returns:
-
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the element is contained; otherwise, returns false.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create a HashSet and add elements
-    let set = HashSet<String>()
-    set.add("apple")
-    set.add("banana")
-    set.add("orange")
-    
-    // Check for existing element
-    if (set.contains("apple")) {
-        println("Contains 'apple'")
-    }
-    
-    // Check for non-existing element
-    if (!set.contains("grape")) {
-        println("Does not contain 'grape'")
-    }
-    
-    // Use contains to check multiple elements
-    let elements = ["apple", "grape", "banana"]
-    for (element in elements) {
-        let exists = set.contains(element)
-        println("'${element}': ${exists}")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Contains 'apple'
-Does not contain 'grape'
-'apple': true
-'grape': false
-'banana': true
-```
-
 ### func contains(Collection\<T>)
 
 ```cangjie
@@ -6521,13 +11902,120 @@ Contains empty collection
 Contains all elements from the other HashSet
 ```
 
+### func contains(T)
+
+```cangjie
+public func contains(element: T): Bool
+```
+
+Function: Determines whether the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) contains the specified element.
+
+Parameters:
+
+- element: T - The specified element.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the element is contained; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create a HashSet and add elements
+    let set = HashSet<String>()
+    set.add("apple")
+    set.add("banana")
+    set.add("orange")
+    
+    // Check for existing element
+    if (set.contains("apple")) {
+        println("Contains 'apple'")
+    }
+    
+    // Check for non-existing element
+    if (!set.contains("grape")) {
+        println("Does not contain 'grape'")
+    }
+    
+    // Use contains to check multiple elements
+    let elements = ["apple", "grape", "banana"]
+    for (element in elements) {
+        let exists = set.contains(element)
+        println("'${element}': ${exists}")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Contains 'apple'
+Does not contain 'grape'
+'apple': true
+'grape': false
+'banana': true
+```
+
+<!--Del_sink-->
+
+### func contains(T)
+
+```cangjie
+public exclave func contains(this @local!, element: T @local!): Bool
+```
+
+Function: Checks whether this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) contains the specified element.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- element: T @local! - The specified element.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if the specified element is contained; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    set.add(5)
+    println("has5=${set.contains(5)}")
+    println("has6=${set.contains(6)}")
+}
+```
+
+Output:
+
+```text
+has5=true
+has6=false
+```
+
+<!--DelEnd_sink-->
+
 ### func filter((T) -> Bool)
+
 ```cangjie
 public func filter(predicate: (T) -> Bool): HashSet<T>
 ```
 
 Function: Returns a new [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet)\<T> containing elements that satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -6548,7 +12036,6 @@ public func filterMap<R>(transform: (T) -> ?R): HashSet<R>
 
 Function: Performs both filtering and mapping operations, returning a new [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -6567,7 +12054,6 @@ public func fold<R>(initial: R, operation: (R, T) -> R): R
 ```
 
 Function: Computes from left to right using the specified initial value.
-
 
 > **Note：**
 >
@@ -6588,7 +12074,6 @@ public func forEach(action: (T) -> Unit): Unit
 ```
 
 Function: Iterates over all elements, executing the given action.
-
 
 > **Note：**
 >
@@ -6649,6 +12134,56 @@ Empty after clearing: true
 Size after clearing: 0
 ```
 
+<!--Del_sink-->
+
+### func isEmpty()
+
+```cangjie
+public func isEmpty(this @local?): Bool
+```
+
+Function: Checks whether this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) is empty.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns true if empty; otherwise, returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+exclave func makeSet(): HashSet<Int64> @local? {
+    let s: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    s.add(5)
+    let v: HashSet<Int64> @local? = s
+    v
+}
+
+main() {
+    let set: HashSet<Int64> @local? = makeSet()
+    println("empty=${set.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+empty=false
+```
+
+<!--DelEnd_sink-->
+
 ### func iterator()
 
 ```cangjie
@@ -6708,6 +12243,56 @@ Traversing with for-in loop:
 - orange
 ```
 
+<!--Del_sink-->
+
+### func iterator()
+
+```cangjie
+public exclave func iterator(this @local!): Iterator<T> @local!
+```
+
+Function: Gets an iterator over the current collection. The iterator is bound to the same local region as the current collection.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - In the current runtime version, writing the element returned by the iterator `next()` into a local Option payload may trigger the write-barrier defect (Barrier::WriteGeneric does not support local object) and abort the process. Please refer to the actual behavior of the SDK version.
+> - The `@local?` form differs from this `@local!` override: the `@local?` form is not an override of the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) but the default implementation inherited from the [Iterable](../../core/core_package_api/core_package_interfaces.md#interface-iterablee) interface; calling that inherited default implementation throws [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) and returns no iterator. Its signature, parameters, return value, and exceptions are documented in the `@local?` entry of `iterator` on the [Iterable](../../core/core_package_api/core_package_interfaces.md#interface-iterablee) interface.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> @local! - The iterator of the collection.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    set.add(5)
+    let it: Iterator<Int64> @local! = set.iterator()
+    let first = it.next()
+    if (let Some(v) <- first) {
+        println("first=${v}")
+    }
+}
+```
+
+Output:
+
+```text
+first=5
+```
+
+<!--DelEnd_sink-->
+
 ### func map\<R>((T)->R)
 
 ```cangjie
@@ -6715,7 +12300,6 @@ public func map<R>(transform: (T) -> R): HashSet<R> where R <: Hashable & Equata
 ```
 
 Function: Maps all elements of type T in the current [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) to elements of type R according to the transform function, forming a new [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet).
-
 
 > **Note：**
 >
@@ -6736,7 +12320,6 @@ public func none(predicate: (T) -> Bool): Bool
 
 Function: Determines whether none of the elements in the [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) satisfy the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -6756,7 +12339,6 @@ public func reduce(operation: (T, T) -> T): Option<T>
 
 Function: Computes from left to right using the first element as the initial value.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -6767,70 +12349,6 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T> - The computation result.
-
-### func remove(T)
-
-```cangjie
-public func remove(element: T): Bool
-```
-
-Function: Removes the specified element from this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) if it exists.
-
-Parameters:
-
-- element: T - The element to be removed.
-
-Returns:
-
-- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true indicates successful removal; false indicates removal failure.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create HashSet and add elements
-    let set = HashSet<String>()
-    set.add("apple")
-    set.add("banana")
-    set.add("orange")
-    
-    println("Initial size: ${set.size}")
-    
-    // Remove existing element
-    let result1 = set.remove("banana")
-    println("Result of removing 'banana': ${result1}")
-    println("Size after removal: ${set.size}")
-    
-    // Remove non-existent element
-    let result2 = set.remove("grape")
-    println("Result of removing 'grape': ${result2}")
-    println("Final size: ${set.size}")
-    
-    // Check remaining elements
-    println("Remaining elements:")
-    for (element in set) {
-        println("- ${element}")
-    }
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Initial size: 3
-Result of removing 'banana': true
-Size after removal: 2
-Result of removing 'grape': false
-Final size: 2
-Remaining elements:
-- apple
-- orange
-```
 
 ### func remove(Collection\<T>)
 
@@ -6915,6 +12433,70 @@ Remaining elements:
 After further removing [banana, cantaloupe]:
 Final size: 1
 Final elements:
+- orange
+```
+
+### func remove(T)
+
+```cangjie
+public func remove(element: T): Bool
+```
+
+Function: Removes the specified element from this [HashSet](collection_package_class.md#class-hashsett-where-t--hashable--equatablet) if it exists.
+
+Parameters:
+
+- element: T - The element to be removed.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true indicates successful removal; false indicates removal failure.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create HashSet and add elements
+    let set = HashSet<String>()
+    set.add("apple")
+    set.add("banana")
+    set.add("orange")
+    
+    println("Initial size: ${set.size}")
+    
+    // Remove existing element
+    let result1 = set.remove("banana")
+    println("Result of removing 'banana': ${result1}")
+    println("Size after removal: ${set.size}")
+    
+    // Remove non-existent element
+    let result2 = set.remove("grape")
+    println("Result of removing 'grape': ${result2}")
+    println("Final size: ${set.size}")
+    
+    // Check remaining elements
+    println("Remaining elements:")
+    for (element in set) {
+        println("- ${element}")
+    }
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Initial size: 3
+Result of removing 'banana': true
+Size after removal: 2
+Result of removing 'grape': false
+Final size: 2
+Remaining elements:
+- apple
 - orange
 ```
 
@@ -7293,6 +12875,52 @@ Element verification:
 'orange' in array: true
 ```
 
+<!--Del_sink-->
+
+### func toArray()
+
+```cangjie
+public exclave func toArray(this @local!): Array<T> @local!
+```
+
+Function: Converts the current collection into an array. The array is bound to the same local region as the current collection.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - In the current runtime version, copying elements of a local collection may trigger the write-barrier defect (Barrier::WriteGeneric does not support local object) and abort the process. Please refer to the actual behavior of the SDK version.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> @local! - The converted `@local!` array.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set: HashSet<Int64> @local! = HashSet<Int64>() @local!
+    set.add(5)
+    let arr: Array<Int64> @local! = set.toArray()
+    println("arr=${arr.size}")
+}
+```
+
+Output:
+
+```text
+arr=1
+```
+
+<!--DelEnd_sink-->
+
 ### operator func &(ReadOnlySet\<T>)
 
 ```cangjie
@@ -7368,6 +12996,86 @@ Empty intersection size: 0
 
 Self-intersection (set1 & set1): [apple, banana, orange]
 Self-intersection size: 3
+```
+
+### operator func -(ReadOnlySet\<T>)
+
+```cangjie
+public operator func -(other: ReadOnlySet<T>): HashSet<T>
+```
+
+Function: Returns a new set containing the difference between two sets.
+
+Parameters:
+
+- other: [ReadOnlySet](collection_package_interface.md#interface-readonlysett)\<T> - The input set.
+
+Returns:
+
+- [HashSet](./collection_package_class.md#class-hashsett-where-t--hashable--equatablet)\<T> - A set of type T.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    // Create two overlapping sets
+    let set1 = HashSet<String>()
+    set1.add("apple")
+    set1.add("banana")
+    set1.add("orange")
+    
+    let set2 = HashSet<String>()
+    set2.add("banana")
+    set2.add("grape")
+    set2.add("cantaloupe")
+    
+    println("Set 1: ${set1}")
+    println("Set 2: ${set2}")
+    
+    // Calculate difference (set1 - set2)
+    let difference = set1 - set2
+    println("Difference (set1 - set2): ${difference}")
+    println("Difference size: ${difference.size}")
+    
+    // Calculate reverse difference (set2 - set1)
+    let reverseDifference = set2 - set1
+    println("\nReverse difference (set2 - set1): ${reverseDifference}")
+    println("Reverse difference size: ${reverseDifference.size}")
+    
+    // Difference with empty set
+    let emptySet = HashSet<String>()
+    let diffWithEmpty = set1 - emptySet
+    println("\nDifference with empty set (set1 - empty): ${diffWithEmpty}")
+    println("Difference with empty set size: ${diffWithEmpty.size}")
+    
+    // Self-difference
+    let selfDiff = set1 - set1
+    println("\nSelf-difference (set1 - set1): ${selfDiff}")
+    println("Self-difference size: ${selfDiff.size}")
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Set 1: [apple, banana, orange]
+Set 2: [banana, grape, cantaloupe]
+Difference (set1 - set2): [apple, orange]
+Difference size: 2
+
+Reverse difference (set2 - set1): [grape, cantaloupe]
+Reverse difference size: 2
+
+Difference with empty set (set1 - empty): [apple, banana, orange]
+Difference with empty set size: 3
+
+Self-difference (set1 - set1): []
+Self-difference size: 0
 ```
 
 ### operator func |(ReadOnlySet\<T>)
@@ -7455,86 +13163,6 @@ Self-union size: 2
 Set 3: [cantaloupe, mango]
 Union of distinct sets (set1 | set3): [apple, banana, cantaloupe, mango]
 Union of distinct sets size: 4
-```
-
-### operator func -(ReadOnlySet\<T>)
-
-```cangjie
-public operator func -(other: ReadOnlySet<T>): HashSet<T>
-```
-
-Function: Returns a new set containing the difference between two sets.
-
-Parameters:
-
-- other: [ReadOnlySet](collection_package_interface.md#interface-readonlysett)\<T> - The input set.
-
-Returns:
-
-- [HashSet](./collection_package_class.md#class-hashsett-where-t--hashable--equatablet)\<T> - A set of type T.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    // Create two overlapping sets
-    let set1 = HashSet<String>()
-    set1.add("apple")
-    set1.add("banana")
-    set1.add("orange")
-    
-    let set2 = HashSet<String>()
-    set2.add("banana")
-    set2.add("grape")
-    set2.add("cantaloupe")
-    
-    println("Set 1: ${set1}")
-    println("Set 2: ${set2}")
-    
-    // Calculate difference (set1 - set2)
-    let difference = set1 - set2
-    println("Difference (set1 - set2): ${difference}")
-    println("Difference size: ${difference.size}")
-    
-    // Calculate reverse difference (set2 - set1)
-    let reverseDifference = set2 - set1
-    println("\nReverse difference (set2 - set1): ${reverseDifference}")
-    println("Reverse difference size: ${reverseDifference.size}")
-    
-    // Difference with empty set
-    let emptySet = HashSet<String>()
-    let diffWithEmpty = set1 - emptySet
-    println("\nDifference with empty set (set1 - empty): ${diffWithEmpty}")
-    println("Difference with empty set size: ${diffWithEmpty.size}")
-    
-    // Self-difference
-    let selfDiff = set1 - set1
-    println("\nSelf-difference (set1 - set1): ${selfDiff}")
-    println("Self-difference size: ${selfDiff.size}")
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Set 1: [apple, banana, orange]
-Set 2: [banana, grape, cantaloupe]
-Difference (set1 - set2): [apple, orange]
-Difference size: 2
-
-Reverse difference (set2 - set1): [grape, cantaloupe]
-Reverse difference size: 2
-
-Difference with empty set (set1 - empty): [apple, banana, orange]
-Difference with empty set size: 3
-
-Self-difference (set1 - set1): []
-Self-difference size: 0
 ```
 
 ### extend\<T> HashSet\<T> <: Equatable\<HashSet\<T>>
@@ -7767,205 +13395,6 @@ Single-element set: [apple]
 Multi-element set: [apple, banana, orange]
 Numeric set: [1, 2, 3]
 Automatic toString call: [apple, banana, orange]
-```
-
-## class LinkedListNode\<T>
-
-```cangjie
-public class LinkedListNode<T>
-```
-
-Function: [LinkedListNode](collection_package_class.md#class-linkedlistnodet) is a node in [LinkedList](collection_package_class.md#class-linkedlistt).
-
-Through [LinkedListNode](collection_package_class.md#class-linkedlistnodet), you can perform forward and backward traversal operations on [LinkedList](collection_package_class.md#class-linkedlistt), as well as access and modify element values.
-
-[LinkedListNode](collection_package_class.md#class-linkedlistnodet) can only be obtained via the 'nodeAt', 'firstNode', or 'lastNode' methods of the corresponding [LinkedList](collection_package_class.md#class-linkedlistt). When a node is removed from [LinkedList](collection_package_class.md#class-linkedlistt), it becomes a dangling node. Any operation on a dangling node will throw an '[IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception)' exception.
-
-### prop next
-
-```cangjie
-public prop next: Option<LinkedListNode<T>>
-```
-
-Function: Gets the next node of the current node, returns None if there isn't one.
-
-Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T>>
-
-Exceptions:
-
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<Int64>()
-    
-    // Add elements
-    list.addLast(10)
-    list.addLast(20)
-    list.addLast(30)
-    
-    // Get first node and check its next property
-    let firstNode = list.firstNode
-    if (let Some(node) <- firstNode) {
-        let nextNode = node.next
-        if (let Some(next) <- nextNode) {
-            println("Next node value: ${next.value}")
-        } else {
-            println("No next node")
-        }
-    } else {
-        println("List is empty")
-    }
-    
-    // Get last node and check its next property
-    let lastNode = list.lastNode
-    if (let Some(node) <- lastNode) {
-        let nextNode = node.next
-        if (let Some(next) <- nextNode) {
-            println("Next node value: ${next.value}")
-        } else {
-            println("No next node")
-        }
-    } else {
-        println("List is empty")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Next node value: 20
-No next node
-```
-
-### prop prev
-
-```cangjie
-public prop prev: Option<LinkedListNode<T>>
-```
-
-Function: Gets the previous node of the current node, returns None if there isn't one.
-
-Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T>>
-
-Exceptions:
-
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<Int64>()
-    
-    // Add elements
-    list.addLast(10)
-    list.addLast(20)
-    list.addLast(30)
-    
-    // Get last node and check its prev property
-    let lastNode = list.lastNode
-    if (let Some(node) <- lastNode) {
-        let prevNode = node.prev
-        if (let Some(prev) <- prevNode) {
-            println("Previous node value: ${prev.value}")
-        } else {
-            println("No previous node")
-        }
-    } else {
-        println("List is empty")
-    }
-    
-    // Get first node and check its prev property
-    let firstNode = list.firstNode
-    if (let Some(node) <- firstNode) {
-        let prevNode = node.prev
-        if (let Some(prev) <- prevNode) {
-            println("Previous node value: ${prev.value}")
-        } else {
-            println("No previous node")
-        }
-    } else {
-        println("List is empty")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Previous node value: 20
-No previous node
-```
-
-### prop value
-
-```cangjie
-public mut prop value: T
-```
-
-Function: Gets or modifies the value of the element.
-
-Type: T
-
-Exceptions:
-
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<Int64>()
-    
-    // Add elements
-    list.addLast(10)
-    list.addLast(20)
-    list.addLast(30)
-    
-    // Get first node and access its value property
-    let firstNode = list.firstNode
-    if (let Some(node) <- firstNode) {
-        println("First node value: ${node.value}")
-        
-        // Modify node's value
-        node.value = 100
-        println("Modified first node value: ${node.value}")
-    } else {
-        println("List is empty")
-    }
-    
-    // Verify first node's value was modified
-    if (let Some(node) <- list.firstNode) {
-        println("Confirmed first node value: ${node.value}")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-First node value: 10
-Modified first node value: 100
-Confirmed first node value: 100
 ```
 
 ## class LinkedList\<T>
@@ -8467,287 +13896,6 @@ Last element: 40
 All elements in list: 0 10 20 30 40 
 ```
 
-### func addLast(T)
-
-```cangjie
-public func addLast(element: T): LinkedListNode<T>
-```
-
-Function: Adds an element at the tail position of the linked list and returns the node of this element.
-
-Parameters:
-
-- element: T - The element to be added to the linked list.
-
-Returns:
-
-- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The node pointing to this element.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<String>()
-    
-    // Add element to empty list
-    let node1 = list.addLast("First")
-    println("List size after adding first element: ${list.size}")
-    println("Returned node value: ${node1.value}")
-    
-    // Add more elements
-    list.addLast("Second")
-    list.addLast("Third")
-    
-    println("List size after adding three elements: ${list.size}")
-    
-    // Verify element order
-    print("All elements in list: ")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    
-    // Verify last node
-    let lastValue = list.last
-    if (let Some(value) <- lastValue) {
-        println("Last element: ${value}")
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-List size after adding first element: 1
-Returned node value: First
-List size after adding three elements: 3
-All elements in list: First Second Third 
-Last element: Third
-```
-
-### func backward(LinkedListNode\<T>)
-
-```cangjie
-public func backward(mark: LinkedListNode<T>): Iterator<T>
-```
-
-Function: Gets an iterator for all elements starting from the mark node to the head node of the corresponding linked list.
-
-Parameters:
-
-- mark: [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The starting element node.
-
-Returns:
-
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - The iterator for corresponding elements.
-
-Exceptions:
-
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node doesn't belong to any linked list instance.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<Int64>()
-    
-    // Add elements
-    list.addLast(10)
-    list.addLast(20)
-    list.addLast(30)
-    list.addLast(40)
-    list.addLast(50)
-    
-    // Get a middle node (index 2, value 30)
-    let middleNode = list.nodeAt(2)
-    if (let Some(node) <- middleNode) {
-        println("Backward traversal starting from node value ${node.value}:")
-        
-        // Use backward method to traverse from middle node to head
-        let iterator = list.backward(node)
-        for (element in iterator) {
-            print("${element} ")
-        }
-        println()
-    }
-    
-    // Traverse backward from last node
-    let lastNode = list.lastNode
-    if (let Some(node) <- lastNode) {
-        println("Backward traversal starting from last node value ${node.value}:")
-        
-        let iterator = list.backward(node)
-        for (element in iterator) {
-            print("${element} ")
-        }
-        println()
-    }
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Backward traversal starting from node value 30:
-30 20 10 
-Backward traversal starting from last node value 50:
-50 40 30 20 10 
-```
-
-### func clear()
-
-```cangjie
-public func clear(): Unit
-```
-
-Function: Removes all elements from the linked list.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<String>()
-    
-    // Add some elements
-    list.addLast("Element1")
-    list.addLast("Element2")
-    list.addLast("Element3")
-    list.addLast("Element4")
-    
-    println("List size before clearing: ${list.size}")
-    println("Is empty before clearing: ${list.isEmpty()}")
-    
-    // Display elements before clearing
-    print("Elements before clearing: ")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    
-    // Clear all elements
-    list.clear()
-    
-    println("List size after clearing: ${list.size}")
-    println("Is empty after clearing: ${list.isEmpty()}")
-    
-    // Verify first and last elements are null
-    let firstValue = list.first
-    if (let Some(value) <- firstValue) {
-        println("First element: ${value}")
-    } else {
-        println("No first element")
-    }
-    
-    let lastValue = list.last
-    if (let Some(value) <- lastValue) {
-        println("Last element: ${value}")
-    } else {
-        println("No last element")
-    }
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-List size before clearing: 4
-Is empty before clearing: false
-Elements before clearing: Element1 Element2 Element3 Element4 
-List size after clearing: 0
-Is empty after clearing: true
-No first element
-No last element
-```
-
-### func forward(LinkedListNode\<T>)
-
-```cangjie
-public func forward(mark: LinkedListNode<T>): Iterator<T>
-```
-
-Function: Obtains an iterator for all elements starting from the mark node to the tail node of the corresponding linked list.
-
-Parameters:
-
-- mark: [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The starting element node.
-
-Returns:
-
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - Iterator for corresponding elements.
-
-Exceptions:
-
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<Int64>()
-    
-    // Add elements
-    list.addLast(10)
-    list.addLast(20)
-    list.addLast(30)
-    list.addLast(40)
-    list.addLast(50)
-    
-    // Get first node and traverse forward from it
-    let firstNode = list.firstNode
-    if (let Some(node) <- firstNode) {
-        println("Forward traversal starting from node value ${node.value}:")
-        
-        let iterator = list.forward(node)
-        for (element in iterator) {
-            print("${element} ")
-        }
-        println()
-    }
-    
-    // Get a middle node (node at index 2 with value 30)
-    let middleNode = list.nodeAt(2)
-    if (let Some(node) <- middleNode) {
-        println("Forward traversal starting from node value ${node.value}:")
-        
-        // Use forward method to traverse from middle node to tail
-        let iterator = list.forward(node)
-        for (element in iterator) {
-            print("${element} ")
-        }
-        println()
-    }
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Forward traversal starting from node value 10:
-10 20 30 40 50 
-Forward traversal starting from node value 30:
-30 40 50 
-```
-
 ### func addAfter(LinkedListNode\<T>,T)
 
 ```cangjie
@@ -8904,15 +14052,69 @@ List size: 4
 public func addFirst(element: T): LinkedListNode<T>
 ```
 
-Function: Inserts an element at the head of the linked list and returns the node of the inserted element.
+Function: Inserts an element at the head of the linked list and returns the node of that element.
 
 Parameters:
 
-- element: T - Element to be added to the linked list.
+- element: T - The element to be added to the list.
 
 Returns:
 
-- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - Node pointing to the element.
+- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The node pointing to the element.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<String>()
+    
+    // Add first element to empty list
+    let node1 = list.addFirst("Third")
+    println("List size after adding first element: ${list.size}")
+    println("Returned node value: ${node1.value}")
+    
+    // Add more elements at the head
+    list.addFirst("Second")
+    list.addFirst("First")
+    
+    println("List size after adding three elements: ${list.size}")
+    
+    // Verify element order (last added is first)
+    print("All elements in list: ")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    
+    // Verify first node
+    let firstValue = list.first
+    if (let Some(value) <- firstValue) {
+        println("First element: ${value}")
+    }
+    
+    // Verify last node
+    let lastValue = list.last
+    if (let Some(value) <- lastValue) {
+        println("Last element: ${value}")
+    }
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+List size after adding first element: 1
+Returned node value: Third
+List size after adding three elements: 3
+All elements in list: First Second Third 
+First element: First
+Last element: Third
+```
 
 ### func addLast(T)
 
@@ -8920,15 +14122,62 @@ Returns:
 public func addLast(element: T): LinkedListNode<T>
 ```
 
-Function: Appends an element at the tail of the linked list and returns the node of the inserted element.
+Function: Adds an element at the tail position of the linked list and returns the node of this element.
 
 Parameters:
 
-- element: T - Element to be added to the linked list.
+- element: T - The element to be added to the linked list.
 
 Returns:
 
-- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - Node pointing to the element.
+- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The node pointing to this element.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<String>()
+    
+    // Add element to empty list
+    let node1 = list.addLast("First")
+    println("List size after adding first element: ${list.size}")
+    println("Returned node value: ${node1.value}")
+    
+    // Add more elements
+    list.addLast("Second")
+    list.addLast("Third")
+    
+    println("List size after adding three elements: ${list.size}")
+    
+    // Verify element order
+    print("All elements in list: ")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    
+    // Verify last node
+    let lastValue = list.last
+    if (let Some(value) <- lastValue) {
+        println("Last element: ${value}")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+List size after adding first element: 1
+Returned node value: First
+List size after adding three elements: 3
+All elements in list: First Second Third 
+Last element: Third
+```
 
 ### func all((T) -> Bool)
 
@@ -8937,7 +14186,6 @@ public func all(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether all elements in the linked list satisfy the given condition.
-
 
 > **Note：**
 >
@@ -8958,7 +14206,6 @@ public func any(predicate: (T) -> Bool): Bool
 
 Function: Determines whether any element in the linked list satisfies the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -8976,7 +14223,7 @@ Returns:
 public func backward(mark: LinkedListNode<T>): Iterator<T>
 ```
 
-Function: Obtains an iterator for all elements starting from the mark node to the head node of the corresponding linked list.
+Function: Gets an iterator for all elements starting from the mark node to the head node of the corresponding linked list.
 
 Parameters:
 
@@ -8984,11 +14231,65 @@ Parameters:
 
 Returns:
 
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - Iterator for corresponding elements.
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - The iterator for corresponding elements.
 
 Exceptions:
 
-- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node doesn't belong to any linked list instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<Int64>()
+    
+    // Add elements
+    list.addLast(10)
+    list.addLast(20)
+    list.addLast(30)
+    list.addLast(40)
+    list.addLast(50)
+    
+    // Get a middle node (index 2, value 30)
+    let middleNode = list.nodeAt(2)
+    if (let Some(node) <- middleNode) {
+        println("Backward traversal starting from node value ${node.value}:")
+        
+        // Use backward method to traverse from middle node to head
+        let iterator = list.backward(node)
+        for (element in iterator) {
+            print("${element} ")
+        }
+        println()
+    }
+    
+    // Traverse backward from last node
+    let lastNode = list.lastNode
+    if (let Some(node) <- lastNode) {
+        println("Backward traversal starting from last node value ${node.value}:")
+        
+        let iterator = list.backward(node)
+        for (element in iterator) {
+            print("${element} ")
+        }
+        println()
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Backward traversal starting from node value 30:
+30 20 10 
+Backward traversal starting from last node value 50:
+50 40 30 20 10 
+```
 
 ### func clear()
 
@@ -8998,13 +14299,75 @@ public func clear(): Unit
 
 Function: Removes all elements from the linked list.
 
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<String>()
+    
+    // Add some elements
+    list.addLast("Element1")
+    list.addLast("Element2")
+    list.addLast("Element3")
+    list.addLast("Element4")
+    
+    println("List size before clearing: ${list.size}")
+    println("Is empty before clearing: ${list.isEmpty()}")
+    
+    // Display elements before clearing
+    print("Elements before clearing: ")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    
+    // Clear all elements
+    list.clear()
+    
+    println("List size after clearing: ${list.size}")
+    println("Is empty after clearing: ${list.isEmpty()}")
+    
+    // Verify first and last elements are null
+    let firstValue = list.first
+    if (let Some(value) <- firstValue) {
+        println("First element: ${value}")
+    } else {
+        println("No first element")
+    }
+    
+    let lastValue = list.last
+    if (let Some(value) <- lastValue) {
+        println("Last element: ${value}")
+    } else {
+        println("No last element")
+    }
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+List size before clearing: 4
+Is empty before clearing: false
+Elements before clearing: Element1 Element2 Element3 Element4 
+List size after clearing: 0
+Is empty after clearing: true
+No first element
+No last element
+```
+
 ### func filter((T) -> Bool)
+
 ```cangjie
 public func filter(predicate: (T) -> Bool): LinkedList<T>
 ```
 
 Function: Returns a new linked list containing elements that satisfy the filtering condition.
-
 
 > **Note：**
 >
@@ -9015,7 +14378,9 @@ Parameters:
 
 Returns:
 
-- [LinkedList](collection_package_class.md#class-linkedlistt)\<T> - Returns a new linked list containing elements that satisfy the condition.### func filterMap\<R>((T) -> ?R)
+- [LinkedList](collection_package_class.md#class-linkedlistt)\<T> - Returns a new linked list containing elements that satisfy the condition.
+
+### func filterMap\<R>((T) -> ?R)
 
 ```cangjie
 public func filterMap<R>(transform: (T) -> ?R): LinkedList<R>
@@ -9039,7 +14404,6 @@ public func flatMap<R>(transform: (T) -> LinkedList<R>): LinkedList<R>
 
 Function: Applies a transform closure to each element in the linked list, which returns a new linked list, then flattens and concatenates all returned linked lists into a single resulting linked list.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -9058,7 +14422,6 @@ public func fold<R>(initial: R, operation: (R, T) -> R): R
 ```
 
 Function: Computes from left to right using the specified initial value.
-
 
 > **Note：**
 >
@@ -9080,7 +14443,6 @@ public func forEach(action: (T) -> Unit): Unit
 
 Function: Iterates over all elements and executes the given action.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -9094,7 +14456,7 @@ Parameters:
 public func forward(mark: LinkedListNode<T>): Iterator<T>
 ```
 
-Function: Retrieves an iterator for all elements starting from the `mark` node to the tail node of the corresponding linked list.
+Function: Obtains an iterator for all elements starting from the mark node to the tail node of the corresponding linked list.
 
 Parameters:
 
@@ -9102,11 +14464,65 @@ Parameters:
 
 Returns:
 
-- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - An iterator for the corresponding elements.
+- [Iterator](../../core/core_package_api/core_package_classes.md#class-iteratort)\<T> - Iterator for corresponding elements.
 
 Exceptions:
 
 - [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<Int64>()
+    
+    // Add elements
+    list.addLast(10)
+    list.addLast(20)
+    list.addLast(30)
+    list.addLast(40)
+    list.addLast(50)
+    
+    // Get first node and traverse forward from it
+    let firstNode = list.firstNode
+    if (let Some(node) <- firstNode) {
+        println("Forward traversal starting from node value ${node.value}:")
+        
+        let iterator = list.forward(node)
+        for (element in iterator) {
+            print("${element} ")
+        }
+        println()
+    }
+    
+    // Get a middle node (node at index 2 with value 30)
+    let middleNode = list.nodeAt(2)
+    if (let Some(node) <- middleNode) {
+        println("Forward traversal starting from node value ${node.value}:")
+        
+        // Use forward method to traverse from middle node to tail
+        let iterator = list.forward(node)
+        for (element in iterator) {
+            print("${element} ")
+        }
+        println()
+    }
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Forward traversal starting from node value 10:
+10 20 30 40 50 
+Forward traversal starting from node value 30:
+30 40 50 
+```
 
 ### func intersperse(T)
 
@@ -9115,7 +14531,6 @@ public func intersperse(separator: T): LinkedList<T>
 ```
 
 Function: Returns a new [LinkedList](collection_package_class.md#class-linkedlistt) with the given new element inserted between every two existing elements.
-
 
 > **Note：**
 >
@@ -9258,7 +14673,6 @@ public func map<R>(transform: (T) -> R): LinkedList<R>
 
 Function: Maps this [LinkedList](collection_package_class.md#class-linkedlistt) and returns a new [LinkedList](collection_package_class.md#class-linkedlistt).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -9367,7 +14781,6 @@ public func none(predicate: (T) -> Bool): Bool
 
 Function: Determines whether none of the elements in this linked list satisfy the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -9387,7 +14800,6 @@ public func reduce(operation: (T, T) -> T): Option<T>
 
 Function: Computes from left to right using the first element as the initial value.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -9398,254 +14810,6 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T> - Returns the computation result.
-
-### func removeFirst()
-
-```cangjie
-public func removeFirst(): ?T
-```
-
-Function: Removes the first element of the linked list and returns its value.
-
-Returns:
-
-- ?T - The value of the removed element, or None if the linked list is empty.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<String>()
-    
-    // Attempt to remove from an empty linked list
-    let removedFromEmpty = list.removeFirst()
-    if (let Some(value) <- removedFromEmpty) {
-        println("Element removed from empty linked list: ${value}")
-    } else {
-        println("Cannot remove from an empty linked list")
-    }
-    
-    // Add some elements
-    list.addLast("First")
-    list.addLast("Second")
-    list.addLast("Third")
-    list.addLast("Fourth")
-    
-    println("Linked list before removal:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("Linked list size before removal: ${list.size}")
-    
-    // Remove the first element
-    let removed1 = list.removeFirst()
-    if (let Some(value) <- removed1) {
-        println("First removed element: ${value}")
-    }
-    
-    println("Linked list after one removal:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("Linked list size after removal: ${list.size}")
-    
-    // Remove the first element again
-    let removed2 = list.removeFirst()
-    if (let Some(value) <- removed2) {
-        println("Second removed element: ${value}")
-    }
-    
-    println("Final linked list:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("Final linked list size: ${list.size}")
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-Cannot remove from an empty linked list
-Linked list before removal:
-First Second Third Fourth 
-Linked list size before removal: 4
-First removed element: First
-Linked list after one removal:
-Second Third Fourth 
-Linked list size after removal: 3
-Second removed element: Second
-Final linked list:
-Third Fourth 
-Final linked list size: 2
-```
-
-### func removeLast()
-
-```cangjie
-public func removeLast(): ?T
-```
-
-Function: Removes the last element from the linked list and returns its value.
-
-Returns:
-
-- ?T - The value of the removed element, or None if the list is empty.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<String>()
-    
-    // Attempt to remove from an empty list
-    let removedFromEmpty = list.removeLast()
-    if (let Some(value) <- removedFromEmpty) {
-        println("Removed element from empty list: ${value}")
-    } else {
-        println("Cannot remove from empty list")
-    }
-    
-    // Add some elements
-    list.addLast("First")
-    list.addLast("Second")
-    list.addLast("Third")
-    list.addLast("Fourth")
-    
-    println("List before removal:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("List size before removal: ${list.size}")
-    
-    // Remove the last element
-    let removed1 = list.removeLast()
-    if (let Some(value) <- removed1) {
-        println("Removed last element: ${value}")
-    }
-    
-    println("List after first removal:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("List size after first removal: ${list.size}")
-    
-    // Remove the last element again
-    let removed2 = list.removeLast()
-    if (let Some(value) <- removed2) {
-        println("Removed last element again: ${value}")
-    }
-    
-    println("Final list:")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    println("Final list size: ${list.size}")
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Cannot remove from empty list
-List before removal:
-First Second Third Fourth 
-List size before removal: 4
-Removed last element: Fourth
-List after first removal:
-First Second Third 
-List size after first removal: 3
-Removed last element again: Third
-Final list:
-First Second 
-Final list size: 2
-```
-
-### func addFirst(T)
-
-```cangjie
-public func addFirst(element: T): LinkedListNode<T>
-```
-
-Function: Inserts an element at the head of the linked list and returns the node of that element.
-
-Parameters:
-
-- element: T - The element to be added to the list.
-
-Returns:
-
-- [LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T> - The node pointing to the element.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let list = LinkedList<String>()
-    
-    // Add first element to empty list
-    let node1 = list.addFirst("Third")
-    println("List size after adding first element: ${list.size}")
-    println("Returned node value: ${node1.value}")
-    
-    // Add more elements at the head
-    list.addFirst("Second")
-    list.addFirst("First")
-    
-    println("List size after adding three elements: ${list.size}")
-    
-    // Verify element order (last added is first)
-    print("All elements in list: ")
-    for (element in list) {
-        print("${element} ")
-    }
-    println()
-    
-    // Verify first node
-    let firstValue = list.first
-    if (let Some(value) <- firstValue) {
-        println("First element: ${value}")
-    }
-    
-    // Verify last node
-    let lastValue = list.last
-    if (let Some(value) <- lastValue) {
-        println("Last element: ${value}")
-    }
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-List size after adding first element: 1
-Returned node value: Third
-List size after adding three elements: 3
-All elements in list: First Second Third 
-First element: First
-Last element: Third
-```
 
 ### func remove(LinkedListNode\<T>)
 
@@ -9741,6 +14905,95 @@ Third Fourth
 Final list size: 2
 ```
 
+### func removeFirst()
+
+```cangjie
+public func removeFirst(): ?T
+```
+
+Function: Removes the first element of the linked list and returns its value.
+
+Returns:
+
+- ?T - The value of the removed element, or None if the linked list is empty.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<String>()
+    
+    // Attempt to remove from an empty linked list
+    let removedFromEmpty = list.removeFirst()
+    if (let Some(value) <- removedFromEmpty) {
+        println("Element removed from empty linked list: ${value}")
+    } else {
+        println("Cannot remove from an empty linked list")
+    }
+    
+    // Add some elements
+    list.addLast("First")
+    list.addLast("Second")
+    list.addLast("Third")
+    list.addLast("Fourth")
+    
+    println("Linked list before removal:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("Linked list size before removal: ${list.size}")
+    
+    // Remove the first element
+    let removed1 = list.removeFirst()
+    if (let Some(value) <- removed1) {
+        println("First removed element: ${value}")
+    }
+    
+    println("Linked list after one removal:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("Linked list size after removal: ${list.size}")
+    
+    // Remove the first element again
+    let removed2 = list.removeFirst()
+    if (let Some(value) <- removed2) {
+        println("Second removed element: ${value}")
+    }
+    
+    println("Final linked list:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("Final linked list size: ${list.size}")
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Cannot remove from an empty linked list
+Linked list before removal:
+First Second Third Fourth 
+Linked list size before removal: 4
+First removed element: First
+Linked list after one removal:
+Second Third Fourth 
+Linked list size after removal: 3
+Second removed element: Second
+Final linked list:
+Third Fourth 
+Final linked list size: 2
+```
+
 ### func removeIf((T)-> Bool)
 
 ```cangjie
@@ -9818,6 +15071,95 @@ List after removing even numbers:
 List size after removal: 4
 List after removing elements > 3:
 1 3 
+Final list size: 2
+```
+
+### func removeLast()
+
+```cangjie
+public func removeLast(): ?T
+```
+
+Function: Removes the last element from the linked list and returns its value.
+
+Returns:
+
+- ?T - The value of the removed element, or None if the list is empty.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<String>()
+    
+    // Attempt to remove from an empty list
+    let removedFromEmpty = list.removeLast()
+    if (let Some(value) <- removedFromEmpty) {
+        println("Removed element from empty list: ${value}")
+    } else {
+        println("Cannot remove from empty list")
+    }
+    
+    // Add some elements
+    list.addLast("First")
+    list.addLast("Second")
+    list.addLast("Third")
+    list.addLast("Fourth")
+    
+    println("List before removal:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("List size before removal: ${list.size}")
+    
+    // Remove the last element
+    let removed1 = list.removeLast()
+    if (let Some(value) <- removed1) {
+        println("Removed last element: ${value}")
+    }
+    
+    println("List after first removal:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("List size after first removal: ${list.size}")
+    
+    // Remove the last element again
+    let removed2 = list.removeLast()
+    if (let Some(value) <- removed2) {
+        println("Removed last element again: ${value}")
+    }
+    
+    println("Final list:")
+    for (element in list) {
+        print("${element} ")
+    }
+    println()
+    println("Final list size: ${list.size}")
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Cannot remove from empty list
+List before removal:
+First Second Third Fourth 
+List size before removal: 4
+Removed last element: Fourth
+List after first removal:
+First Second Third 
+List size after first removal: 3
+Removed last element again: Third
+Final list:
+First Second 
 Final list size: 2
 ```
 
@@ -9911,7 +15253,6 @@ public func skip(count: Int64): LinkedList<T>
 Function: Skips a specified number of elements and returns a new linked list.
 
 Throws an exception when count is less than or equal to 0. When count equals 0, it effectively skips no elements and returns a new list containing all elements of the source list. When count is greater than 0 but less than the size of the source list, it skips the first 'count' elements and returns a new list containing the remaining elements. When count is greater than or equal to the size of the source list, returns an empty list.
-
 
 > **Note：**
 >
@@ -10029,6 +15370,7 @@ Last element of original list: 2
 ```
 
 ### func step(Int64)
+
 ```cangjie
 public func step(count: Int64): LinkedList<T>
 ```
@@ -10036,7 +15378,6 @@ public func step(count: Int64): LinkedList<T>
 Function: Extracts elements from the linked list at specified intervals and returns a new list.
 
 Throws an exception when count is less than or equal to 0.
-
 
 > **Note：**
 >
@@ -10054,6 +15395,7 @@ Exceptions:
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when count <= 0.
 
 ### func take(Int64)
+
 ```cangjie
 public func take(count: Int64): LinkedList<T>
 ```
@@ -10061,7 +15403,6 @@ public func take(count: Int64): LinkedList<T>
 Function: Takes a specified number of elements from the linked list and returns a new list.
 
 Throws an exception when count is less than or equal to 0. When count equals 0, takes no elements and returns an empty list. When count is greater than 0 but less than the size of the source list, takes the first 'count' elements and returns a new list. When count is greater than or equal to the size of the source list, takes all elements and returns a new list.
-
 
 > **Note：**
 >
@@ -10391,7 +15732,6 @@ public func zip<R>(other: LinkedList<R>): LinkedList<(T, R)>
 
 Function: Combines two [LinkedList](./collection_package_class.md#class-linkedlistt) instances into a new [LinkedList](./collection_package_class.md#class-linkedlistt) (length determined by the shorter list).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -10491,6 +15831,205 @@ toString of number list: [10, 20, 30, 40]
 toString of string list: [Apple, Banana, Orange]
 Manual traversal of number list: [10, 20, 30, 40]
 Modified number list toString: [5, 10, 20, 30, 40, 50]
+```
+
+## class LinkedListNode\<T>
+
+```cangjie
+public class LinkedListNode<T>
+```
+
+Function: [LinkedListNode](collection_package_class.md#class-linkedlistnodet) is a node in [LinkedList](collection_package_class.md#class-linkedlistt).
+
+Through [LinkedListNode](collection_package_class.md#class-linkedlistnodet), you can perform forward and backward traversal operations on [LinkedList](collection_package_class.md#class-linkedlistt), as well as access and modify element values.
+
+[LinkedListNode](collection_package_class.md#class-linkedlistnodet) can only be obtained via the 'nodeAt', 'firstNode', or 'lastNode' methods of the corresponding [LinkedList](collection_package_class.md#class-linkedlistt). When a node is removed from [LinkedList](collection_package_class.md#class-linkedlistt), it becomes a dangling node. Any operation on a dangling node will throw an '[IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception)' exception.
+
+### prop next
+
+```cangjie
+public prop next: Option<LinkedListNode<T>>
+```
+
+Function: Gets the next node of the current node, returns None if there isn't one.
+
+Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T>>
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<Int64>()
+    
+    // Add elements
+    list.addLast(10)
+    list.addLast(20)
+    list.addLast(30)
+    
+    // Get first node and check its next property
+    let firstNode = list.firstNode
+    if (let Some(node) <- firstNode) {
+        let nextNode = node.next
+        if (let Some(next) <- nextNode) {
+            println("Next node value: ${next.value}")
+        } else {
+            println("No next node")
+        }
+    } else {
+        println("List is empty")
+    }
+    
+    // Get last node and check its next property
+    let lastNode = list.lastNode
+    if (let Some(node) <- lastNode) {
+        let nextNode = node.next
+        if (let Some(next) <- nextNode) {
+            println("Next node value: ${next.value}")
+        } else {
+            println("No next node")
+        }
+    } else {
+        println("List is empty")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Next node value: 20
+No next node
+```
+
+### prop prev
+
+```cangjie
+public prop prev: Option<LinkedListNode<T>>
+```
+
+Function: Gets the previous node of the current node, returns None if there isn't one.
+
+Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[LinkedListNode](collection_package_class.md#class-linkedlistnodet)\<T>>
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<Int64>()
+    
+    // Add elements
+    list.addLast(10)
+    list.addLast(20)
+    list.addLast(30)
+    
+    // Get last node and check its prev property
+    let lastNode = list.lastNode
+    if (let Some(node) <- lastNode) {
+        let prevNode = node.prev
+        if (let Some(prev) <- prevNode) {
+            println("Previous node value: ${prev.value}")
+        } else {
+            println("No previous node")
+        }
+    } else {
+        println("List is empty")
+    }
+    
+    // Get first node and check its prev property
+    let firstNode = list.firstNode
+    if (let Some(node) <- firstNode) {
+        let prevNode = node.prev
+        if (let Some(prev) <- prevNode) {
+            println("Previous node value: ${prev.value}")
+        } else {
+            println("No previous node")
+        }
+    } else {
+        println("List is empty")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+Previous node value: 20
+No previous node
+```
+
+### prop value
+
+```cangjie
+public mut prop value: T
+```
+
+Function: Gets or modifies the value of the element.
+
+Type: T
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown if the node does not belong to any linked list instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let list = LinkedList<Int64>()
+    
+    // Add elements
+    list.addLast(10)
+    list.addLast(20)
+    list.addLast(30)
+    
+    // Get first node and access its value property
+    let firstNode = list.firstNode
+    if (let Some(node) <- firstNode) {
+        println("First node value: ${node.value}")
+        
+        // Modify node's value
+        node.value = 100
+        println("Modified first node value: ${node.value}")
+    } else {
+        println("List is empty")
+    }
+    
+    // Verify first node's value was modified
+    if (let Some(node) <- list.firstNode) {
+        println("Confirmed first node value: ${node.value}")
+    }
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+First node value: 10
+Modified first node value: 100
+Confirmed first node value: 100
 ```
 
 ## class TreeMap\<K, V> where K <: Comparable\<K>
@@ -10600,7 +16139,7 @@ main() {
     // Get last element (sorted by key's lexicographical order)
     let lastValue2 = map.last
     if (let Some((key, value)) <- lastValue2) {
-        println("Last element: (${key, ${value})")
+        println("Last element: (${key}, ${value})")
     } else {
         println("TreeMap is empty")
     }
@@ -11035,7 +16574,6 @@ public func all(predicate: (K, V) -> Bool): Bool
 
 Function: Determines whether all key-value pairs in [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) satisfy the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11055,7 +16593,6 @@ public func any(predicate: (K, V) -> Bool): Bool
 
 Function: Determines whether any key-value pair in [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) satisfies the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11073,7 +16610,7 @@ Returns:
 public func backward(mark: K, inclusive!: Bool = true): Iterator<(K, V)>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-3). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
+Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-5). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
 
 Parameters:
 
@@ -11482,12 +17019,12 @@ entryView provides reference view access to specific key-value pairs in TreeMap
 ```
 
 ### func filter((K, V) -> Bool)
+
 ```cangjie
 public func filter(predicate: (K, V) -> Bool): TreeMap<K, V>
 ```
 
 Function: Returns a new [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek)\<K, V> containing key-value pairs that satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -11507,7 +17044,6 @@ public func fold<R>(initial: R, operation: (R, K, V) -> R): R
 ```
 
 Function: Computes from left to right using the specified initial value.
-
 
 > **Note：**
 >
@@ -11529,7 +17065,6 @@ public func forEach(action: (K, V) -> Unit): Unit
 
 Function: Iterates over all key-value pairs and executes the given action.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11543,7 +17078,7 @@ Parameters:
 public func forward(mark: K, inclusive!: Bool = true): Iterator<(K, V)>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key greater than or equal to `mark` in ascending order until [last](./collection_package_class.md#prop-last-3). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
+Function: Obtains an iterator that traverses from the first node with a key greater than or equal to `mark` in ascending order until [last](./collection_package_class.md#prop-last-5). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
 
 Parameters:
 
@@ -11875,7 +17410,6 @@ public func mapValues<R>(transform: (K, V) -> R): TreeMap<K, R>
 
 Function: Maps this [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) and returns a new [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11894,7 +17428,6 @@ public func mapValues<R>(transform: (V) -> R): TreeMap<K, R>
 ```
 
 Function: Maps this [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek)\<K, R> and returns a new [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek)\<K, R>.
-
 
 > **Note：**
 >
@@ -11915,7 +17448,6 @@ public func none(predicate: (K, V) -> Bool): Bool
 
 Function: Determines whether none of the key-value pairs in the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek) satisfy the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11935,7 +17467,6 @@ public func reduce(operation: (V, V) -> V): Option<V>
 
 Function: Computes from left to right using the first value as the initial value.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -11946,152 +17477,6 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<V> - Returns the computation result.
-
-### func removeFirst()
-
-```cangjie
-public func removeFirst(): ?(K, V)
-```
-
-Function: Removes the first element of the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
-
-Returns:
-
-- ?(K, V) - If the first element exists, it is removed and returned wrapped in an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise, returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)>.None.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let map = TreeMap<String, Int64>()
-    
-    // Remove first element from an empty TreeMap
-    let result1 = map.removeFirst()
-    if (let Some((key, value)) <- result1) {
-        println("Removed first element: (${key}, ${value})")
-    } else {
-        println("TreeMap is empty, cannot remove")
-    }
-    
-    // Add some elements
-    map.add("cherry", 30)
-    map.add("apple", 10)
-    map.add("banana", 20)
-    map.add("date", 40)
-    
-    println("\nTreeMap before removal: ${map}")
-    println("Size before removal: ${map.size}")
-    
-    // Remove the first element (first in lexicographical order)
-    let result2 = map.removeFirst()
-    if (let Some((key, value)) <- result2) {
-        println("Removed first element: (${key}, ${value})")
-    }
-    
-    println("TreeMap after removal: ${map}")
-    println("Size after removal: ${map.size}")
-    
-    // Remove the first element again
-    let result3 = map.removeFirst()
-    if (let Some((key, value)) <- result3) {
-        println("Removed first element again: (${key}, ${value})")
-    }
-    
-    println("Final TreeMap: ${map}")
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-TreeMap is empty, cannot remove
-
-TreeMap before removal: [(apple, 10), (banana, 20), (cherry, 30), (date, 40)]
-Size before removal: 4
-Removed first element: (apple, 10)
-TreeMap after removal: [(banana, 20), (cherry, 30), (date, 40)]
-Size after removal: 3
-Removed first element again: (banana, 20)
-Final TreeMap: [(cherry, 30), (date, 40)]
-```
-
-### func removeLast()
-
-```cangjie
-public func removeLast(): ?(K, V)
-```
-
-Function: Removes the last element of the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
-
-Returns:
-
-- ?(K, V) - If the last element exists, it is removed and returned wrapped in an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise, returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)>.None.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let map = TreeMap<String, Int64>()
-    
-    // Remove last element from an empty TreeMap
-    let result1 = map.removeLast()
-    if (let Some((key, value)) <- result1) {
-        println("Removed last element: (${key, ${value})")
-    } else {
-        println("TreeMap is empty, cannot remove")
-    }
-    
-    // Add some elements
-    map.add("cherry", 30)
-    map.add("apple", 10)
-    map.add("banana", 20)
-    map.add("date", 40)
-    
-    println("\nTreeMap before removal: ${map}")
-    println("Size before removal: ${map.size}")
-    
-    // Remove the last element (last in lexicographical order)
-    let result2 = map.removeLast()
-    if (let Some((key, value)) <- result2) {
-        println("Removed last element: (${key}, ${value})")
-    }
-    
-    println("TreeMap after removal: ${map}")
-    println("Size after removal: ${map.size}")
-    
-    // Remove the last element again
-    let result3 = map.removeLast()
-    if (let Some((key, value)) <- result3) {
-        println("Removed last element again: (${key}, ${value})")
-    }
-    
-    println("Final TreeMap: ${map}")
-    
-    return 0
-}
-```
-
-Output:
-
-```text
-TreeMap is empty, cannot remove
-
-TreeMap before removal: [(apple, 10), (banana, 20), (cherry, 30), (date, 40)]
-Size before removal: 4
-Removed last element: (date, 40)
-TreeMap after removal: [(apple, 10), (banana, 20), (cherry, 30)]
-Size after removal: 3
-Removed last element again: (cherry, 30)
-Final TreeMap: [(apple, 10), (banana, 20)]
-```
 
 ### func remove(K)
 
@@ -12275,6 +17660,79 @@ Final TreeMap: [(elderberry, 50)]
 Final size: 1
 ```
 
+### func removeFirst()
+
+```cangjie
+public func removeFirst(): ?(K, V)
+```
+
+Function: Removes the first element of the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
+
+Returns:
+
+- ?(K, V) - If the first element exists, it is removed and returned wrapped in an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise, returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)>.None.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map = TreeMap<String, Int64>()
+    
+    // Remove first element from an empty TreeMap
+    let result1 = map.removeFirst()
+    if (let Some((key, value)) <- result1) {
+        println("Removed first element: (${key}, ${value})")
+    } else {
+        println("TreeMap is empty, cannot remove")
+    }
+    
+    // Add some elements
+    map.add("cherry", 30)
+    map.add("apple", 10)
+    map.add("banana", 20)
+    map.add("date", 40)
+    
+    println("\nTreeMap before removal: ${map}")
+    println("Size before removal: ${map.size}")
+    
+    // Remove the first element (first in lexicographical order)
+    let result2 = map.removeFirst()
+    if (let Some((key, value)) <- result2) {
+        println("Removed first element: (${key}, ${value})")
+    }
+    
+    println("TreeMap after removal: ${map}")
+    println("Size after removal: ${map.size}")
+    
+    // Remove the first element again
+    let result3 = map.removeFirst()
+    if (let Some((key, value)) <- result3) {
+        println("Removed first element again: (${key}, ${value})")
+    }
+    
+    println("Final TreeMap: ${map}")
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+TreeMap is empty, cannot remove
+
+TreeMap before removal: [(apple, 10), (banana, 20), (cherry, 30), (date, 40)]
+Size before removal: 4
+Removed first element: (apple, 10)
+TreeMap after removal: [(banana, 20), (cherry, 30), (date, 40)]
+Size after removal: 3
+Removed first element again: (banana, 20)
+Final TreeMap: [(cherry, 30), (date, 40)]
+```
+
 ### func removeIf((K, V) -> Bool)
 
 ```cangjie
@@ -12366,6 +17824,79 @@ Size: 5
 After removing elements with keys starting with 'b':
 TreeMap: [(avocado, 15), (cherry, 30), (coconut, 35)]
 Size: 3
+```
+
+### func removeLast()
+
+```cangjie
+public func removeLast(): ?(K, V)
+```
+
+Function: Removes the last element of the [TreeMap](collection_package_class.md#class-treemapk-v-where-k--comparablek).
+
+Returns:
+
+- ?(K, V) - If the last element exists, it is removed and returned wrapped in an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise, returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<(K, V)>.None.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let map = TreeMap<String, Int64>()
+    
+    // Remove last element from an empty TreeMap
+    let result1 = map.removeLast()
+    if (let Some((key, value)) <- result1) {
+        println("Removed last element: (${key}, ${value})")
+    } else {
+        println("TreeMap is empty, cannot remove")
+    }
+    
+    // Add some elements
+    map.add("cherry", 30)
+    map.add("apple", 10)
+    map.add("banana", 20)
+    map.add("date", 40)
+    
+    println("\nTreeMap before removal: ${map}")
+    println("Size before removal: ${map.size}")
+    
+    // Remove the last element (last in lexicographical order)
+    let result2 = map.removeLast()
+    if (let Some((key, value)) <- result2) {
+        println("Removed last element: (${key}, ${value})")
+    }
+    
+    println("TreeMap after removal: ${map}")
+    println("Size after removal: ${map.size}")
+    
+    // Remove the last element again
+    let result3 = map.removeLast()
+    if (let Some((key, value)) <- result3) {
+        println("Removed last element again: (${key}, ${value})")
+    }
+    
+    println("Final TreeMap: ${map}")
+    
+    return 0
+}
+```
+
+Output:
+
+```text
+TreeMap is empty, cannot remove
+
+TreeMap before removal: [(apple, 10), (banana, 20), (cherry, 30), (date, 40)]
+Size before removal: 4
+Removed last element: (date, 40)
+TreeMap after removal: [(apple, 10), (banana, 20), (cherry, 30)]
+Size after removal: 3
+Removed last element again: (cherry, 30)
+Final TreeMap: [(apple, 10), (banana, 20)]
 ```
 
 ### func values()
@@ -13231,7 +18762,6 @@ public func all(predicate: (T) -> Bool): Bool
 
 Function: Determines whether all elements in the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) satisfy the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13251,7 +18781,6 @@ public func any(predicate: (T) -> Bool): Bool
 
 Function: Determines whether any element in the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) satisfies the given condition.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13269,7 +18798,7 @@ Returns:
 public func backward(mark: T, inclusive!: Bool = true): Iterator<T>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-4). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include the node.
+Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-6). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include the node.
 
 Parameters:
 
@@ -13525,12 +19054,12 @@ Contains all ['fig', 'grape']: false
 ```
 
 ### func filter((T) -> Bool)
+
 ```cangjie
 public func filter(predicate: (T) -> Bool): TreeSet<T>
 ```
 
 Function: Returns a new [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet)\<T> containing elements that satisfy the given predicate.
-
 
 > **Note：**
 >
@@ -13567,7 +19096,6 @@ public func fold<R>(initial: R, operation: (R, T) -> R): R
 
 Function: Computes a value by applying an operation from left to right with the specified initial value.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13588,7 +19116,6 @@ public func forEach(action: (T) -> Unit): Unit
 
 Function: Iterates over all elements and applies the given action.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13602,7 +19129,7 @@ Parameters:
 public func forward(mark: T, inclusive!: Bool = true): Iterator<T>
 ```
 
-Function: Obtains an iterator that traverses from the first element greater than or equal to `mark` in ascending order to [last](./collection_package_class.md#prop-last-3). If the element equals `mark`, the `inclusive!` parameter determines whether to include the element.
+Function: Obtains an iterator that traverses from the first element greater than or equal to `mark` in ascending order to [last](./collection_package_class.md#prop-last-5). If the element equals `mark`, the `inclusive!` parameter determines whether to include the element.
 
 Parameters:
 
@@ -13656,8 +19183,7 @@ Forward traversal from cherry (inclusive):
 Forward traversal from cherry (exclusive):
   date
   elderberry
-```Here is the professional translation of the provided Markdown content from Chinese to English, maintaining all structural and formatting elements:
-
+```
 
 ### func isEmpty()
 
@@ -13759,7 +19285,6 @@ public func map<R>(transform: (T) -> R): TreeSet<R> where R <: Comparable<R>
 
 Function: Transforms all elements of type T in the current [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) into elements of type R using the transform function, forming a new [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13778,7 +19303,6 @@ public func none(predicate: (T) -> Bool): Bool
 ```
 
 Function: Determines whether none of the elements in the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet) satisfy the given condition.
-
 
 > **Note：**
 >
@@ -13799,7 +19323,6 @@ public func reduce(operation: (T, T) -> T): Option<T>
 
 Function: Uses the first element as the initial value and computes from left to right.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -13810,108 +19333,6 @@ Parameters:
 Returns:
 
 - [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T> - Returns the computation result.
-
-### func removeFirst()
-
-```cangjie
-public func removeFirst(): ?T
-```
-
-Function: Removes the first element from the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
-
-Returns:
-
-- ?T - If the first element exists, removes it and returns the element wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T>.None.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let set = TreeSet<String>()
-    set.add("cherry")
-    set.add("apple") 
-    set.add("banana")
-    set.add("date")
-    
-    println("Original set: ${set}")
-    
-    // Remove first element
-    let first = set.removeFirst()
-    println("Removed first element: ${first}")
-    println("Set after removal: ${set}")
-    
-    // Remove next first element
-    let second = set.removeFirst()
-    println("Removed second element: ${second}")
-    println("Set after second removal: ${set}")
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Original set: [apple, banana, cherry, date]
-Removed first element: Some(apple)
-Set after removal: [banana, cherry, date]
-Removed second element: Some(banana)
-Set after second removal: [cherry, date]
-```
-
-### func removeLast()
-
-```cangjie
-public func removeLast(): ?T
-```
-
-Function: Removes the last element from the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
-
-Returns:
-
-- ?T - If the last element exists, removes it and returns the element wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T>.None.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import std.collection.*
-
-main() {
-    let set = TreeSet<String>()
-    set.add("cherry")
-    set.add("apple") 
-    set.add("banana")
-    set.add("date")
-    
-    println("Original set: ${set}")
-    
-    // Remove last element
-    let last = set.removeLast()
-    println("Removed last element: ${last}")
-    println("Set after removal: ${set}")
-    
-    // Remove next last element
-    let secondLast = set.removeLast()
-    println("Removed second last element: ${secondLast}")
-    println("Set after second removal: ${set}")
-    
-    return 0
-}
-```
-
-Execution Result:
-
-```text
-Original set: [apple, banana, cherry, date]
-Removed last element: Some(date)
-Set after removal: [apple, banana, cherry]
-Removed second last element: Some(cherry)
-Set after second removal: [apple, banana]
-```
 
 ### func remove(T)
 
@@ -14014,6 +19435,57 @@ Initial set: [apple, banana, cherry, date, elderberry]
 Set after removal: [apple, cherry, elderberry]
 ```
 
+### func removeFirst()
+
+```cangjie
+public func removeFirst(): ?T
+```
+
+Function: Removes the first element from the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
+
+Returns:
+
+- ?T - If the first element exists, removes it and returns the element wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T>.None.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set = TreeSet<String>()
+    set.add("cherry")
+    set.add("apple") 
+    set.add("banana")
+    set.add("date")
+    
+    println("Original set: ${set}")
+    
+    // Remove first element
+    let first = set.removeFirst()
+    println("Removed first element: ${first}")
+    println("Set after removal: ${set}")
+    
+    // Remove next first element
+    let second = set.removeFirst()
+    println("Removed second element: ${second}")
+    println("Set after second removal: ${set}")
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Original set: [apple, banana, cherry, date]
+Removed first element: Some(apple)
+Set after removal: [banana, cherry, date]
+Removed second element: Some(banana)
+Set after second removal: [cherry, date]
+```
+
 ### func removeIf((T) -> Bool)
 
 ```cangjie
@@ -14060,6 +19532,57 @@ Execution Result:
 ```text
 Initial set: [apple, banana, cherry, date, elderberry]
 Set after removing elements with length > 5: [apple, date]
+```
+
+### func removeLast()
+
+```cangjie
+public func removeLast(): ?T
+```
+
+Function: Removes the last element from the [TreeSet](collection_package_class.md#class-treesett-where-t--comparablet).
+
+Returns:
+
+- ?T - If the last element exists, removes it and returns the element wrapped in [Option](../../core/core_package_api/core_package_enums.md#enum-optiont); otherwise returns [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<T>.None.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.collection.*
+
+main() {
+    let set = TreeSet<String>()
+    set.add("cherry")
+    set.add("apple") 
+    set.add("banana")
+    set.add("date")
+    
+    println("Original set: ${set}")
+    
+    // Remove last element
+    let last = set.removeLast()
+    println("Removed last element: ${last}")
+    println("Set after removal: ${set}")
+    
+    // Remove next last element
+    let secondLast = set.removeLast()
+    println("Removed second last element: ${secondLast}")
+    println("Set after second removal: ${set}")
+    
+    return 0
+}
+```
+
+Execution Result:
+
+```text
+Original set: [apple, banana, cherry, date]
+Removed last element: Some(date)
+Set after removal: [apple, banana, cherry]
+Removed second last element: Some(cherry)
+Set after second removal: [apple, banana]
 ```
 
 ### func retain(Set\<T>)

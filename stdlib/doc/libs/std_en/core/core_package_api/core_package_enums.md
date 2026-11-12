@@ -4,16 +4,16 @@
 
 ```cangjie
 public enum AnnotationKind {
-    | Type
-    | Parameter
-    | Init
-    | MemberProperty
-    | MemberFunction
-    | MemberVariable
     | EnumConstructor
+    | Extension
     | GlobalFunction
     | GlobalVariable
-    | Extension
+    | Init
+    | MemberFunction
+    | MemberProperty
+    | MemberVariable
+    | Parameter
+    | Type
     | ...
 }
 ```
@@ -36,14 +36,6 @@ Extension
 
 Function: Extension declaration.
 
-### Init
-
-```cangjie
-Init
-```
-
-Function: Constructor declaration.
-
 ### GlobalFunction
 
 ```cangjie
@@ -59,6 +51,14 @@ GlobalVariable
 ```
 
 Function: Global variable declaration.
+
+### Init
+
+```cangjie
+Init
+```
+
+Function: Constructor declaration.
 
 ### MemberFunction
 
@@ -389,6 +389,61 @@ Value obtained from Some: 42
 Caught exception: Value is None
 ```
 
+<!--Del_sink-->
+### func getOrThrow(() -> Exception)
+
+```cangjie
+public exclave func getOrThrow(this @local!, exception: () -> Exception): T @local!
+```
+
+Function: Obtains the value or throws the specified exception.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- exception: () ->[Exception](core_package_exceptions.md#class-exception) - The exception function; if the current instance value is [None](#none), the function is executed and its return value is thrown as the exception.
+
+Returns:
+
+- T @local! - If the current instance value is [Some](#somet)\<T>, returns an instance of type `T`.
+
+Exceptions:
+
+- [Exception](core_package_exceptions.md#class-exception) - If the current instance is [None](#none), throws the exception returned by the exception function.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    let o: Option<Int64> @local! = arr.first
+    let v: Int64 @local! = o.getOrThrow({=> IllegalArgumentException("empty option")})
+    println("v=${v}")
+    let empty: Array<Int64> @local! = []
+    let n: Option<Int64> @local! = empty.first
+    try {
+        n.getOrThrow({=> IllegalArgumentException("empty option")})
+        println("no exception")
+    } catch (e: IllegalArgumentException) {
+        println("caught: ${e.message}")
+    }
+}
+```
+
+Execution Result:
+
+```text
+v=1
+caught: empty option
+```
+
+<!--DelEnd_sink-->
 ### func getOrThrow()
 
 ```cangjie
@@ -437,6 +492,60 @@ Value obtained from Some: 42
 Caught NoneValueException
 ```
 
+<!--Del_sink-->
+### func getOrThrow()
+
+```cangjie
+public exclave func getOrThrow(this @local!): T @local!
+```
+
+Function: Obtains the value or throws an exception.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- T @local! - If the current instance value is [Some](#somet)\<T>, returns an instance of type `T`.
+
+Exceptions:
+
+- [NoneValueException](core_package_exceptions.md#class-nonevalueexception) - If the current instance is [None](#none), throws the exception.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    let o: Option<Int64> @local! = arr.first
+    let v: Int64 @local! = o.getOrThrow()
+    println("v=${v}")
+    let empty: Array<Int64> @local! = []
+    let n: Option<Int64> @local! = empty.first
+    try {
+        n.getOrThrow()
+        println("no exception")
+    } catch (e: NoneValueException) {
+        println("caught NoneValueException")
+    }
+}
+```
+
+Execution Result:
+
+```text
+v=1
+caught NoneValueException
+```
+
+<!--DelEnd_sink-->
 ### func isNone()
 
 ```cangjie
@@ -475,6 +584,50 @@ Some(42) is None: false
 None is None: true
 ```
 
+<!--Del_sink-->
+### func isNone()
+
+```cangjie
+public func isNone(this @local?): Bool
+```
+
+Function: Determines whether the current instance value is [None](#none).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if the current instance value is [None](#none), otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("o isNone: ${o.isNone()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("n isNone: ${n.isNone()}")
+}
+```
+
+Execution Result:
+
+```text
+o isNone: false
+n isNone: true
+```
+
+<!--DelEnd_sink-->
 ### func isSome()
 
 ```cangjie
@@ -513,6 +666,50 @@ Some(42) is Some: true
 None is Some: false
 ```
 
+<!--Del_sink-->
+### func isSome()
+
+```cangjie
+public func isSome(this @local?): Bool
+```
+
+Function: Determines whether the current instance value is [Some](#somet).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if the current instance value is [Some](#somet), otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("o isSome: ${o.isSome()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("n isSome: ${n.isSome()}")
+}
+```
+
+Execution Result:
+
+```text
+o isSome: true
+n isSome: false
+```
+
+<!--DelEnd_sink-->
 ### func map\<R>((T)->R)
 
 ```cangjie
@@ -759,6 +956,52 @@ Hash codes of Some(42) and Some(42) are equal: true
 Hash codes of Some(42) and Some(24) are equal: false
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current instance.
+
+The hash value of [Some](#somet)\<T> is equal to the hash value of the `T` value, and the hash value of [None](#none) is equal to [Int64](core_package_intrinsics.md#int64)(0).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("h=${o.hashCode()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("h2=${n.hashCode()}")
+}
+```
+
+Execution Result:
+
+```text
+h=5
+h2=0
+```
+
+<!--DelEnd_sink-->
 ### extend\<T> Option\<T> <: ToString where T <: ToString
 
 ```cangjie
@@ -984,6 +1227,322 @@ LT.compare(GT): Ordering.LT
 GT.compare(GT): Ordering.EQ
 ```
 
+<!--Del_sink-->
+#### func compare(Ordering)
+
+```cangjie
+public func compare(this @local?, other: Ordering @local?): Ordering
+```
+
+Function: Determines the size relationship between the current [Ordering](core_package_enums.md#enum-ordering) instance and the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - If greater, returns [Ordering](core_package_enums.md#enum-ordering).GT; if equal, returns [Ordering](core_package_enums.md#enum-ordering).EQ; if less, returns [Ordering](core_package_enums.md#enum-ordering).LT.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let eq: Ordering @local? = Ordering.EQ
+    let r1 = lt.compare(gt)
+    println("LT.compare(GT): ${r1}")
+    let r2 = gt.compare(eq)
+    println("GT.compare(EQ): ${r2}")
+    let r3 = eq.compare(eq)
+    println("EQ.compare(EQ): ${r3}")
+}
+```
+
+Execution Result:
+
+```text
+LT.compare(GT): Ordering.LT
+GT.compare(EQ): Ordering.GT
+EQ.compare(EQ): Ordering.EQ
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Ordering)
+
+```cangjie
+public operator func ==(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is equal to the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal to, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let lt2: Ordering @local? = Ordering.LT
+    println("lt == lt2: ${lt == lt2}")
+    println("lt == gt: ${lt == gt}")
+}
+```
+
+Execution Result:
+
+```text
+lt == lt2: true
+lt == gt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Ordering)
+
+```cangjie
+public operator func !=(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is not equal to the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal to, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let lt2: Ordering @local? = Ordering.LT
+    println("lt != lt2: ${lt != lt2}")
+    println("lt != gt: ${lt != gt}")
+}
+```
+
+Execution Result:
+
+```text
+lt != lt2: false
+lt != gt: true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Ordering)
+
+```cangjie
+public operator func <(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is less than the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    println("lt < gt: ${lt < gt}")
+    println("gt < lt: ${gt < lt}")
+}
+```
+
+Execution Result:
+
+```text
+lt < gt: true
+gt < lt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Ordering)
+
+```cangjie
+public operator func >(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is greater than the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    println("gt > lt: ${gt > lt}")
+    println("lt > gt: ${lt > gt}")
+}
+```
+
+Execution Result:
+
+```text
+gt > lt: true
+lt > gt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Ordering)
+
+```cangjie
+public operator func <=(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is less than or equal to the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal to, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let eq: Ordering @local? = Ordering.EQ
+    println("lt <= eq: ${lt <= eq}")
+    println("eq <= lt: ${eq <= lt}")
+}
+```
+
+Execution Result:
+
+```text
+lt <= eq: true
+eq <= lt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Ordering)
+
+```cangjie
+public operator func >=(this @local?, other: Ordering @local?): Bool
+```
+
+Function: Determines whether the current instance is greater than or equal to the specified instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - The other `@local?` instance to compare with.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal to, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let gt: Ordering @local? = Ordering.GT
+    let eq: Ordering @local? = Ordering.EQ
+    println("gt >= eq: ${gt >= eq}")
+    println("eq >= gt: ${eq >= gt}")
+}
+```
+
+Execution Result:
+
+```text
+gt >= eq: true
+eq >= gt: false
+```
+
+<!--DelEnd_sink-->
+
 ### extend Ordering <: Hashable
 
 ```cangjie
@@ -1037,6 +1596,86 @@ EQ hash value: 2
 LT hash value: 1
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current instance; the hash value is 3 for GT, 2 for EQ, and 1 for LT.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local? = Ordering.LT
+    let h = ord.hashCode()
+    println("h=${h}")
+}
+```
+
+Execution Result:
+
+```text
+h=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current instance; the hash value is 3 for GT, 2 for EQ, and 1 for LT.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local! = Ordering.GT
+    println("h=${ord.hashCode()}")
+}
+```
+
+Execution Result:
+
+```text
+h=3
+```
+
+<!--DelEnd_sink-->
 ### extend Ordering <: ToString
 
 ```cangjie
@@ -1096,13 +1735,54 @@ EQ as string: Ordering.EQ
 LT as string: Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public func toString(this @local?): String @local!
+```
+
+Function: Converts the current [Ordering](core_package_enums.md#enum-ordering) instance to an outputtable string (`Ordering.GT`, `Ordering.LT`, or `Ordering.EQ`); the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - Under the current compiler/runtime versions, the `@local?` dispatch of the `Ordering` enum has a known defect: in some call forms this method may throw [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) (the default implementation is not overridden and the dispatch hits it). Refer to the actual SDK version behavior.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local? = Ordering.LT
+    let s: String @local! = ord.toString()
+    println(s)
+}
+```
+
+Execution Result:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
 ## enum ThreadState
 
 ```cangjie
 public enum ThreadState <: ToString {
+    | Pending
     | Ready
     | Running
-    | Pending
     | Terminated 
     | ...
 }
@@ -1113,6 +1793,14 @@ Function: Represents the state of a thread.
 Parent Types:
 
 - [ToString](core_package_interfaces.md#interface-tostring)
+
+### Pending
+
+```cangjie
+Pending
+```
+
+Function: Indicates that the thread is suspended.
 
 ### Ready
 
@@ -1129,14 +1817,6 @@ Running
 ```
 
 Function: Indicates that the thread is currently executing.
-
-### Pending
-
-```cangjie
-Pending
-```
-
-Function: Indicates that the thread is suspended.
 
 ### Terminated
 
@@ -1164,5 +1844,3 @@ Conversion results are as follows:
 Returns:
 
 - [String](core_package_structs.md#struct-string) - The converted string.
-
-

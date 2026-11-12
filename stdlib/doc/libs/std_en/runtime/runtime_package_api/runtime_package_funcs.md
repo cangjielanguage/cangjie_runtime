@@ -56,6 +56,49 @@ Returns:
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The allocated heap size of Cangjie in bytes.
 
+<!--Del_sink-->
+## func getAllocatedLocalObjectSize()
+
+```cangjie
+public func getAllocatedLocalObjectSize(): Int64
+```
+
+Function: Obtains the memory size accounted to active local regions, in bytes.
+
+The memory usage of local objects is not counted in the result of [getAllocatedHeapSize](runtime_package_funcs.md#func-getallocatedheapsize).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Returns:
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The memory size accounted to active local regions, in bytes.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.runtime.*
+
+main(): Unit {
+    // The return value accounts each active backing chunk: the current allocation chunk counts
+    // only its used prefix (the unused tail is excluded), while other chunks count at full
+    // capacity; the value varies with allocation behavior and has no stable fixed value, so
+    // only its non-negativity is verified here
+    let size = getAllocatedLocalObjectSize()
+    println("Local region size >= 0: ${size >= 0}")
+}
+```
+
+Output:
+
+```text
+Local region size >= 0: true
+```
+
+<!--DelEnd_sink-->
 ## func getBlockingThreadCount()
 
 ```cangjie

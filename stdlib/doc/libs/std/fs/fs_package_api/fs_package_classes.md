@@ -715,6 +715,56 @@ main(): Unit {
 File length: 6
 ```
 
+<!--Del_sink-->
+### prop length
+
+```cangjie
+public prop length: Int64 @local!
+```
+
+功能：获取文件头至文件尾的数据字节数。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+类型：[Int64](../../core/core_package_api/core_package_intrinsics.md#int64) @local!
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_length_file.txt", recursive: true)
+
+    // 创建一个文件并写入 3 个字节
+    let writeData: Array<Byte> = [65, 66, 67] // ABC
+    File.writeTo("./test_local_length_file.txt", writeData)
+
+    // 打开 `@local!` 文件并获取文件长度
+    let path: String @local! = "./test_local_length_file.txt"
+    let file: File @local! = File(path, OpenMode.Read) @local!
+    println("File length: ${file.length}")
+
+    // 关闭文件
+    file.close()
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_length_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+File length: 3
+```
+
+<!--DelEnd_sink-->
 ### init(Path, OpenMode)
 
 ```cangjie
@@ -815,6 +865,65 @@ main(): Unit {
 Was the file created successfully? true
 ```
 
+<!--Del_sink-->
+### init(this @local!, String @local!, OpenMode @local!)
+
+```cangjie
+public exclave init(this @local!, path: String @local!, mode: OpenMode @local!)
+```
+
+功能：创建 [File](fs_package_classes.md#class-file) 对象。
+
+需指定文件路径和文件打开方式（读写权限），路径支持相对路径和绝对路径。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 待构造的 `@local!` 实例。
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - 文件路径字符串。
+- mode: [OpenMode](fs_package_enums.md#enum-openmode) @local! - 文件打开模式。
+
+异常：
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - 如果以只读方式打开文件但文件不存在、文件的父目录不存在或其他原因导致无法打开文件，则抛出异常。
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 如果 path 是空字符串或者 path 包含空字符，则抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_init_file.txt", recursive: true)
+
+    // 在 local region 中创建 File 对象
+    let path: String @local! = "./test_local_init_file.txt"
+    let file: File @local! = File(path, OpenMode.ReadWrite) @local!
+
+    // 验证文件是否创建成功
+    println("Was the file created successfully? ${exists("./test_local_init_file.txt")}")
+
+    // 关闭文件
+    file.close()
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_init_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Was the file created successfully? true
+```
+
+<!--DelEnd_sink-->
 ### static func appendTo(Path, Array\<Byte>)
 
 ```cangjie
@@ -1243,6 +1352,66 @@ main(): Unit {
 Is the file content correct? result: true
 ```
 
+<!--Del_sink-->
+### static func readFrom(String)
+
+```cangjie
+public static exclave func readFrom(path: String @local!): Array<Byte> @local!
+```
+
+功能：读取指定路径对应文件的全部内容，返回的字节数组绑定在调用者的 local region 中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - 文件路径字符串。
+
+返回值：
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> @local! - 文件内容的字节数组。
+
+异常：
+
+- [FSException](./fs_package_exceptions.md#class-fsexception) - 当指定路径不存在或读取文件内容失败时，抛出异常。
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当指定路径为空或包含空字符时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_read_from.txt", recursive: true)
+
+    // 先创建文件并写入数据
+    let writeData: Array<Byte> = [74, 75, 76] // JKL
+    File.writeTo("./test_local_read_from.txt", writeData)
+
+    // 在 local region 中读取文件全部内容
+    let path: String @local! = "./test_local_read_from.txt"
+    let readData: Array<Byte> @local! = File.readFrom(path)
+    println("Bytes read: ${readData.size}")
+    println("Content: ${readData[0]}, ${readData[1]}, ${readData[2]}")
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_read_from.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 3
+Content: 74, 75, 76
+```
+
+<!--DelEnd_sink-->
 ### static func writeTo(Path, Array\<Byte>)
 
 ```cangjie
@@ -1492,6 +1661,58 @@ File is closed before close: false
 File is closed after close: true
 ```
 
+<!--Del_sink-->
+### func close()
+
+```cangjie
+public exclave func close(this @local!): Unit
+```
+
+功能：关闭当前 [File](fs_package_classes.md#class-file) 对象。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+
+异常：
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - 如果关闭失败，则抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_close_file.txt", recursive: true)
+
+    // 在 local region 中创建 File 对象
+    let path: String @local! = "./test_local_close_file.txt"
+    let file: File @local! = File(path, OpenMode.ReadWrite) @local!
+
+    // 关闭文件
+    file.close()
+    println("File is closed after close: ${file.isClosed()}")
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_close_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+File is closed after close: true
+```
+
+<!--DelEnd_sink-->
 ### func flush()
 
 ```cangjie
@@ -1528,6 +1749,60 @@ main(): Unit {
 }
 ```
 
+<!--Del_sink-->
+### func flush()
+
+```cangjie
+public func flush(this @local?): Unit
+```
+
+功能：将缓冲区数据写入流。由于 [File](fs_package_classes.md#class-file) 不存在缓冲区，所以该函数没有具体作用。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_flush_file.txt", recursive: true)
+
+    // 在 local region 中创建 File 对象
+    let path: String @local! = "./test_local_flush_file.txt"
+    let file: File @local! = File(path, OpenMode.ReadWrite) @local!
+
+    // 显式绑定 `@local?` 接收者
+    let localFile: File @local? = file
+
+    // 刷新缓冲区（File 不存在缓冲区，该函数没有具体作用）
+    localFile.flush()
+    println("File is open after flush: ${!localFile.isClosed()}")
+
+    // 关闭文件
+    file.close()
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_flush_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+File is open after flush: true
+```
+
+<!--DelEnd_sink-->
 ### func isClosed()
 
 ```cangjie
@@ -1576,6 +1851,65 @@ File is closed before close: false
 File is closed after close: true
 ```
 
+<!--Del_sink-->
+### func isClosed()
+
+```cangjie
+public func isClosed(this @local?): Bool
+```
+
+功能：判断当前 [File](fs_package_classes.md#class-file) 对象是否已关闭。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - true 表示已关闭，false 表示未关闭。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_isclosed_file.txt", recursive: true)
+
+    // 在 local region 中创建 File 对象
+    let path: String @local! = "./test_local_isclosed_file.txt"
+    let file: File @local! = File(path, OpenMode.ReadWrite) @local!
+
+    // 显式绑定 `@local?` 接收者
+    let localFile: File @local? = file
+
+    // 检查文件是否关闭
+    println("File is closed before close: ${localFile.isClosed()}")
+
+    // 关闭文件
+    file.close()
+    println("File is closed after close: ${localFile.isClosed()}")
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_isclosed_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+File is closed before close: false
+File is closed after close: true
+```
+
+<!--DelEnd_sink-->
 ### func read(Array\<Byte>)
 
 ```cangjie
@@ -1639,6 +1973,76 @@ Bytes read: 3
 Buffer content matches: true
 ```
 
+<!--Del_sink-->
+### func read(Array\<Byte>)
+
+```cangjie
+public exclave func read(this @local!, buffer: Array<Byte> @local!): Int64
+```
+
+功能：从文件中读出数据到 buffer 中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> @local! - 读取数据存放的缓冲区。
+
+返回值：
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 读取成功，返回读取字节数，如果文件被读完，返回 0。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 如果 buffer 为空，则抛出异常。
+- [FSException](fs_package_exceptions.md#class-fsexception) - 读取失败、文件已关闭或文件不可读，则抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_read_file.txt", recursive: true)
+
+    // 先创建文件并写入数据
+    let writeData: Array<Byte> = [89, 90, 91] // YZ[
+    File.writeTo("./test_local_read_file.txt", writeData)
+
+    // 打开 `@local!` 文件进行读取
+    let path: String @local! = "./test_local_read_file.txt"
+    let file: File @local! = File(path, OpenMode.Read) @local!
+
+    // 分配 `@local!` 缓冲区
+    let buffer: Array<Byte> @local! = [0, 0, 0]
+
+    // 读取数据
+    let bytesRead = file.read(buffer)
+    println("Bytes read: ${bytesRead}")
+    println("Content: ${buffer[0]}, ${buffer[1]}, ${buffer[2]}")
+
+    // 关闭文件
+    file.close()
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_read_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 3
+Content: 89, 90, 91
+```
+
+<!--DelEnd_sink-->
 ### func seek(SeekPosition)
 
 ```cangjie
@@ -1714,6 +2118,86 @@ First byte after seek: 65
 Last byte: 69
 ```
 
+<!--Del_sink-->
+### func seek(SeekPosition)
+
+```cangjie
+public func seek(this @local!, sp: SeekPosition): Int64
+```
+
+功能：将光标跳转到指定位置。
+
+指定的位置不能位于文件头部之前，指定位置可以超过文件末尾，但指定位置到文件头部的最大偏移量不能超过当前文件系统允许的最大值，这个最大值接近当前文件系统的所允许的最大文件大小，一般为最大文件大小减去 4096 个字节。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- sp: [SeekPosition](../../io/io_package_api/io_package_enums.md#enum-seekposition) - 指定光标跳转后的位置。
+
+返回值：
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 返回文件头部到跳转后位置的偏移量（以字节为单位）。
+
+异常：
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - 指定位置不满足以上情况时或文件不能 seek 时均会抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_seek_file.txt", recursive: true)
+
+    // 先创建文件并写入数据
+    let writeData: Array<Byte> = [65, 66, 67] // ABC
+    File.writeTo("./test_local_seek_file.txt", writeData)
+
+    // 打开 `@local!` 文件进行读取
+    let path: String @local! = "./test_local_seek_file.txt"
+    let file: File @local! = File(path, OpenMode.Read) @local!
+
+    // 分配 `@local!` 缓冲区
+    let buffer: Array<Byte> @local! = [0]
+
+    // 读取一个字节，光标位于 1
+    file.read(buffer)
+    println("First byte: ${buffer[0]}")
+
+    // 将光标跳转回文件开头
+    let pos = file.seek(SeekPosition.Begin(0))
+    println("Position after seek: ${pos}")
+
+    // 再次读取第一个字节
+    file.read(buffer)
+    println("First byte after seek: ${buffer[0]}")
+
+    // 关闭文件
+    file.close()
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_seek_file.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+First byte: 65
+Position after seek: 0
+First byte after seek: 65
+```
+
+<!--DelEnd_sink-->
 ### func setLength(Int64)
 
 ```cangjie
