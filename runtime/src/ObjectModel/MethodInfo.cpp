@@ -5,6 +5,8 @@
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 
+#include <cinttypes>
+
 #include "Base/Log.h"
 #include "Heap/Heap.h"
 #include "ObjectManager.inline.h"
@@ -12,6 +14,12 @@
 #include "Mutator/Mutator.h"
 
 namespace MapleRuntime {
+static bool IsValidArrayView(const CJArray* view, const CJRawArray* rawArray)
+{
+    // Subtract after checking start so a forged start + length cannot wrap around.
+    return rawArray != nullptr && view->start <= rawArray->len && view->length <= rawArray->len - view->start;
+}
+
 ScopedAllocBuffer::~ScopedAllocBuffer()
 {
     if (mutator != nullptr) {
@@ -218,16 +226,19 @@ bool MethodInfo::CheckMethodActualArgs(void* genericArgsArray, void* actualArgsA
         }
     }
 
-    RefField<false>* actualRawPtrField = reinterpret_cast<RefField<false>*>(
-        &(static_cast<CJArray*>(actualArgsArray)->rawPtr));
+    CJArray* actualArgs = static_cast<CJArray*>(actualArgsArray);
+    RefField<false>* actualRawPtrField = reinterpret_cast<RefField<false>*>(&(actualArgs->rawPtr));
     CJRawArray* cjRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *actualRawPtrField));
-    U64 actualArgCnt = cjRawArray->len;
+    if (!IsValidArrayView(actualArgs, cjRawArray)) {
+        return false;
+    }
+    U64 actualArgCnt = actualArgs->length;
     if (actualArgCnt != GetNumOfActualParameterInfos()) {
         return false;
     }
     ObjRef rawArray = reinterpret_cast<ObjRef>(cjRawArray);
-    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data));
+    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data)) + actualArgs->start;
     for (U64 actualArgIdx = 0; actualArgIdx < actualArgCnt; ++actualArgIdx) {
         ObjRef argObj = static_cast<ObjRef>(Heap::GetBarrier().ReadReference(rawArray, *refField));
         ParameterInfo* actualParameterInfo = GetActualParameterInfo(actualArgIdx);
@@ -296,11 +307,15 @@ TypeInfo* MethodInfo::GetActualTypeFromGenericType(GenericTypeInfo* genericTi, v
         for (U32 idx = 0; idx < genericParametersCnt; ++idx) {
             GenericTypeInfo* genericParamType = GetGenericParameterInfo(idx);
             if (genericTi == genericParamType) {
-                RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(
-                    &(static_cast<CJArray*>(genericArgs)->rawPtr));
+                CJArray* genericArray = static_cast<CJArray*>(genericArgs);
+                RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(&(genericArray->rawPtr));
                 CJRawArray* genericRawArray = reinterpret_cast<CJRawArray*>(
                     Heap::GetBarrier().ReadReference(nullptr, *genericRawPtrField));
-                Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data));
+                CHECK_DETAIL(IsValidArrayView(genericArray, genericRawArray),
+                             "GetActualTypeFromGenericType: invalid generic argument view");
+                CHECK_DETAIL(idx < genericArray->length,
+                             "GetActualTypeFromGenericType: generic argument index out of bounds");
+                Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data)) + genericArray->start * TYPEINFO_PTR_SIZE;
                 TypeInfo* ti = *reinterpret_cast<TypeInfo**>(base + idx * TYPEINFO_PTR_SIZE);
                 return ti;
             }
@@ -453,13 +468,15 @@ void MethodInfo::PrepareCJMethodActualArgs(ArgValue* argValues, void* actualArgs
     // Read rawPtr (ref to CJRawArray) through the GC read barrier instead of a raw
     // cast: if GC concurrently moves the CJRawArray, the raw read would return a
     // stale pointer and all downstream argObj reads would be garbage.
-    RefField<false>* rawPtrField = reinterpret_cast<RefField<false>*>(
-        &(static_cast<CJArray*>(actualArgsArray)->rawPtr));
+    CJArray* actualArgs = static_cast<CJArray*>(actualArgsArray);
+    RefField<false>* rawPtrField = reinterpret_cast<RefField<false>*>(&(actualArgs->rawPtr));
     CJRawArray* cjRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *rawPtrField));
-    U64 actualArgCnt = cjRawArray->len;
+    CHECK_DETAIL(IsValidArrayView(actualArgs, cjRawArray), "PrepareCJMethodActualArgs: invalid argument view");
+    // Array slices share raw storage; only the view's range contains actual arguments.
+    U64 actualArgCnt = actualArgs->length;
     ObjRef rawArray = reinterpret_cast<ObjRef>(cjRawArray);
-    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data));
+    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data)) + actualArgs->start;
     for (U64 actualArgIdx = 0; actualArgIdx < actualArgCnt; ++actualArgIdx) {
         ObjRef argObj = static_cast<ObjRef>(Heap::GetBarrier().ReadReference(rawArray, *refField));
         ParameterInfo* actualParameterInfo = GetActualParameterInfo(actualArgIdx);
@@ -478,12 +495,13 @@ void MethodInfo::PrepareCJMethodActualArgs(ArgValue* argValues, void* actualArgs
 
 void MethodInfo::PrepareCJMethodGenericArgs(ArgValue* argValues, void* genericArgsArray)
 {
-    RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(
-        &(static_cast<CJArray*>(genericArgsArray)->rawPtr));
+    CJArray* genericArgs = static_cast<CJArray*>(genericArgsArray);
+    RefField<false>* genericRawPtrField = reinterpret_cast<RefField<false>*>(&(genericArgs->rawPtr));
     CJRawArray* genericRawArray = reinterpret_cast<CJRawArray*>(
         Heap::GetBarrier().ReadReference(nullptr, *genericRawPtrField));
-    Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data));
-    U64 genericArgCnt = genericRawArray->len;
+    CHECK_DETAIL(IsValidArrayView(genericArgs, genericRawArray), "PrepareCJMethodGenericArgs: invalid argument view");
+    Uptr base = reinterpret_cast<Uptr>(&(genericRawArray->data)) + genericArgs->start * TYPEINFO_PTR_SIZE;
+    U64 genericArgCnt = genericArgs->length;
     for (U64 idx = 0; idx < genericArgCnt; ++idx) {
         TypeInfo* ti = *reinterpret_cast<TypeInfo**>(base + idx * TYPEINFO_PTR_SIZE);
         argValues->AddInt64(reinterpret_cast<Uptr>(ti));
@@ -763,16 +781,19 @@ void* DynamicMethodInfo::ApplyCangjieMethod(void* argsArray)
     }
     ScopedAllocBuffer scopedAllocBuffer;
     ArgValue argValues;
+    CJArray* args = static_cast<CJArray*>(argsArray);
     CJRawArray* cjRawArray = nullptr;
     if (!Heap::IsHeapAddress(argsArray)) {
-        cjRawArray = static_cast<CJArray*>(argsArray)->rawPtr;
+        cjRawArray = args->rawPtr;
     } else {
-        RefField<false> oldField(reinterpret_cast<MAddress>(argsArray));
-        cjRawArray = reinterpret_cast<CJRawArray*>(Heap::GetBarrier().ReadReference(nullptr, oldField));
+        RefField<false>* rawPtrField = reinterpret_cast<RefField<false>*>(&(args->rawPtr));
+        cjRawArray = reinterpret_cast<CJRawArray*>(Heap::GetBarrier().ReadReference(nullptr, *rawPtrField));
     }
-    U64 actualArgCount = cjRawArray->len;
+    CHECK_DETAIL(IsValidArrayView(args, cjRawArray), "ApplyCangjieMethod: invalid argument view");
+    U64 actualArgCount = args->length;
     if (actualArgCount != parameterCount) {
-        LOG(RTLOG_FATAL, "DynamicMethodInfo: actualArgCount %d != parameterCount %d", actualArgCount, parameterCount);
+        LOG(RTLOG_FATAL, "DynamicMethodInfo: actualArgCount %" PRIu64 " != parameterCount %u",
+            actualArgCount, parameterCount);
     }
 
     size_t retObjSize = MRT_ALIGN(returnType->GetInstanceSize() + TYPEINFO_PTR_SIZE, TYPEINFO_PTR_SIZE);
@@ -788,7 +809,7 @@ void* DynamicMethodInfo::ApplyCangjieMethod(void* argsArray)
     argValues.AddReference(instanceObj);
 
     ObjRef rawArray = reinterpret_cast<ObjRef>(cjRawArray);
-    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data));
+    RefField<false>* refField = reinterpret_cast<RefField<false>*>(&(cjRawArray->data)) + args->start;
     for (U64 actualArgIdx = 0; actualArgIdx < actualArgCount; ++actualArgIdx) {
         ObjRef argObj = static_cast<ObjRef>(Heap::GetBarrier().ReadReference(rawArray, *refField));
         argValues.AddReference(argObj);
