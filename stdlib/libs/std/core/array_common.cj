@@ -510,7 +510,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     @When[env != "ohos"]
     public exclave func next(this @local!): Option<T> @local! {
         if (this.myPosition < this.end) {
-            let v: T @local! = arrayGetUnchecked2<T>(this.myData.rawptr, this.myData.start + this.myPosition)
+            let v: T @local! = arrayGetUnchecked<T>(this.myData.rawptr, this.myData.start + this.myPosition)
             this.myPosition++
             return Some<T>(v)
         }
@@ -523,7 +523,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     @When[env != "ohos"]
     public exclave func next(this @local?): Option<T> @local? {
         if (this.myPosition < this.end) {
-            let v: T @local? = arrayGetUnchecked3<T>(this.myData.rawptr, this.myData.start + this.myPosition)
+            let v: T @local? = arrayGetUnchecked<T>(this.myData.rawptr, this.myData.start + this.myPosition)
             this.myPosition++
             return Some<T>(v)
         }
@@ -568,7 +568,7 @@ public unsafe func acquireArrayRawData<T>(arr: Array<T>): CPointerHandle<T> wher
 @Frozen
 @When[env != "ohos"]
 public exclave unsafe func acquireArrayRawData<T>(arr: Array<T> @local?): CPointerHandle<T> @local? where T <: CType {
-    CPointerHandle<T>(acquireRawData2<T>(arr.rawptr) + arr.start, arr)
+    CPointerHandle<T>(acquireRawData<T>(arr.rawptr) + arr.start, arr)
 }
 
 @Frozen
@@ -579,7 +579,7 @@ public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T>): Unit where
 @Frozen
 @When[env != "ohos"]
 public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T> @local?): Unit where T <: CType {
-    releaseRawData2(handle.array.rawptr, handle.pointer - handle.array.start)
+    releaseRawData(handle.array.rawptr, handle.pointer - handle.array.start)
 }
 
 
@@ -600,7 +600,7 @@ extend<T> Array<T> where T <: Equatable<T> {
             0
         }
         for (i in start..this.len) {
-            if (arrayGetUnchecked3<T>(this.rawptr, this.start + i) == element) {
+            if (arrayGetUnchecked<T>(this.rawptr, this.start + i) == element) {
                 return Some(i)
             }
         }
@@ -615,8 +615,8 @@ extend<T> Array<T> where T <: Equatable<T> {
         for (i in 0..(this.len - elements.len + 1)) {
             var matched: Bool = true
             for (j in 0..elements.len) {
-                if (arrayGetUnchecked3<T>(this.rawptr, this.start + i + j) !=
-                    arrayGetUnchecked3<T>(elements.rawptr, elements.start + j)) {
+                if (arrayGetUnchecked<T>(this.rawptr, this.start + i + j) !=
+                    arrayGetUnchecked<T>(elements.rawptr, elements.start + j)) {
                     matched = false
                     break
                 }
@@ -643,8 +643,8 @@ extend<T> Array<T> where T <: Equatable<T> {
         for (i in start..(this.len - elements.len + 1)) {
             var matched: Bool = true
             for (j in 0..elements.len) {
-                if (arrayGetUnchecked3<T>(this.rawptr, this.start + i + j) !=
-                    arrayGetUnchecked3<T>(elements.rawptr, elements.start + j)) {
+                if (arrayGetUnchecked<T>(this.rawptr, this.start + i + j) !=
+                    arrayGetUnchecked<T>(elements.rawptr, elements.start + j)) {
                     matched = false
                     break
                 }
@@ -662,7 +662,7 @@ extend<T> Array<T> where T <: Equatable<T> {
             return None
         }
         for (i in this.len - 1..=0 : -1) {
-            if (arrayGetUnchecked3<T>(this.rawptr, this.start + i) == element) {
+            if (arrayGetUnchecked<T>(this.rawptr, this.start + i) == element) {
                 return Some(i)
             }
         }
@@ -680,7 +680,7 @@ extend<T> Array<T> where T <: Equatable<T> {
             0
         }
         for (i in this.len - 1..=start : -1) {
-            if (arrayGetUnchecked3<T>(this.rawptr, this.start + i) == element) {
+            if (arrayGetUnchecked<T>(this.rawptr, this.start + i) == element) {
                 return Some(i)
             }
         }
@@ -695,8 +695,8 @@ extend<T> Array<T> where T <: Equatable<T> {
         for (i in (this.len - elements.len)..=0 : -1) {
             var matched: Bool = true
             for (j in 0..elements.len) {
-                if (arrayGetUnchecked3<T>(this.rawptr, this.start + i + j) !=
-                    arrayGetUnchecked3<T>(elements.rawptr, elements.start + j)) {
+                if (arrayGetUnchecked<T>(this.rawptr, this.start + i + j) !=
+                    arrayGetUnchecked<T>(elements.rawptr, elements.start + j)) {
                     matched = false
                     break
                 }
@@ -721,8 +721,8 @@ extend<T> Array<T> where T <: Equatable<T> {
         for (i in (this.len - elements.len)..=start : -1) {
             var matched: Bool = true
             for (j in 0..elements.len) {
-                if (arrayGetUnchecked3<T>(this.rawptr, this.start + i + j) !=
-                    arrayGetUnchecked3<T>(elements.rawptr, elements.start + j)) {
+                if (arrayGetUnchecked<T>(this.rawptr, this.start + i + j) !=
+                    arrayGetUnchecked<T>(elements.rawptr, elements.start + j)) {
                     matched = false
                     break
                 }
