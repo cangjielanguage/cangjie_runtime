@@ -21,38 +21,46 @@ package std.core
  */
 @When[env != "ohos"]
 public func exclusiveScope<T>(fn: () -> T): T {
-    let cl = ExclusiveScope<T>()
-    cl.run(fn)
-    match (cl.result) {
-        case Val(v) => v
-        case Ex(e) => throw ExclusiveScopeException(e)
-        case Err(e) => throw e
-    }
-}
-
-private enum Result<T> {
-    | Val(T)
-    | Ex(Exception)
-    | Err(Error)
-}
-
-@Intrinsic 
-func exclusiveScopeImpl<T>(executeClosure: (() -> T) -> T, fn: () -> T): T
-
-private class ExclusiveScope<T> {
-    var result: Result<T> = unsafe { zeroValue<Result<T>>() }
-    func run(fn: () -> T): Unit {
-        exclusiveScopeImpl(Future<Unit>.executeClosure) {
-            try {
-                result = Val(fn())
-            } catch (e: Exception) {
-                result = Ex(e)
-            } catch (e: Error) {
-                result = Err(e)
-            }
+    let caught = exclusiveScopeImpl<T>(catchResult<T>, fn)
+    if (caught.ok) {
+        return match (caught.payload) {
+            case v: T => v
+            case _ => throw Error() // unreachable
         }
     }
+
+    match (caught.payload) {
+        case e: Exception => throw ExclusiveScopeException(e)
+        case e: Error => throw e
+        case _ => throw Error() // unreachable
+    }
 }
+
+private struct ExclusiveScopeResult {
+    let payload: Any
+    let ok: Bool
+
+    init(payload: Any, ok: Bool) {
+        this.payload = payload
+        this.ok = ok
+    }
+}
+
+private func catchResult<T>(fn: () -> T): ExclusiveScopeResult {
+    try {
+        ExclusiveScopeResult(fn(), true)
+    } catch (e: Exception) {
+        ExclusiveScopeResult(e, false)
+    } catch (e: Error) {
+        ExclusiveScopeResult(e, false)
+    }
+}
+
+@Intrinsic
+private func exclusiveScopeImpl<T>(
+    wrapper: (() -> T) -> ExclusiveScopeResult,
+    fn: () -> T
+): ExclusiveScopeResult
 
 /**
  * Custom exception class to wrap exceptions thrown in an exclusive scope.

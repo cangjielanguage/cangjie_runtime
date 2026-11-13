@@ -185,7 +185,6 @@ public:
     static void RecordStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr fp);
 #ifdef __arm__
     static void RecordC2NStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr fp);
-    static void RecordExclusiveStubCalleeSaved(RegSlotsMap& regSlotsMap, Uptr fp);
 #endif
     static void RecordStubAllRegister(RegSlotsMap& regSlotsMap, Uptr fp);
     // Types, so that we don't confuse root sets and working stack.

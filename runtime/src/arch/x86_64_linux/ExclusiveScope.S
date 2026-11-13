@@ -4,35 +4,30 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#define CJTHREAD_THREAD_OFFSET      0x10
-#define CJTHREAD_CONTEXT_OFFSET     0x18
-
-#define CONTEXT_RSP                 0x00
-#define CONTEXT_RBP                 0x08
-#define CONTEXT_RBX                 0x10
-#define CONTEXT_RIP                 0x18
-#define CONTEXT_R12                 0x20
-#define CONTEXT_R13                 0x28
-#define CONTEXT_R14                 0x30
-#define CONTEXT_R15                 0x38
-#define CONTEXT_MXCSR               0x40
-#define CONTEXT_FPU_CW              0x44
-
-#define ExclusiveScopeFrameSize     (8 * 22)
-
-
-// ==============================================================================
-// CJ_MCC_ExclusiveScope: from cjthread switch OS thread and exclusive this thread
-// ==============================================================================
+// ------------------------------------------------------------------------------
+// CJ_MCC_ExclusiveScope
 //
-//   void* CJ_MCC_ExclusiveScope(void* executeClosure, void* closurePtr)
-//                                    rdi              rsi
+// CodeGen owns pin + protectAddr via CJ_MCC_ExclusiveScopeEnter/Leave and
+// only calls this stub when destSp != 0. This stub:
+//   1) builds the CJ exclusive stub frame on the heap stack
+//   2) switches SP to destSp
+//   3) builds the exclusive OS bridge and calls catchResult
 //
+// protectAddr and exclusiveScopeCnt are owned by Enter/Leave around the invoke.
+// Exceptions are caught inside catchResult, so this stub returns normally.
 //
-// 1. call MCC_NewExclusiveCJThread to creat exclusive cjthread
-// 2. switch to OS thread
-// 3. call ExclusiveExecutor to execute closure
-// 4. switch to normal cjthread
+// ABI: void CJ_MCC_ExclusiveScope(void* sret, void* fn, void* ti, void* code, uintptr_t destSp)
+//      SysV x86_64: rdi=sret, rsi=fn, rdx=ti, rcx=code, r8=destSp
+//      Cangjie call: rdi=sret, rsi=fn, rdx=ti, call *code
+//
+// Callee-saved NOP: do not clobber rbx/r12–r15. sret/fn/ti stay in arg regs.
+// ------------------------------------------------------------------------------
+
+// CJ exclusive stub frame (heap stack):
+//   [rbp]     saved rbp | return addr
+//
+// OS bridge frame:
+//   [rbp]  saved rbp = stub FA | return addr = managed caller RA
 
     .text
     .align 2
@@ -40,258 +35,41 @@
     .type CJ_MCC_ExclusiveScope, @function
 CJ_MCC_ExclusiveScope:
     .cfi_startproc
-    
+
     pushq   %rbp
     .cfi_def_cfa_offset 16
     .cfi_offset %rbp, -16
     movq    %rsp, %rbp
     .cfi_def_cfa_register %rbp
-    subq    $ExclusiveScopeFrameSize, %rsp
 
-    movq    %r15, -8(%rbp)
-    movq    %r14, -16(%rbp)
-    movq    %r13, -24(%rbp)
-    movq    %r12, -32(%rbp)
-    movq    %rbx, -40(%rbp)
-    .cfi_rel_offset %rbx, -40
-    .cfi_rel_offset %r12, -32
-    .cfi_rel_offset %r13, -24
-    .cfi_rel_offset %r14, -16
-    .cfi_rel_offset %r15, -8
+    // rdi=sret, rsi=fn, rdx=ti, rcx=code, r8=destSp.
 
-    movq    %rdi, -48(%rbp)     // executeClosure
-    movq    %rsi, -56(%rbp)     // closurePtr
+    // Red-zone / align for bridge frame on OS stack, then switch SP.
+    subq    $128, %r8
+    andq    $-16, %r8
+    movq    %r8, %rsp
 
+    // Build OS bridge frame: saved rbp = stub FA; RA = managed caller.
+    pushq   8(%rbp)
+    pushq   %rbp
+    movq    %rsp, %rbp
 
-    // get oldCJThread thread oldProcessor
-    callq   CJ_CJThreadGetHandle
-    testq   %rax, %rax
-    jz      .L_exc_no_cjthread
-    movq    %rax, -80(%rbp)     // oldCJThread
-
-    // thread = oldCJThread->thread
-    movq    CJTHREAD_THREAD_OFFSET(%rax), %r12
-    testq   %r12, %r12
-    jz      .L_exc_no_thread
-    movq    %r12, -88(%rbp)     // thread
-
-    // Save original processor (thread->processor) before it's modified
-    // thread->processor is at offset 0x38 in Thread struct
-    movq    0x38(%r12), %r11
-    movq    %r11, -168(%rbp)    // oldProcessor
-
-    // MCC_NewExclusiveCJThread(executeClosure, closurePtr, futureTi)
-    //                              rdi           rsi        rdx
-    movq    -48(%rbp), %rdi     // executeClosure
-    movq    -56(%rbp), %rsi     // closurePtr
-    movq    -64(%rbp), %rdx     // futureTi
-    callq   MCC_NewExclusiveCJThread@PLT
-    
-    testq   %rax, %rax
-    jz      .L_exc_create_failed
-    movq    %rax, -160(%rbp)    // newCJThread
-
-    movq    %rbp,  %rsi                  // rsi = fa (frame address)
-    call    .L_exc_get_pc
-.L_exc_get_pc:
+    // catchResult(sret, fn, ti). rdi/rsi/rdx are already the Cangjie call.
+    callq   *%rcx
+    // Post-call PC: exclusive bridge identity for IsExclusiveBridgeFrame.
     .global unwindPCForExclusiveStub
 unwindPCForExclusiveStub:
-    pop     %rdi
-    mov     %r15, %rdx
-    callq   MRT_SaveC2NContext@PLT
 
-    movq    $0, %rdi
-    callq   MRT_EnterSaferegion@PLT
-    movq    %rax, -96(%rbp)     // enterSafe
+    // Tear down bridge frame.
+    movq    %rbp, %rsp
+    popq    %rbp                    // restore CJ exclusive stub fa into %rbp
+    addq    $8, %rsp                // discard bridge return address
 
-
-    movq    %rsp, -104(%rbp)
-
-    // ==================== save cjthread context ====================
-    movq    -80(%rbp), %rax         // oldCJThread
-    leaq    CJTHREAD_CONTEXT_OFFSET(%rax), %r14
-
-    leaq    8(%rsp), %r11
-    movq    %r11, CONTEXT_RSP(%r14)
-    movq    %rbp, CONTEXT_RBP(%r14)
-    movq    %rbx, CONTEXT_RBX(%r14)
-    movq    (%rsp), %r11
-    movq    %r11, CONTEXT_RIP(%r14)
-    movq    %r12, CONTEXT_R12(%r14)
-    movq    %r13, CONTEXT_R13(%r14)
-    movq    -16(%rbp), %r11
-    movq    %r11, CONTEXT_R14(%r14)
-    movq    -8(%rbp), %r11
-    movq    %r11, CONTEXT_R15(%r14)
-    stmxcsr CONTEXT_MXCSR(%r14)
-    fstcw   CONTEXT_FPU_CW(%r14)
-
-    // Nested exclusive scope is already on OS thread stack.
-    // Switching rsp again to thread->context.rsp may clobber current frames.
-    movq    -80(%rbp), %rdi
-    callq   IsExclusiveCJThread@PLT
-    testl   %eax, %eax
-    jnz     .L_exc_skip_stack_switch
-
-    // ==================== switch to OS thread ====================
-    movq    -88(%rbp), %rdi             // arg0 = thread pointer
-    callq   ExclusiveGetThreadContext@PLT  // returns void* = &thread->context
-    testq   %rax, %rax
-    jz      .L_exc_skip_stack_switch
-    movq    %rax, %r15
-
-    movq    CONTEXT_RSP(%r15), %r11
-    testq   %r11, %r11
-    jz      .L_exc_skip_stack_switch
-    js      .L_exc_skip_stack_switch
-    cmpq    $0x1000, %r11
-    jb      .L_exc_skip_stack_switch
-    movq    %r11, %rsp
-    ldmxcsr CONTEXT_MXCSR(%r15)
-    fldcw   CONTEXT_FPU_CW(%r15)
-
-    subq    $128, %rsp
-    andq    $-16, %rsp
-
-    // ExclusiveExecutor(thread, newCJThread)
-    //                     rdi      rsi
-    movq    -88(%rbp), %rdi
-    movq    -160(%rbp), %rsi
-    callq   ExclusiveExecutor@PLT
-    jmp     .L_exc_after_executor
-
-.L_exc_skip_stack_switch:
-    // Already on OS thread stack, execute directly without switching rsp.
-    movq    -88(%rbp), %rdi
-    movq    -160(%rbp), %rsi
-    callq   ExclusiveExecutor@PLT
-
-.L_exc_after_executor:
-
-    movq    %rax, %r13
-    movapd  %xmm0, -128(%rbp)
-    movapd  %xmm1, -144(%rbp)
-
-    // ==================== switch back to cjthread stack ====================
-    movq    -104(%rbp), %rsp
-
-    // ExclusiveRestore(oldCJThread, thread, newCJThread, oldProcessor)
-    //                     rdi         rsi      rdx         rcx
-    movq    -80(%rbp), %rdi
-    movq    -88(%rbp), %rsi
-    movq    -160(%rbp), %rdx
-    movq    -168(%rbp), %rcx    // oldProcessor
-    callq   ExclusiveRestore@PLT
-
-    // ==================== continue ====================
-    movq    %r13, -112(%rbp)
-
-    // ==================== LeaveSaferegion ====================
-    movq    -96(%rbp), %rax
-    cmpq    $0, %rax
-    je      .L_exc_skip_leave
-    callq   MRT_LeaveSaferegion@PLT
-    callq   MRT_GetThreadLocalData@PLT
-    movq    %rax, %r13
-.L_exc_skip_leave:
-
-    movq    %r13, %rdi
-    callq   MRT_DeleteC2NContext@PLT
-
-    movq    -112(%rbp), %rax
-    movapd  -128(%rbp), %xmm0
-    movapd  -144(%rbp), %xmm1
-
-    jmp     .L_exc_cleanup
-
-// ==================== exception ====================
-.L_exc_create_failed:
-.L_exc_no_cjthread:
-.L_exc_no_thread:
-    xorq    %rax, %rax
-
-.L_exc_cleanup:
-    movq    -8(%rbp),  %r15
-    movq    -16(%rbp), %r14
-    movq    -24(%rbp), %r13
-    movq    -32(%rbp), %r12
-    movq    -40(%rbp), %rbx
-
-    addq    $ExclusiveScopeFrameSize, %rsp
+    // Restore heap SP (stub FA) and return.
+    movq    %rbp, %rsp
     popq    %rbp
     .cfi_def_cfa %rsp, 8
     retq
 
     .cfi_endproc
     .size CJ_MCC_ExclusiveScope, .-CJ_MCC_ExclusiveScope
-
-
-//   void* ExecuteExclusiveCangjieStub(void* sret, void* arg1, void* closureObj, void* executeClosure, void* threadData)
-//                                     rdi         rsi         rdx             rcx                 r8
-//
-// Update r15 with threadData before executing closure
-
-    .text
-    .align 2
-    .global   ExecuteExclusiveCangjieStub
-    .type     ExecuteExclusiveCangjieStub, @function
-ExecuteExclusiveCangjieStub:
-    .cfi_startproc
-    pushq   %rbp
-    .cfi_def_cfa_offset 16
-    .cfi_offset %rbp, -16
-    movq    %rsp, %rbp
-    .cfi_def_cfa_register %rbp
-    subq    $96, %rsp
-
-    movq    %r15, -8(%rbp)
-    movq    %r14, -16(%rbp)
-    movq    %r13, -24(%rbp)
-    movq    %r12, -32(%rbp)
-    movq    %rbx, -40(%rbp)
-    .cfi_rel_offset %rbx, -40
-    .cfi_rel_offset %r12, -32
-    .cfi_rel_offset %r13, -24
-    .cfi_rel_offset %r14, -16
-    .cfi_rel_offset %r15, -8
-
-    // Save arguments directly to the slots used for closure call
-    movq    %rdi, -48(%rbp)     // sret
-    movq    %rdx, -56(%rbp)     // closureObj (remap to arg1 slot)
-    movq    %rcx, -64(%rbp)     // executeClosure (remap to arg2 slot)
-    movq    %r8,  -80(%rbp)     // threadData
-
-    // Update r15 with new ThreadLocalData from r8
-    movq    %r8, %r15
-
-    // SaveTopManagedContext
-    movq    %rbp, %rdi
-    callq   MRT_SaveTopManagedContextToN2CStub@PLT
-
-    movq    -48(%rbp), %rdi
-    movq    -56(%rbp), %rdx
-
-    // get func from executeClosure
-    movq    -64(%rbp), %r11
-    movq    8(%r11),   %r11
-
-    callq   *%r11
-    .global unwindPCForExclusiveStubFull
-unwindPCForExclusiveStubFull:
-
-    // RestoreTopManagedContext
-    movq    %rbp, %rdi
-    callq   MRT_RestoreTopManagedContextFromN2CStub@PLT
-
-    movq    -8(%rbp),  %r15
-    movq    -16(%rbp), %r14
-    movq    -24(%rbp), %r13
-    movq    -32(%rbp), %r12
-    movq    -40(%rbp), %rbx
-
-    addq    $96, %rsp
-    popq    %rbp
-    .cfi_def_cfa %rsp, 8
-    retq
-    .cfi_endproc
-    .size ExecuteExclusiveCangjieStub, .-ExecuteExclusiveCangjieStub

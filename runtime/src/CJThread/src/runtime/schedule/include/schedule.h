@@ -425,8 +425,7 @@ enum LuaCJThreadState {
 enum ScheduleType {
     SCHEDULE_DEFAULT = 0,               /* default scheduler */
     SCHEDULE_UI_THREAD,                 /* scheduler for UI thread */
-    SCHEDULE_FOREIGN_THREAD,            /* scheduler for foreign thread */
-    SCHEDULE_EXCLUSIVE                  /* scheduler for exclusive scope */
+    SCHEDULE_FOREIGN_THREAD             /* scheduler for foreign thread */
 };
 
 /**
@@ -589,19 +588,6 @@ void CJThreadAttrCjFromCSet(struct CJThreadAttr *attrUser, bool flag);
  * -1 is returned. If the memset_s fails, error is returned.
  */
 int CJThreadAttrSpecificSet(struct CJThreadAttr *attrUser, unsigned int num, struct CJThreadSpecificDataInner* data);
-
-/**
- * @brief Create a exclusive cjthread. This interface must be invoked in the cjthread context.
- * @par Description: Creates a cjthread and returns its handle. created cjthread will not enters
- * the run schedule queue, but bind to it's os thread
-  * @param func              [IN] User-defined cjthread execution function.
- * @param argStart          [IN] Parameter start address of the cjthread function.
- * @param argSize           [IN] Parameter length of the cjthread function.
- * @retval If the operation is successful, the handle of the cjthread is returned.
- * NULL indicates that the cjthread fails to be created.
- */
-CJThreadHandle ExclusiveCJThreadNew(CJThreadFunc func,
-                                    const void *argStart, unsigned int argSize);
 
 /**
  * @brief Create a cjthread. This interface must be invoked in the cjthread context.
@@ -1194,6 +1180,27 @@ int CJThreadPreemptOffCntAdd(void);
  * @retval 0 or error code
  */
 int CJThreadPreemptOffCntSub(void);
+
+/**
+ * @brief Compiler exclusiveScopeImpl stack state.
+ * Compiler CodeGen uses getelementptr, so keep them in sync.
+ */
+struct ExclusiveScopeState {
+    uintptr_t destSp;    /* validated OS SP, or 0 if no stack switch is needed */
+    unsigned int *cnt;   /* &CJThread::exclusiveScopeCnt */
+};
+
+/**
+ * @brief Increment the CJThread pin count, and compute the destination OS thread stack SP.
+ * Called by the compiler CodeGen for exclusiveScopeImpl.
+ */
+void CJ_MCC_ExclusiveScopeEnter(struct ExclusiveScopeState *out);
+
+/**
+ * @brief Decrement the CJThread pin count, and reenable stack growth if needed.
+ * Called by the compiler CodeGen for exclusiveScopeImpl.
+ */
+void CJ_MCC_ExclusiveScopeLeave(struct ExclusiveScopeState *out);
 
 /**
  * @brief Register the hook function for releasing cjthread control blocks.

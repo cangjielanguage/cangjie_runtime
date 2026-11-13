@@ -136,6 +136,13 @@ __attribute__((constructor)) static void GetSystemPageSize(void)
 int ThreadSleep(struct Thread *thread);
 
 /**
+ * @brief Wake a thread blocked in SemaphoreWait after THREAD_SLEEP (park / idle).
+ * @par Spins through THREAD_PRE_SLEEP, then CAS THREAD_SLEEP → THREAD_RUNNING and
+ * posts thread->sem. No-op if thread is null or not sleeping.
+ */
+void ThreadWakeIfSleeping(struct Thread *thread);
+
+/**
  * @brief Create an idle thread.
  * @par Description: Create an idle thread, including the control block of the allocated
  * thread and the idle cjthread0 control block, initialize related fields,

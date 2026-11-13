@@ -22,7 +22,6 @@ extern uintptr_t unwindPCForC2NStub;
 extern uintptr_t unwindPCForC2RStubStart;
 extern uintptr_t unwindPCForC2RStubEnd;
 extern uintptr_t unwindPCForStackGrowStub;
-extern uintptr_t unwindPCForExclusiveStubFull;
 extern uintptr_t unwindPCForExclusiveStub;
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
 extern uintptr_t unwindPCForRuntimeStubStart;
@@ -36,16 +35,13 @@ bool MachineFrame::IsN2CStubFrame() const
 {
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
     uintptr_t strippedIP = PtrauthStripInstPointer(reinterpret_cast<Uptr>(ip));
-    return strippedIP == reinterpret_cast<uintptr_t>(&unwindPCForN2CStub) ||
-        strippedIP == reinterpret_cast<uintptr_t>(&unwindPCForExclusiveStubFull);
+    return strippedIP == reinterpret_cast<uintptr_t>(&unwindPCForN2CStub);
 #else
-    uintptr_t ipAddr = reinterpret_cast<uintptr_t>(ip);
-    return ipAddr == reinterpret_cast<uintptr_t>(&unwindPCForN2CStub) ||
-        ipAddr == reinterpret_cast<uintptr_t>(&unwindPCForExclusiveStubFull);
+    return reinterpret_cast<uintptr_t>(ip) == reinterpret_cast<uintptr_t>(&unwindPCForN2CStub);
 #endif
 }
 
-bool MachineFrame::IsExclusiveStubFrame() const
+bool MachineFrame::IsExclusiveBridgeFrame() const
 {
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
     return PtrauthStripInstPointer(reinterpret_cast<Uptr>(ip)) ==

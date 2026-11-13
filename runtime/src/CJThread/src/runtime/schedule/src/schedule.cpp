@@ -251,15 +251,9 @@ int ScheduleProcessorInit(struct Schedule *schedule, unsigned int processorNum)
         }
     }
 
-    // Exclusive scheduler just bind thread to thread0
-    if (schedule->scheduleType == SCHEDULE_EXCLUSIVE) {
-        thread = CJThreadGet()->thread;
-        schedule->thread0 = thread;
-    } else {
-        // bind processor0 to thread0.
-        thread = schedule->thread0;
-        thread->processor = &processorGroup[0];
-    }
+    // bind processor0 to thread0.
+    thread = schedule->thread0;
+    thread->processor = &processorGroup[0];
     processorGroup[0].thread = thread;
     processorGroup[0].state = PROCESSOR_RUNNING;
     // free num is processor_num - 1, because processor0 is running.
@@ -562,7 +556,7 @@ ScheduleHandle ScheduleNew(ScheduleType scheduleType, const struct ScheduleAttr 
     // When the scheduler is initialized, the created thread is bound to thread0. It is
     // convenient to use CJThreadGet() to obtain the cjthread. Therefore, only one scheduler
     // can be created for a thread.
-    if (scheduleType != SCHEDULE_FOREIGN_THREAD && scheduleType != SCHEDULE_EXCLUSIVE &&
+    if (scheduleType != SCHEDULE_FOREIGN_THREAD &&
         CJThreadGet() != nullptr) {
         LOG_ERROR(ERRNO_SCHD_INIT_FAILED, "schedule has been inited");
         return nullptr;
@@ -607,22 +601,19 @@ ScheduleHandle ScheduleNew(ScheduleType scheduleType, const struct ScheduleAttr 
         ScheduleFini(schedule, FINI_CJTHREAD);
         return nullptr;
     }
-    // for exclusive schedule, no need to init thread0
-    if (schedule->scheduleType != SCHEDULE_EXCLUSIVE) {
-        // Init thread0 and cjthread0
-        error = ScheduleThread0Init(schedule, schedAttr);
-        if (error) {
-            LOG_ERROR(error, "thread0 init failed");
-            ScheduleFini(schedule, FINI_THREAD0);
-            return nullptr;
-        }
-         // Init thread structure
-        error = ScheduleThreadInit(&(schedule->schdThread), schedAttr);
-        if (error) {
-            LOG_ERROR(error, "schedule thread control block init failed");
-            ScheduleFini(schedule, FINI_THREAD);
-            return nullptr;
-        }
+    // Init thread0 and cjthread0
+    error = ScheduleThread0Init(schedule, schedAttr);
+    if (error) {
+        LOG_ERROR(error, "thread0 init failed");
+        ScheduleFini(schedule, FINI_THREAD0);
+        return nullptr;
+    }
+     // Init thread structure
+    error = ScheduleThreadInit(&(schedule->schdThread), schedAttr);
+    if (error) {
+        LOG_ERROR(error, "schedule thread control block init failed");
+        ScheduleFini(schedule, FINI_THREAD);
+        return nullptr;
     }
 
     // Init processor group
@@ -973,14 +964,6 @@ bool ScheduleAnyCJThreadRunning(struct Schedule *schedule)
     return false;
 }
 
-// free exclusive scheduler
-void ExclusiveScheduleFree(struct Schedule *schedule)
-{
-    ScheduleListRemove(schedule);
-    ScheduleProcessorFree(schedule);
-    MapleRuntime::NativeAllocator::NativeFree(schedule, sizeof(struct Schedule));
-}
-
 void ScheduleNonDefaultFree(ScheduleHandle scheduleHandle)
 {
     auto* schedule = reinterpret_cast<Schedule*>(scheduleHandle);
@@ -996,8 +979,7 @@ void ScheduleNonDefaultFree(ScheduleHandle scheduleHandle)
     ScheduleCJThreadFree(schedule);
     // Release processor resources and auxiliary resources, including timers.
     ScheduleProcessorFree(schedule);
-    // EXCLUSIVE scheduler doesn't have thread0
-    if (schedule->scheduleType != SCHEDULE_EXCLUSIVE && schedule->thread0 != nullptr) {
+    if (schedule->thread0 != nullptr) {
         CJThreadMemFree(static_cast<struct CJThread*>(schedule->thread0->cjthread0));
         free(schedule->thread0);
         schedule->thread0 = nullptr;
@@ -1059,8 +1041,7 @@ void ScheduleAllNonDefaultExit(void)
         if (schedule == curschdeule) {
             continue;
         }
-        if (schedule->scheduleType != SCHEDULE_EXCLUSIVE &&
-            pthread_self() != schedule->thread0->osThread &&
+        if (pthread_self() != schedule->thread0->osThread &&
             !ScheduleProcessorSkipFFI(&(schedule->schdProcessor.processorGroup[0]))) {
             pthread_join(schedule->thread0->osThread, nullptr);
             atomic_store(&schedule->schdProcessor.processorGroup[0].state, PROCESSOR_EXITING);

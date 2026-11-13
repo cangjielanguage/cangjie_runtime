@@ -86,7 +86,6 @@ void StackGrowStackInfo::RecordStackPtrs(const StackPtrVisitor& traceAndFixPtrVi
             }
             case FrameType::C2R_STUB:
             case FrameType::C2N_STUB:
-            case FrameType::EXSLUSIVE:
 #ifdef INTERPRETER_ENABLED
             case FrameType::INTERPRETER_C2I:
 #endif

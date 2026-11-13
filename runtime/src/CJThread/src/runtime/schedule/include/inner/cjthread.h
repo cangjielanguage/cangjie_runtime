@@ -142,6 +142,7 @@ struct CJThread {
     unsigned int preemptOffCnt;              /* the count bit to disable the preemption
                                               * function of the current cjthread. If the
                                               * value is not 0, preemption is prohibited. */
+    unsigned int exclusiveScopeCnt;          /* != 0 ⇒ in exclusiveScope; OS thread pinned */
     int coErrno;                             /* error code */
     bool isLuaCJThread;
     unsigned long long int id;               /* cjthread id. The offset of this field in the

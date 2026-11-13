@@ -863,17 +863,7 @@ void ProcessorFree(struct Schedule *schedule, struct Processor *processor)
 
 void ProcessorNonDefaultScheduleWake(struct Schedule *schedule)
 {
-    ThreadState expectedThreadState = THREAD_SLEEP;
-
-    while (atomic_load(&schedule->thread0->state) == THREAD_PRE_SLEEP) {}
-    if (atomic_load(&schedule->thread0->state) == THREAD_SLEEP) {
-        if (atomic_compare_exchange_strong(&schedule->thread0->state, &expectedThreadState, THREAD_RUNNING)) {
-            int error = SemaphorePost(&(schedule->thread0->sem));
-            if (error != 0) {
-                LOG_ERROR(error, "sem post failed");
-            }
-        }
-    }
+    ThreadWakeIfSleeping(schedule->thread0);
 }
 
 /* Wakes up a processor or randomly selects a free processor for startup. */

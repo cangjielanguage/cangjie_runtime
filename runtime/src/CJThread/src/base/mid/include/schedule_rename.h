@@ -433,6 +433,7 @@
 
 /* thread */
 #define ThreadSleep                              CJ_ThreadSleep
+#define ThreadWakeIfSleeping                     CJ_ThreadWakeIfSleeping
 #define ThreadCoreBind                           CJ_ThreadCoreBind
 #define ThreadPreemptFlagInit                    CJ_ThreadPreemptFlagInit
 #define ThreadEntry                              CJ_ThreadEntry
