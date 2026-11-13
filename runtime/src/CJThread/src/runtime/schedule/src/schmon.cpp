@@ -180,7 +180,7 @@ void SchmonCheckAllprocessors(unsigned long long now)
             struct Thread *thread = processor->thread;
             struct CJThread *running = (thread != nullptr)
                 ? static_cast<struct CJThread *>(thread->cjthread) : nullptr;
-            if (running == nullptr || running->exclusiveScopeCnt == 0) {
+            if (running == nullptr || running->exclusiveScopeCnt.load() == 0) {
                 SchmonProcessorPreemptCheck(processor, now, schedule);
             }
             if (timerCheckFunc != nullptr) {

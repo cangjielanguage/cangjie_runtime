@@ -1187,7 +1187,7 @@ int CJThreadPreemptOffCntSub(void);
  */
 struct ExclusiveScopeState {
     uintptr_t destSp;    /* validated OS SP, or 0 if no stack switch is needed */
-    unsigned int *cnt;   /* &CJThread::exclusiveScopeCnt */
+    struct CJThread *cjthread; /* set by Enter, used by Leave */
 };
 
 /**

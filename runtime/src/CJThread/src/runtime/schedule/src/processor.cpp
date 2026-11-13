@@ -788,6 +788,18 @@ void ProcessorSchedule(void)
         }
         // Finds a dispatchable cjthread and switches its state to RUNNING.
         nextCJThread = ProcessorCJThreadGet();
+        if (UNLIKELY(nextCJThread->exclusiveScopeCnt.load() != 0 &&
+                     nextCJThread->schedule->scheduleType == SCHEDULE_DEFAULT)) {
+            // An exclusiveScope-pinned cjthread can only run on its own OS thread, but a netpoll
+            // wake queues it like any other (via CJThreadAddBatch). Wake its owner instead.
+            struct Thread *owner = nextCJThread->thread;
+            if (UNLIKELY(owner == nullptr)) {
+                LOG(RTLOG_FATAL, "pinned cjthread %llu dequeued without owner thread", nextCJThread->id);
+            }
+            atomic_store(&nextCJThread->state, CJTHREAD_RUNNING);
+            ThreadWakeIfSleeping(owner);
+            continue;
+        }
         atomic_store_explicit(&nextCJThread->state, CJTHREAD_RUNNING, std::memory_order_relaxed);
         ProtectAddrSet((uintptr_t)nextCJThread->stack.stackGuard);
         if (nextCJThread->boundThread != nullptr) {

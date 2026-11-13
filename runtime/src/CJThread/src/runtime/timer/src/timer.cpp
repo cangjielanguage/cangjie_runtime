@@ -1066,7 +1066,7 @@ int TimerSchmonCheck(void *pro, unsigned long long now)
         struct Thread *thread = processor->thread;
         struct CJThread *cjthread = (thread != nullptr)
             ? static_cast<struct CJThread *>(thread->cjthread) : nullptr;
-        if (cjthread != nullptr && cjthread->exclusiveScopeCnt != 0) {
+        if (cjthread != nullptr && cjthread->exclusiveScopeCnt.load() != 0) {
             ThreadWakeIfSleeping(thread);
             return 0;
         }

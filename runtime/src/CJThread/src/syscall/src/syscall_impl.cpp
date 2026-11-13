@@ -27,6 +27,10 @@ void SyscallEnter(void)
     if (cjthread == nullptr) {
         return;
     }
+    // Pinned by exclusiveScope: keep the processor, do not switch context on exit.
+    if (cjthread->exclusiveScopeCnt.load() != 0) {
+        return;
+    }
     ScheduleTraceEvent(TRACE_EV_CJTHREAD_SYSCALL, TRACE_STACK_10, nullptr, 0);
     thread = static_cast<struct Thread *>(cjthread->thread);
     processor = static_cast<struct Processor *>(thread->processor);
@@ -96,6 +100,10 @@ void SyscallExit(void)
     struct Thread *thread;
     cjthread = CJThreadGet();
     if (cjthread == nullptr) {
+        return;
+    }
+    // Mirrors SyscallEnter; the pin count cannot change in between.
+    if (cjthread->exclusiveScopeCnt.load() != 0) {
         return;
     }
     thread = static_cast<struct Thread *>(cjthread->thread);
