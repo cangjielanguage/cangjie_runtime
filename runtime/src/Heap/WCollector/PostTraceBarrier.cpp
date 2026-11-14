@@ -39,6 +39,17 @@ BaseObject* PostTraceBarrier::ReadWeakRef(BaseObject* obj, RefField<false>& fiel
     RegionInfo* regionInfo = RegionInfo::GetRegionInfoAt(reinterpret_cast<MAddress>(referent));
     bool isMarked = regionInfo->IsMarkedObject(referent);
     if (!isMarked) { // skip live referents
+        // A weak referent recorded after the satb buffer's final drain is never
+        // processed, so it stays unmarked and would be reclaimed, leaving a
+        // dangling pointer to the mutator. The enqueued bit on the region outlives
+        // the cleared satb node, so mark the referent here to complete the rescue.
+        size_t offset = regionInfo->GetAddressOffset(reinterpret_cast<MAddress>(referent));
+        if (regionInfo->IsLoadedWeakRef(offset)) {
+            if (!regionInfo->MarkObject(referent)) {
+                regionInfo->AddLiveByteCount(referent->GetSize());
+            }
+            return tmpField.GetTargetObject();
+        }
         void** referentAddr = reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(obj) + TYPEINFO_PTR_SIZE);
         DLOG(BARRIER, "update referent@%p: 0x%zx -> %p", referentAddr, *referentAddr, nullptr);
         *referentAddr = nullptr; // set referent field as null

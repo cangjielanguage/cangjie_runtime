@@ -605,6 +605,18 @@ public:
         return enqueBitmap->IsMarked(offset);
     }
 
+    bool IsLoadedWeakRef(size_t offset)
+    {
+        if (IsLargeRegion()) {
+            return metadata.isEnqueued == 1;
+        }
+        RegionBitmap* enqueBitmap = GetEnqueueBitmap();
+        if (enqueBitmap == nullptr) {
+            return false;
+        }
+        return enqueBitmap->IsMarked(offset);
+    }
+
     ALWAYS_INLINE size_t GetAddressOffset(MAddress address)
     {
         DCHECK(GetRegionStart() <= address);
