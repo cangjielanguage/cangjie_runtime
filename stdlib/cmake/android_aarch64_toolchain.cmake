@@ -24,8 +24,8 @@ else()
 endif()
 
 # Add support for 16k page size (required for Android 13+)
-set(ANDROID_16K_LINKER_FLAGS "-Wl,-z,max-page-size=16384")
-set(LINK_FLAGS "${LINK_FLAGS} ${ANDROID_16K_LINKER_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ANDROID_16K_LINKER_FLAGS}")
+set(ANDROID_MAX_PAGE_SIZE 16384)
+set(LINK_FLAGS "${LINK_FLAGS} -Wl,-z,max-page-size=${ANDROID_MAX_PAGE_SIZE}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=${ANDROID_MAX_PAGE_SIZE}")
 
 # Variable ANDROID will be set by CMake. Custom variables are not necessary here.

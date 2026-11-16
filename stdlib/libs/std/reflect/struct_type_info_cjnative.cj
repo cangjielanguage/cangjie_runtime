@@ -91,7 +91,7 @@ public class StructTypeInfo <: TypeInfo {
      *
      * @param args parameter list.
      *
-     * @throw MisMatchException, if no public constructor is found to construct new instance.
+     * @throw InfoNotFoundException, if no public constructor is found to construct new instance.
      * @throw InvocationTargetException, if an exception is thrown when the constructor is called to construct the instance.
      */
     public func construct(args: Array<Any>): Any {

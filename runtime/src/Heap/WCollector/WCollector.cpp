@@ -7,6 +7,7 @@
 
 #include "WCollector.h"
 
+#include "Allocator/LocalObjectUtil.h"
 #include "Concurrency/Concurrency.h"
 #include "Mutator/MutatorManager.h"
 
@@ -143,9 +144,15 @@ void WCollector::EnumRefFieldRoot(RefField<>& field, RootSet& rootSet) const
         BaseObject* targetObj = oldField.GetTargetObject();
         latest = FindLatestVersion(targetObj);
     } else {
+        // Decode the same snapshot whose tag was checked above.
         latest = oldField.GetTargetObject();
     }
 
+#if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
+    if (UNLIKELY(IsLocalObject(latest))) {
+        LOG(RTLOG_FATAL, "EnumRefFieldRoot does not support local object root %p", latest);
+    }
+#endif
     // target object could be null or non-heap for some static variable.
     if (!Heap::IsHeapAddress(latest)) {
         return;
@@ -175,6 +182,11 @@ void WCollector::EnumAndTagRawRoot(ObjectRef& ref, RootSet& rootSet) const
         return;
     }
     BaseObject* root = oldField.GetTargetObject();
+#if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
+    if (UNLIKELY(!Heap::IsHeapAddress(root) && IsLocalObject(root))) {
+        LOG(RTLOG_FATAL, "EnumAndTagRawRoot does not support native local object root %p", root);
+    }
+#endif
     if (Heap::IsHeapAddress(root)) {
         CHECK_DETAIL(root->IsValidObject(), "Enum and tag runtime root %p(%p) encounters invalid object", root, &ref);
         RefField<> newField = GetAndTryTagRefField(root);
@@ -213,9 +225,14 @@ void WCollector::TraceRefField(BaseObject* obj, RefField<>& field, WorkStack& wo
         BaseObject* targetObj = oldField.GetTargetObject();
         latest = FindLatestVersion(targetObj);
     } else {
-        latest = field.GetTargetObject();
+        // Decode the same snapshot whose tag was checked above.
+        latest = oldField.GetTargetObject();
     }
-
+#if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
+    if (UNLIKELY(IsLocalObject(latest) && !IsLocalObject(obj))) {
+        LOG(RTLOG_FATAL, "heap object %p must not reference local object %p", obj, latest);
+    }
+#endif
     // target object could be null or non-heap for some static variable.
     if (!Heap::IsHeapAddress(latest)) {
         return;
@@ -254,9 +271,15 @@ BaseObject* WCollector::GetAndTryTagObj(BaseObject* obj, RefField<>& field)
         BaseObject* targetObj = oldField.GetTargetObject();
         latest = FindLatestVersion(targetObj);
     } else {
-        latest = field.GetTargetObject();
+        // Decode the same snapshot whose tag was checked above.
+        latest = oldField.GetTargetObject();
     }
     // target object could be null or non-heap for some static variable.
+#if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
+    if (UNLIKELY(IsLocalObject(latest) && !IsLocalObject(obj))) {
+        LOG(RTLOG_FATAL, "weak heap object %p must not reference local object %p", obj, latest);
+    }
+#endif
     if (!Heap::IsHeapAddress(latest)) {
         return nullptr;
     }

@@ -320,7 +320,26 @@ private:
     }
     void AssembleOldRegions()
     {
+        RegionList resweepRegions("old regions selected for resweep");
+        size_t sweptRegionCount = 0;
+        {
+            std::lock_guard<std::mutex> lock(sweptOldRegionList.GetListMutex());
+            sweptRegionCount = sweptOldRegionList.GetRegionCount();
+            constexpr size_t resweepDivisor = 2;
+            const size_t resweepCount = sweptRegionCount / resweepDivisor + sweptRegionCount % resweepDivisor;
+            // Swept regions are prepended after sweeping. Take the oldest half to avoid starvation.
+            for (size_t i = 0; i < resweepCount; ++i) {
+                RegionInfo* region = sweptOldRegionList.GetTailRegion();
+                sweptOldRegionList.RemoveRegionNoLock(region);
+                resweepRegions.PrependRegionNoLock(region, RegionInfo::RegionType::SWEEP_REGION);
+            }
+        }
+        VLOG(REPORT, "mixed old resweep: selected %zu of %zu regions", resweepRegions.GetRegionCount(),
+             sweptRegionCount);
+        sweepableOldRegionList.MergeRegionList(resweepRegions, RegionInfo::RegionType::SWEEP_REGION);
         sweepableOldRegionList.MergeRegionList(oldRegionList, RegionInfo::RegionType::SWEEP_REGION);
+        // Mixed GC traces all old regions, including those deferred from sweeping this cycle.
+        sweptOldRegionList.VisitAllRegions([](RegionInfo* region) { region->ClearLiveInfo(); });
         sweepableOldRegionList.VisitAllRegions([](RegionInfo* region) { region->ClearLiveInfo(); });
     }
     RegionList sweepableYoungRegionList;

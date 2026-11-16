@@ -13,7 +13,6 @@
 #	MRT_DUMP_ADDRESS ：Indicates whether the runtime dumps the address in the log.
 #	COV_SIGNALHANDLE : Indicates whether to perform a coverage test.
 
-set(CMAKE_VERBOSE_MAKEFILEON ON)
 set(CMAKE_SKIP_RPATH TRUE)
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/output/cj" CACHE PATH "My default install prefix" FORCE)

@@ -33,3 +33,11 @@ set(CMAKE_RANLIB "${CANGJIE_TARGET_TOOLCHAIN}/llvm-ranlib")
 set(TARGET_TRIPLE_DIRECTORY_PREFIX "linux_ohos_arm")
  
 set(LINKER_OPTION_PREFIX)
+
+# OHOS currently uses 4 KB pages; bump this if OHOS adopts a larger page size,
+# otherwise the produced .so cannot be mapped.
+set(OHOS_MAX_PAGE_SIZE 4096)
+# Apply to CMake-driven shared libraries too (the standard library itself is
+# linked by MakeCJNATIVEStdSharedLib.cmake).
+set(LINK_FLAGS "${LINK_FLAGS} -Wl,-z,max-page-size=${OHOS_MAX_PAGE_SIZE}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=${OHOS_MAX_PAGE_SIZE}")

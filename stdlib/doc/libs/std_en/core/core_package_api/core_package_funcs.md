@@ -43,6 +43,52 @@ Output:
 The first element of the array is 1
 ```
 
+<!--Del_sink-->
+## func acquireArrayRawData\<T>(Array\<T>) where T <: CType
+
+```cangjie
+public exclave unsafe func acquireArrayRawData<T>(arr: Array<T> @local?): CPointerHandle<T> @local? where T <: CType
+```
+
+Function: Obtains a raw pointer instance to the data in an [Array](core_package_structs.md#struct-arrayt)\<T>; the pointer instance points to the address of the first element of the array, and T must satisfy the [CType](core_package_interfaces.md#interface-ctype) constraint.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - The pointer must be released in time with the [releaseArrayRawData](core_package_funcs.md#func-releasearrayrawdatatcpointerhandlet-where-t--ctype) function after use.
+> - Between acquiring and releasing the pointer, only simple logic such as foreign C function calls is allowed; do not construct Cangjie objects such as [CString](core_package_intrinsics.md#cstring), otherwise unpredictable behavior may occur.
+
+Parameters:
+
+- arr: [Array](./core_package_structs.md#struct-arrayt)\<T> @local? - The array whose raw pointer is to be obtained; `@local!` and `@local?` arguments are supported.
+
+Returns:
+
+- [CPointerHandle](core_package_structs.md#struct-cpointerhandlet-where-t--ctype)\<T> @local? - The raw pointer instance of the array.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3, 4]
+    let cptrHandle: CPointerHandle<Int64> @local? = unsafe { acquireArrayRawData(arr) }
+    let cptr: CPointer<Int64> = cptrHandle.pointer
+
+    let num: Int64 = unsafe { cptr.read() }
+    unsafe { releaseArrayRawData<Int64>(cptrHandle) }
+    println("The first element of the array is ${num}")
+}
+```
+
+Output:
+
+```text
+The first element of the array is 1
+```
+
+<!--DelEnd_sink-->
 ## func alignOf\<T>() where T <: CType
 
 ```cangjie
@@ -123,39 +169,6 @@ Output:
 NegativeArraySizeException is caught!
 ```
 
-## func eprintln(String)
-
-```cangjie
-public func eprintln(str: String): Unit
-```
-
-Function: Prints the specified string to the standard error text stream with a trailing newline.
-
-When an exception is thrown, the message will be printed to the standard error text stream (stderr) instead of standard output (stdout).
-
-Parameters:
-
-- str: [String](core_package_structs.md#struct-string) - The string to output.
-
-Example:
-
-<!-- verify -->
-```cangjie
-main() {
-    try {
-        throw NegativeArraySizeException("I am an Exception!")
-    } catch (e: NegativeArraySizeException) {
-        eprintln("NegativeArraySizeException is caught!")
-    }
-}
-```
-
-Output:
-
-```text
-NegativeArraySizeException is caught!
-```
-
 ## func eprint\<T>(T, Bool) where T <: ToString
 
 ```cangjie
@@ -205,6 +218,39 @@ Output:
 
 ```text
 width: 10, height: 20
+```
+
+## func eprintln(String)
+
+```cangjie
+public func eprintln(str: String): Unit
+```
+
+Function: Prints the specified string to the standard error text stream with a trailing newline.
+
+When an exception is thrown, the message will be printed to the standard error text stream (stderr) instead of standard output (stdout).
+
+Parameters:
+
+- str: [String](core_package_structs.md#struct-string) - The string to output.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    try {
+        throw NegativeArraySizeException("I am an Exception!")
+    } catch (e: NegativeArraySizeException) {
+        eprintln("NegativeArraySizeException is caught!")
+    }
+}
+```
+
+Output:
+
+```text
+NegativeArraySizeException is caught!
 ```
 
 ## func eprintln\<T>(T) where T <: ToString
@@ -824,6 +870,44 @@ Execution result:
 I like Cangjie
 ```
 
+<!--Del_sink-->
+## func print(String, Bool)
+
+```cangjie
+public func print(str: String @local?, flush!: Bool = false): Unit
+```
+
+Function: Outputs the specified string to the console.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- str: [String](core_package_structs.md#struct-string) @local? - The string to be output; `@local!` and `@local?` arguments are supported.
+- flush!: [Bool](core_package_intrinsics.md#bool) - Whether to flush the buffer: true to flush, false to retain (default: false).
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let n: Int64 @local! = 123
+    let s: String @local! = n.toString()
+    print(s)
+    println()
+}
+```
+
+Execution Result:
+
+```text
+123
+```
+
+<!--DelEnd_sink-->
 ## func print(UInt16, Bool)
 
 ```cangjie
@@ -1339,6 +1423,42 @@ I like Cangjie
 I like programming
 ```
 
+<!--Del_sink-->
+## func println(String)
+
+```cangjie
+public func println(str: String @local?): Unit
+```
+
+Function: Outputs the specified string to the console with a line break at the end.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- str: [String](core_package_structs.md#struct-string) @local? - The string to be output; `@local!` and `@local?` arguments are supported.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let n: Int64 @local! = 123
+    let s: String @local! = n.toString()
+    println(s)
+}
+```
+
+Execution Result:
+
+```text
+123
+```
+
+<!--DelEnd_sink-->
 ## func println(UInt16)
 
 ```cangjie
@@ -1548,33 +1668,23 @@ Function: Determines whether two [Object](core_package_classes.md#class-object) 
 
 Parameters:
 
-- a: [Object](core_package_classes.md#class-object) - An [Object](core_package_classes.md#class-object) instance.
-- b: [Object](core_package_classes.md#class-object) - Another [Object](core_package_classes.md#class-object) instance.
+- a: [Object](core_package_classes.md#class-object) - One instance.
+- b: [Object](core_package_classes.md#class-object) - The other instance.
 
 Returns:
 
-- [Bool](core_package_intrinsics.md#bool) - Returns true if the two [Object](core_package_classes.md#class-object) instances share the same memory address, otherwise returns false.
+- [Bool](core_package_intrinsics.md#bool) - Returns true if the instances share the same memory address; otherwise, returns false.
 
 Example:
 
 <!-- verify -->
 ```cangjie
-class Rectangle {
-    var width: Int64
-    var height: Int64
-
-    public init(width: Int64, height: Int64) {
-        this.width = width
-        this.height = height
-    }
-}
-
 main() {
-    var r1: Rectangle = Rectangle(10, 20)
-    var r2: Rectangle = r1
-    var r3: Rectangle = Rectangle(5, 6)
-    println(refEq(r1, r2))
-    println(refEq(r1, r3))
+    let first = Object()
+    let same = first
+    let other = Object()
+    println(refEq(first, same))
+    println(refEq(first, other))
 }
 ```
 
@@ -1585,6 +1695,52 @@ true
 false
 ```
 
+<!--Del_sink-->
+## func refEq(Object, Object)
+
+```cangjie
+public func refEq(a: Object @local?, b: Object @local?): Bool
+```
+
+Function: Determines whether two [Object](core_package_classes.md#class-object) instances share the same memory address.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- a: [Object](core_package_classes.md#class-object) @local? - An [Object](core_package_classes.md#class-object) instance.
+- b: [Object](core_package_classes.md#class-object) @local? - Another [Object](core_package_classes.md#class-object) instance.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if the two [Object](core_package_classes.md#class-object) instances share the same memory address, otherwise returns false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let first: Object @local! = Object() @local!
+    let other: Object @local! = Object() @local!
+    let view: Object @local? = first
+    let same: Object @local? = first
+    let otherView: Object @local? = other
+    println(refEq(view, same))
+    println(refEq(view, otherView))
+}
+```
+
+Execution Result:
+
+```text
+true
+false
+```
+
+<!--DelEnd_sink-->
 ## func releaseArrayRawData\<T>(CPointerHandle\<T>) where T <: CType
 
 ```cangjie
@@ -1619,6 +1775,46 @@ Execution Result:
 The first element of the array is 1
 ```
 
+<!--Del_sink-->
+## func releaseArrayRawData\<T>(CPointerHandle\<T>) where T <: CType
+
+```cangjie
+public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T> @local?): Unit where T <: CType
+```
+
+Function: Releases a raw pointer instance obtained through [acquireArrayRawData](core_package_funcs.md#func-acquirearrayrawdatatarrayt-where-t--ctype).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- handle: [CPointerHandle](core_package_structs.md#struct-cpointerhandlet-where-t--ctype)\<T> @local? - The pointer instance to be released; `@local!` and `@local?` arguments are supported.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3, 4]
+    let cptrHandle: CPointerHandle<Int64> @local? = unsafe { acquireArrayRawData(arr) }
+
+    let cptr: CPointer<Int64> = cptrHandle.pointer
+    let num: Int64 = unsafe { cptr.read() }
+    unsafe { releaseArrayRawData<Int64>(cptrHandle) }
+    println("The first element of the array is ${num}")
+}
+```
+
+Execution Result:
+
+```text
+The first element of the array is 1
+```
+
+<!--DelEnd_sink-->
 ## func sizeOf\<T>() where T <: CType
 
 ```cangjie
@@ -1772,3 +1968,44 @@ Example Result:
 ```text
 student
 ```
+
+<!--Del_sink-->
+## func zeroValue2\<T>()
+
+```cangjie
+public unsafe func zeroValue2<T>(): T @local!
+```
+
+Function: Retrieves a zero-initialized instance of type T.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+> - This function only provides a placeholder value for storage that has not been initialized yet. An all-zero byte sequence does not guarantee the invariants of type T, so the value must not be treated as a valid default value of T. The placeholder must not be read, dereferenced, or used to call any member; it must be overwritten with a properly initialized value before use.
+> - The placeholder holds no resources that need to be released, so do not release or clean up the placeholder value.
+
+Returns:
+
+- T @local! - A zero-initialized instance of type T, usable only as a placeholder for uninitialized storage.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    var value: Int64 @local! = unsafe { zeroValue2<Int64>() }
+    // The placeholder cannot be read directly; overwrite it with a properly initialized value first
+    value = 42
+    let text: String @local! = value.toString()
+    println(text)
+}
+```
+
+Output:
+
+```text
+42
+```
+
+<!--DelEnd_sink-->

@@ -26,6 +26,11 @@ set(CANGJIE_TARGET_TOOLCHAIN "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${lo
 set(TRIPLE arm-linux-android${CMAKE_ANDROID_API})
 set(TARGET_TRIPLE_DIRECTORY_PREFIX linux_android${CMAKE_ANDROID_API}_arm)
 
+# Android 32-bit ARM runs with 4 KB pages.
+set(ANDROID_MAX_PAGE_SIZE 4096)
+set(LINK_FLAGS "${LINK_FLAGS} -Wl,-z,max-page-size=${ANDROID_MAX_PAGE_SIZE}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=${ANDROID_MAX_PAGE_SIZE}")
+
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=shorten-64-to-32 -Wno-error=conversion -Wno-shift-count-overflow")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-error=shorten-64-to-32 -Wno-error=conversion -Wno-shift-count-overflow")
 

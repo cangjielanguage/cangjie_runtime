@@ -840,6 +840,8 @@ public class FuncDecl <: Decl {
                 this.block_ = v.block_
                 this.overloadedOperators_ = v.overloadedOperators_
                 this.isEnumConstruct = v.isEnumConstruct
+                this.modal_ = v.modal_
+                this.thisParam_ = v.thisParam_
             case None => throw ASTException("Cannot construct the 'FuncDecl' node.")
         }
     }
@@ -862,7 +864,17 @@ public class FuncDecl <: Decl {
     private var colon_ = Token()
     private var retTy_: Option<TypeNode> = None<TypeNode>
     private var block_: Block = Block()
+    private var modal_: ModalInfo = ModalInfo()
+    private var thisParam_: Option<ThisParam> = None<ThisParam>
     var isEnumConstruct: Bool = false
+    public mut prop modal: ModalInfo {
+        get() { modal_ }
+        set(v) { modal_ = v }
+    }
+    public mut prop thisParam: Option<ThisParam> {
+        get() { thisParam_ }
+        set(v) { thisParam_ = v }
+    }
     public mut prop overloadOp: Tokens {
         get() {
             overloadedOperators_
@@ -942,6 +954,7 @@ public class FuncDecl <: Decl {
         for (i in 0..modifiers.size) {
             ret.append(modifiers[i].toTokens())
         }
+        ret.append(modal_.toTokens())
         if (isValidToken(keyword)) {
             ret.append(keyword)
         }
@@ -962,6 +975,14 @@ public class FuncDecl <: Decl {
             Tokens()
         }
         ret.append(paramTokens).append(lParen_)
+        match (thisParam_) {
+            case Some(tp) =>
+                ret.append(tp.toTokens())
+                if (isValidToken(tp.comma)) {
+                    ret.append(tp.comma)
+                }
+            case None => ()
+        }
         ret.append(funcParams.toTokens())
         ret.append(rParen_)
         match (retTy_) {
@@ -987,6 +1008,11 @@ public class FuncDecl <: Decl {
             return
         }
         this.traverseCommonChild(v)
+        modal_.traverse(v)
+        match (thisParam_) {
+            case Some(node) => node.traverse(v)
+            case None => ()
+        }
         traverseNodes(v, params_)
         match (retTy_) {
             case Some(node) => node.traverse(v)
@@ -1011,6 +1037,13 @@ public class FuncDecl <: Decl {
                 ret += getIndent(currentIndent) +
                     "overloadOp: ${overloadedOperators_[0].value + overloadedOperators_[1].value}"
             }
+        }
+        ret += modal_.dump(currentIndent)
+        match (thisParam_) {
+            case Some(node) =>
+                ret += getIndent(currentIndent) + "-thisParam: "
+                ret += node.dump(currentIndent)
+            case None => ()
         }
         ret += dumpNodes("-funcParams", funcParams, currentIndent)
 
@@ -1790,6 +1823,86 @@ public open class FuncParam <: Decl {
                 ret += v.dump(currentIndent)
             case None => ()
         }
+        ret += getIndent(indent) + "}\n"
+        ret
+    }
+}
+
+
+public class ThisParam <: Decl {
+    init(thisTok: Token, modal: ModalInfo, comma: Token) {
+        super()
+        this.this_ = thisTok
+        this.modal_ = modal
+        this.comma_ = comma
+    }
+    public init(inputs: Tokens) {
+        super()
+        try {
+            match (parseExpr(inputs) as ThisParam) {
+                case Some(v) =>
+                    this.begin_ = v.beginPos
+                    this.end_ = v.endPos
+                    this.this_ = v.this_
+                    this.modal_ = v.modal_
+                    this.comma_ = v.comma_
+                case None => throw ASTException("Cannot construct the 'ThisParam' node.")
+            }
+        } catch (e: ParseASTException) {
+            if (e.message == String.empty) {
+                throw ASTException("Cannot construct the 'ThisParam' node.")
+            } else {
+                throw ASTException(e.message)
+            }
+        }
+    }
+    public init() {
+        super()
+    }
+    private var this_: Token = Token(TokenKind.THIS)
+    private var modal_: ModalInfo = ModalInfo()
+    private var comma_: Token = Token()
+    public mut prop `this`: Token {
+        get() { this_ }
+        set(v) {
+            checkTokenType(v, THIS)
+            this_ = v
+        }
+    }
+    public mut prop modal: ModalInfo {
+        get() { modal_ }
+        set(v) { modal_ = v }
+    }
+    public mut prop comma: Token {
+        get() { comma_ }
+        set(v) {
+            checkTokenType(v, COMMA)
+            comma_ = v
+        }
+    }
+    public func toTokens(): Tokens {
+        var ret = Tokens().append(this_).append(modal_.toTokens())
+        return ret
+    }
+
+    public func traverse(v: Visitor): Unit {
+        v.visit(this)
+        super.traverse(v)
+        if (v.needBreakTraverse()) {
+            return
+        }
+        modal_.traverse(v)
+        return
+    }
+
+    protected func dump(indent: UInt16): String {
+        var ret: String = "ThisParam {\n"
+        currentIndent = indent
+        if (indent != 0 || beginNode) {
+            currentIndent++
+        }
+        ret += getTokenIndent("-this", this_, currentIndent)
+        ret += modal_.dump(currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
     }

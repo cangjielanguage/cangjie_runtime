@@ -9,6 +9,10 @@
 #define COMMON_ALIAS_SRC
 
 extern "C" MRT_EXPORT ObjRef CJ_MCC_OnFinalizerCreated(ObjRef ref) __attribute__((alias("MCC_OnFinalizerCreated")));
+extern "C" MRT_EXPORT void CJ_MCC_AddLocalFinalizer(ObjectPtr obj)
+    __attribute__((alias("MCC_AddLocalFinalizer")));
+extern "C" MRT_EXPORT void CJ_MCC_RemoveLocalFinalizer(ObjectPtr obj)
+    __attribute__((alias("MCC_RemoveLocalFinalizer")));
 extern "C" MRT_EXPORT void CJ_MCC_WriteRefField(const ObjectPtr ref, const ObjectPtr obj, RefField<false>* field)
     __attribute__((alias("MCC_WriteRefField")));
 
@@ -20,6 +24,18 @@ extern "C" MRT_EXPORT void CJ_MCC_WriteStaticRef(const ObjectPtr ref, RefField<f
     __attribute__((alias("MCC_WriteStaticRef")));
 extern "C" MRT_EXPORT void CJ_MCC_WriteStaticStruct(MAddress dst, size_t dstLen, MAddress src, size_t srcLen,
                                                     const GCTib gcTib) __attribute__((alias("MCC_WriteStaticStruct")));
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                                     RefField<false>* field)
+    __attribute__((alias("MCC_MaybeLocalWriteRef")));
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteStruct(const ObjectPtr obj, MAddress dst, size_t dstLen,
+                                                        MAddress src, size_t srcLen, GCTib gctib)
+    __attribute__((alias("MCC_MaybeLocalWriteStruct")));
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteGeneric(const ObjectPtr obj, void* fieldPtr,
+                                                          const ObjectPtr src, size_t size)
+    __attribute__((alias("MCC_MaybeLocalWriteGeneric")));
+extern "C" MRT_EXPORT void CJ_MCC_DemodeWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                                  RefField<false>* field)
+    __attribute__((alias("MCC_DemodeWriteRef")));
 extern "C" MRT_EXPORT void CJ_MCC_AtomicWriteReference(const ObjectPtr ref, const ObjectPtr obj, RefField<true>* field,
                                                        MemoryOrder order)
     __attribute__((alias("MCC_AtomicWriteReference")));
@@ -38,6 +54,8 @@ extern "C" MRT_EXPORT void CJ_MCC_InvokeGCImpl(bool sync) __attribute__((alias("
 extern "C" MRT_EXPORT ssize_t CJ_MCC_GetRealHeapSize()
     __attribute__((alias("MCC_GetRealHeapSize")));
 extern "C" MRT_EXPORT size_t CJ_MCC_GetAllocatedHeapSize() __attribute__((alias("MCC_GetAllocatedHeapSize")));
+extern "C" MRT_EXPORT size_t CJ_MCC_GetAllocatedLocalObjectSize()
+    __attribute__((alias("MCC_GetAllocatedLocalObjectSize")));
 extern "C" MRT_EXPORT size_t CJ_MCC_GetMaxHeapSize() __attribute__((alias("MCC_GetMaxHeapSize")));
 extern "C" MRT_EXPORT size_t CJ_MCC_GetCJThreadNumber() __attribute__((alias("MCC_GetCJThreadNumber")));
 extern "C" MRT_EXPORT size_t CJ_MCC_GetBlockingCJThreadNumber() __attribute__((alias("MCC_GetBlockingCJThreadNumber")));

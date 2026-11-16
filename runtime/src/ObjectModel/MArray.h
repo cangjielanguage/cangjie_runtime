@@ -26,6 +26,9 @@ public:
                                       AllocType allocType = AllocType::MOVEABLE_OBJECT);
     inline static MArray* NewKnownWidthArray(MIndex nElems, TypeInfo& arrayClass, const U32 elemBytes,
                                              AllocType allocType = AllocType::MOVEABLE_OBJECT);
+    inline static MArray* NewLocalArray(MIndex nElems, TypeInfo& arrayClass);
+    inline static MArray* NewLocalRefArray(MIndex nElems, TypeInfo& arrayClass);
+    inline static MArray* NewLocalKnownWidthArray(MIndex nElems, TypeInfo& arrayClass, const U32 elemBytes);
 
     // inlined functions
     inline MIndex GetLength() const; // the number of elements

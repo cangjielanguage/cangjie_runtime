@@ -7178,7 +7178,7 @@ public override func read(buffer: Array<Byte>): Int64
 
 返回值：
 
-- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 读取的数据长度。
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 读取的数据长度。当对端关闭连接或本端套接字已通过 `close` 关闭时，返回 `0`。
 
 异常：
 

@@ -1577,6 +1577,55 @@ main(): Unit {
 32
 ```
 
+<!--Del_sink-->
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+功能：创建 [ByteBuffer](io_package_classes.md#class-bytebuffer) 实例，默认的初始容量是 32。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 待构造的 `@local!` 实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+
+    // 写入数据
+    let data: Array<Byte> @local! = [72, 73] // HI
+    buffer.write(data)
+
+    // 读取数据
+    buffer.seek(SeekPosition.Begin(0))
+    let readBuf: Array<Byte> @local! = [0, 0]
+    let bytesRead = buffer.read(readBuf)
+    println("Bytes read: ${bytesRead}")
+    println("Content: ${readBuf[0]}, ${readBuf[1]}")
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 2
+Content: 72, 73
+```
+
+<!--DelEnd_sink-->
 ### init(Array\<Byte>)
 
 ```cangjie
@@ -1654,6 +1703,69 @@ main(): Unit {
 Error: Invalid argument 'capacity': expected a non-negative value, got '-1024'.
 ```
 
+<!--Del_sink-->
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, capacity: Int64)
+```
+
+功能：创建 [ByteBuffer](io_package_classes.md#class-bytebuffer) 实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 待构造的 `@local!` 实例。
+- capacity: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 指定的初始容量。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 capacity 小于 0 时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建指定容量的 ByteBuffer 实例
+    let buffer: ByteBuffer @local! = ByteBuffer(16) @local!
+
+    // 写入数据
+    let data: Array<Byte> @local! = [82, 83] // RS
+    buffer.write(data)
+
+    // 读取数据
+    buffer.seek(SeekPosition.Begin(0))
+    let readBuf: Array<Byte> @local! = [0, 0]
+    let bytesRead = buffer.read(readBuf)
+    println("Bytes read: ${bytesRead}")
+    println("Content: ${readBuf[0]}, ${readBuf[1]}")
+
+    // capacity 小于 0 时抛出异常
+    try {
+        let errorBuffer: ByteBuffer @local! = ByteBuffer(-1) @local!
+        println("This line is unreachable")
+    } catch (e: IllegalArgumentException) {
+        println("Caught: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 2
+Content: 82, 83
+Caught: The capacity must be greater than or equal to 0: -1.
+```
+
+<!--DelEnd_sink-->
 ### func bytes()
 
 ```cangjie
@@ -1795,7 +1907,7 @@ public func read(buffer: Array<Byte>): Int64
 
 异常：
 
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 buffer 为空时，抛出异常。
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当光标不在数据末尾时：buffer 为空，或光标经 seek 移到数据末尾之后（此时内部剩余长度记录为负值，即使 buffer 非空），抛出异常。
 
 示例：
 
@@ -1829,6 +1941,65 @@ Hello
 Error: Invalid argument 'buffer': buffer size is 0.
 ```
 
+<!--Del_sink-->
+### func read(Array\<Byte>)
+
+```cangjie
+public exclave func read(this @local!, buffer: Array<Byte> @local!): Int64
+```
+
+功能：从绑定的输入流读出数据到 `buffer` 中。当光标恰好位于数据末尾时，直接返回 0，此时不再检查 `buffer` 是否为空。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> @local! - 存放读取的数据的缓冲区。
+
+返回值：
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 读取数据的字节数。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当光标不在数据末尾时：`buffer` 为空，或光标经 seek 移到数据末尾之后（此时内部剩余长度记录为负值，即使 `buffer` 非空），抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例并写入 3 个字节
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+    let data: Array<Byte> @local! = [65, 66, 67] // ABC
+    buffer.write(data)
+
+    // 将光标移动到数据头部
+    buffer.seek(SeekPosition.Begin(0))
+
+    // 分配 `@local!` 缓冲区并读取数据
+    let readBuf: Array<Byte> @local! = [0, 0]
+    println("First read: ${buffer.read(readBuf)}")
+    println("Second read: ${buffer.read(readBuf)}")
+    println("Third read: ${buffer.read(readBuf)}")
+}
+```
+
+运行结果：
+
+```text
+First read: 2
+Second read: 1
+Third read: 0
+```
+
+<!--DelEnd_sink-->
 ### func readByte()
 
 ```cangjie
@@ -1883,10 +2054,11 @@ public func reserve(additional: Int64): Unit
 > **说明：**
 >
 > - 若入参 additional < 0，抛出 IllegalArgumentException 异常。
+> - 若入参 additional 为 0，不执行任何扩容操作。
 > - 若当前剩余容量 ≥ additional，不进行扩容，直接返回。
 > - 否则按以下两者计算最大者执行扩容：
->     - 1. 原始容量的 1.5 倍（结果向下取整）
->     - 2. 处于读模式（length ≥ 0）时为「原始容量 + additional」；处于写模式（length < 0，由 seek 越过现有数据尾部触发）时为「已使用容量 + additional」。
+>     - 原始容量的 1.5 倍（结果向下取整）
+>     - 处于读模式（length ≥ 0）时为「原始容量 + additional」；处于写模式（length < 0，由 seek 越过现有数据尾部触发）时为「已使用容量 + additional」。
 
 参数：
 
@@ -1942,6 +2114,79 @@ Error: Invalid argument 'additional': expected a non-negative value, got '-1'.
 Error: Capacity overflow: the maximum value cannot exceed 'Int64 max'.
 ```
 
+<!--Del_sink-->
+### func reserve(Int64)
+
+```cangjie
+public exclave func reserve(this @local!, additional: Int64): Unit
+```
+
+功能：以指定大小扩容缓冲区。
+
+> **说明：**
+>
+> - 若光标未越过数据末尾，且数据末尾之后的剩余容量 ≥ additional，不进行扩容，直接返回。
+> - 若光标已越过数据末尾，且光标位置到当前容量末尾的剩余空间 ≥ additional，不进行扩容，直接返回。
+> - 其余情况下执行扩容，扩容后的容量为以下两者中的较大者：
+>     - 1.当前容量（扩容前缓冲区的容量）的 1.5 倍（结果向下取整）。
+>     - 2.所需最小容量：光标未越过数据末尾时为当前容量 + additional；光标已越过数据末尾时为光标位置 + additional。
+> - additional 为 0 不保证不扩容：若光标已被 seek 到超出当前容量的位置，即使 additional 为 0 也会按上述规则扩容。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- additional: [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 将要扩容的大小。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 当 additional 小于 0 时，抛出异常。
+- [OverflowException](../../core/core_package_api/core_package_exceptions.md#class-overflowexception) - 当扩容后的缓冲区大小超过 [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) 的最大值时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+
+    // 扩容缓冲区
+    buffer.reserve(64)
+
+    // 写入数据
+    let data: Array<Byte> @local! = [84, 85] // TU
+    buffer.write(data)
+
+    // 读取数据
+    buffer.seek(SeekPosition.Begin(0))
+    let readBuf: Array<Byte> @local! = [0, 0]
+    buffer.read(readBuf)
+    println("Content: ${readBuf[0]}, ${readBuf[1]}")
+
+    // additional 小于 0 时抛出异常
+    try {
+        buffer.reserve(-1)
+    } catch (e: IllegalArgumentException) {
+        println("Caught: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+Content: 84, 85
+Caught: The additional must be greater than or equal to 0.
+```
+
+<!--DelEnd_sink-->
 ### func seek(SeekPosition)
 
 ```cangjie
@@ -2004,6 +2249,67 @@ World
 Error: Failed to seek: position '-1' is before the beginning of the stream.
 ```
 
+<!--Del_sink-->
+### func seek(SeekPosition)
+
+```cangjie
+public func seek(this @local!, sp: SeekPosition): Int64
+```
+
+功能：将光标跳转到指定位置。
+
+> **说明：**
+>
+> - 指定的位置不能位于流中数据头部之前。
+> - 指定位置可以超过流中数据末尾。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- sp: [SeekPosition](io_package_enums.md#enum-seekposition) - 指定光标跳转后的位置。
+
+返回值：
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 流中数据的头部到跳转后位置的偏移量（以字节为单位）。
+
+异常：
+
+- [IOException](io_package_exceptions.md#class-ioexception) - 当指定的位置位于流中数据头部之前时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例并写入 3 个字节
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+    let data: Array<Byte> @local! = [86, 87, 88] // VWX
+    buffer.write(data)
+
+    // 将光标移动到数据头部并读取第一个字节
+    let pos = buffer.seek(SeekPosition.Begin(0))
+    println("Position after seek: ${pos}")
+    let readBuf: Array<Byte> @local! = [0]
+    buffer.read(readBuf)
+    println("First byte: ${readBuf[0]}")
+}
+```
+
+运行结果：
+
+```text
+Position after seek: 0
+First byte: 86
+```
+
+<!--DelEnd_sink-->
 ### func setLength(Int64)
 
 ```cangjie
@@ -2094,6 +2400,107 @@ main(): Unit {
 Hello World
 ```
 
+<!--Del_sink-->
+### func write(Array\<Byte>)
+
+```cangjie
+public exclave func write(this @local!, buffer: Array<Byte>): Unit
+```
+
+功能：将 `buffer` 中的数据写入到绑定的输出流中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> - 待写入数据的缓冲区。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+
+    // 写入堆上的字节数组
+    let data: Array<Byte> = [77, 78] // MN
+    buffer.write(data)
+
+    // 读取数据
+    buffer.seek(SeekPosition.Begin(0))
+    let readBuf: Array<Byte> @local! = [0, 0]
+    let bytesRead = buffer.read(readBuf)
+    println("Bytes read: ${bytesRead}")
+    println("Content: ${readBuf[0]}, ${readBuf[1]}")
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 2
+Content: 77, 78
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func write(Array\<Byte>)
+
+```cangjie
+public exclave func write(this @local!, buffer: Array<Byte> @local!): Unit
+```
+
+功能：将 `buffer` 中的数据写入到绑定的输出流中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> @local! - 待写入数据的缓冲区。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例
+    let buffer: ByteBuffer @local! = ByteBuffer() @local!
+
+    // 写入 `@local!` 字节数组
+    let data: Array<Byte> @local! = [75, 76] // KL
+    buffer.write(data)
+
+    // 读取数据
+    buffer.seek(SeekPosition.Begin(0))
+    let readBuf: Array<Byte> @local! = [0, 0]
+    let bytesRead = buffer.read(readBuf)
+    println("Bytes read: ${bytesRead}")
+    println("Content: ${readBuf[0]}, ${readBuf[1]}")
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 2
+Content: 75, 76
+```
+
+<!--DelEnd_sink-->
 ### func writeByte(Byte)
 
 ```cangjie

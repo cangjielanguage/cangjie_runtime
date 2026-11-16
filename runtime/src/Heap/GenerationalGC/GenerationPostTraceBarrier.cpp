@@ -6,8 +6,34 @@
 
 #include "GenerationPostTraceBarrier.h"
 #include "ObjectModel/MArray.h"
+#include "ObjectModel/RefField.inline.h"
 
 namespace MapleRuntime {
+BaseObject* GenerationPostTraceBarrier::ReadWeakRef(BaseObject* obj, RefField<false>& field) const
+{
+    RefField<> tmpField(field);
+    if (tmpField.IsTagged()) {
+        CHECK(theCollector.IsCurrentPointer(tmpField));
+    }
+    BaseObject* referent = tmpField.GetTargetObject();
+    if (referent == nullptr) {
+        return nullptr;
+    }
+    // Young GC does not mark old-generation objects, so preserve non-target referents.
+    if (!theCollector.IsTargetAddress(referent)) {
+        return referent;
+    }
+    RegionInfo* regionInfo = RegionInfo::GetRegionInfoAt(reinterpret_cast<MAddress>(referent));
+    bool isMarked = regionInfo->IsMarkedObject(referent);
+    if (!isMarked) { // skip live referents
+        void** referentAddr = reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(obj) + TYPEINFO_PTR_SIZE);
+        DLOG(BARRIER, "update referent@%p: 0x%zx -> %p", referentAddr, *referentAddr, nullptr);
+        *referentAddr = nullptr; // set referent field as null
+        return nullptr;
+    }
+    return tmpField.GetTargetObject();
+}
+
 void GenerationPostTraceBarrier::WriteStruct(BaseObject* obj, MAddress dst, size_t dstLen, MAddress src,
                                              size_t srcLen) const
 {

@@ -121,6 +121,73 @@ CalleeSavedStubFrameSize:
     .size \funcNameStub, .-\funcNameStub
     .endm
 
+    .macro LocalRegionStub, funcName, funcNameStub
+    .text
+    .align 2
+    .global \funcNameStub
+    .type \funcNameStub, @function
+\funcNameStub:
+    .cfi_startproc
+#if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
+    paciasp
+#endif
+    stp  x29, x30, [sp,  #-StubFrameContextSize]!
+    cfi_adjust_cfa_offset (StubFrameContextSize)
+    cfi_rel_offset (x29, 0)
+    cfi_rel_offset (x30, 8)
+
+    mov  x29, sp
+    cfi_def_cfa_register (sp)
+
+    stp  x19, x20, [sp, #StubCalleeSaveAreaSize]
+    cfi_rel_offset (x19, StubCalleeSaveAreaSize)
+    cfi_rel_offset (x20, StubCalleeSaveAreaSize+8)
+    stp  x21, x22, [sp, #StubCalleeSaveAreaSize+0x10]
+    cfi_rel_offset (x21, StubCalleeSaveAreaSize+0x10)
+    cfi_rel_offset (x22, StubCalleeSaveAreaSize+0x18)
+    stp  x23, x24, [sp, #StubCalleeSaveAreaSize+0x20]
+    cfi_rel_offset (x23, StubCalleeSaveAreaSize+0x20)
+    cfi_rel_offset (x24, StubCalleeSaveAreaSize+0x28)
+    stp  x25, x26, [sp, #StubCalleeSaveAreaSize+0x30]
+    cfi_rel_offset (x25, StubCalleeSaveAreaSize+0x30)
+    cfi_rel_offset (x26, StubCalleeSaveAreaSize+0x38)
+    stp  x27, x28, [sp, #StubCalleeSaveAreaSize+0x40]
+    cfi_rel_offset (x27, StubCalleeSaveAreaSize+0x40)
+    cfi_rel_offset (x28, StubCalleeSaveAreaSize+0x48)
+
+    ldr  x0, [x29]
+    bl   \funcName
+
+    bl   MRT_GetThreadLocalData
+    mov  x28, x0
+
+    ldp  x19, x20, [sp, #StubCalleeSaveAreaSize]
+    cfi_restore (x19)
+    cfi_restore (x20)
+    ldp  x21, x22, [sp, #StubCalleeSaveAreaSize+0x10]
+    cfi_restore (x21)
+    cfi_restore (x22)
+    ldp  x23, x24, [sp, #StubCalleeSaveAreaSize+0x20]
+    cfi_restore (x23)
+    cfi_restore (x24)
+    ldp  x25, x26, [sp, #StubCalleeSaveAreaSize+0x30]
+    cfi_restore (x25)
+    cfi_restore (x26)
+    ldr  x27, [sp, #StubCalleeSaveAreaSize+0x40]
+    cfi_restore (x27)
+
+    ldp  x29, x30, [sp], #StubFrameContextSize
+    cfi_adjust_cfa_offset (-StubFrameContextSize)
+    cfi_restore (x29)
+    cfi_restore (x30)
+#if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
+    autiasp
+#endif
+    ret
+    .cfi_endproc
+    .size \funcNameStub, .-\funcNameStub
+    .endm
+
     .macro CalleeSavedRegistersStubNew, funcName, funcNameStub
     .text
     .align 2
@@ -243,5 +310,18 @@ unwindPCForC2RStubStart:
     CalleeSavedRegistersStub MCC_ThrowException CJ_MCC_ThrowException
     CalleeSavedRegistersStub MCC_ThrowStackOverflowError CJ_MCC_ThrowStackOverflowError
 #endif
+    LocalRegionStub MCC_StartLocalRegion CJ_MCC_StartLocalRegion
+    LocalRegionStub MCC_EndLocalRegion CJ_MCC_EndLocalRegion
+    CalleeSavedRegistersStub MCC_NewLocalObject CJ_MCC_NewLocalObject
+    CalleeSavedRegistersStub MCC_NewLocalFinalizer CJ_MCC_NewLocalFinalizer
+    CalleeSavedRegistersStub MCC_NewLocalArray CJ_MCC_NewLocalArray
+    CalleeSavedRegistersStub MCC_NewLocalObjArray CJ_MCC_NewLocalObjArray
+    CalleeSavedRegistersStub MCC_NewLocalArray8 CJ_MCC_NewLocalArray8
+    CalleeSavedRegistersStub MCC_NewLocalArray16 CJ_MCC_NewLocalArray16
+    CalleeSavedRegistersStub MCC_NewLocalArray32 CJ_MCC_NewLocalArray32
+    CalleeSavedRegistersStub MCC_NewLocalArray64 CJ_MCC_NewLocalArray64
+    CalleeSavedRegistersStub MCC_NewLocalGenericObject CJ_MCC_NewLocalGenericObject
+    CalleeSavedRegistersStub MCC_NewLocalGenericArray CJ_MCC_NewLocalGenericArray
+    CalleeSavedRegistersStub MCC_NewLocalWeakRefObject CJ_MCC_NewLocalWeakRefObject
     .global unwindPCForC2RStubEnd
 unwindPCForC2RStubEnd:

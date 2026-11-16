@@ -10,6 +10,10 @@ package std.ast
 
 public abstract class Visitor {
     private var breakTraverseFlag = false
+    func isTraversalStopped(): Bool {
+        return breakTraverseFlag
+    }
+
     protected func needBreakTraverse(): Bool {
         if (breakTraverseFlag) {
             breakTraverseFlag = false
@@ -207,5 +211,10 @@ public abstract class Visitor {
     protected open func visit(_: QuoteToken): Unit {}
 
     protected open func visit(_: MacroExpandParam): Unit {}
+    // Keep new overloads after existing entries to preserve virtual method slots.
+    protected open func visit(_: ExclaveExpr): Unit {}
+    protected open func visit(_: ThisParam): Unit {}
+    protected open func visit(_: ModalInfo): Unit {}
+
 }
 

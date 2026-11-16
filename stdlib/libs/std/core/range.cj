@@ -83,6 +83,9 @@ public struct Range<T> <: Iterable<T> where T <: Countable<T> & Comparable<T> & 
     }
 }
 
+@When[env != "ohos"]
+extend<T> Range<T> <: Copyable where T <: Copyable {}
+
 public class RangeIterator<T> <: Iterator<T> where T <: Countable<T> & Comparable<T> & Equatable<T> {
     private let _last: T
     private let _step: Int64

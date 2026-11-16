@@ -53,7 +53,8 @@ let EXPR_LIST: Array<String> = [
     "resume_expr",
     "spawn_expr",
     "synchronized_expr",
-    "macro_expand_expr"
+    "macro_expand_expr",
+    "exclave_expr"
 ]
 let DECL_LIST: Array<String> = [
     "main_decl",

@@ -40,7 +40,9 @@ Span* CentralCache::GetOneSpan(SpanList& list, size_t alignBytes)
     span->freeBlocks = start;
     start += alignBytes;
     void* tail = span->freeBlocks;
-    while (start < end) {
+    // Only link blocks that fit completely inside the span. A block starting before
+    // the span end but ending after it would overlap the next span.
+    while (start + alignBytes <= end) {
         NextObj(tail) = start;
         tail = start;
         start += alignBytes;

@@ -86,6 +86,103 @@ Output:
 4
 ```
 
+<!--Del_sink-->
+### func next()
+
+```cangjie
+public exclave func next(this @local!): Option<T> @local!
+```
+
+Function: Obtains the next element in the iteration.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Option](core_package_enums.md#enum-optiont)\<T> @local! - The next element in the iteration.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    // Obtain the local iterator via the iterator method of the @local! array
+    let it: Iterator<Int64> @local! = arr.iterator()
+    while (true) {
+        match (it.next()) {
+            case Some(v) => println("next=${v}")
+            case None => break
+        }
+    }
+}
+```
+
+Output:
+
+```text
+next=1
+next=2
+next=3
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func next()
+
+```cangjie
+public exclave func next(this @local?): Option<T> @local?
+```
+
+Function: Obtains the next element in the iteration.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Option](core_package_enums.md#enum-optiont)\<T> @local? - The next element in the iteration.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [1, 2, 3]
+    // Obtain the local iterator via the iterator method of the @local? array
+    let it: Iterator<Int64> @local? = arr.iterator()
+    while (true) {
+        match (it.next()) {
+            case Some(v) => println("next=${v}")
+            case None => break
+        }
+    }
+}
+```
+
+Output:
+
+```text
+next=1
+next=2
+next=3
+```
+
+<!--DelEnd_sink-->
 ## class Box\<T>
 
 ```cangjie
@@ -528,6 +625,58 @@ box3 hashCode: 100
 box1 and box2 have same hashCode: true
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: When the call is bound to the inherited default implementation, throws [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) instead of returning a hash value.
+
+The [Box](core_package_classes.md#class-boxt) does not override the `@local?` form of `hashCode`; this default implementation computes no hash value and does not read the `T` instance wrapped in the [Box](core_package_classes.md#class-boxt). When a call is bound to this default implementation, [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) is thrown.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The signature is `Int64`, but the current default implementation returns no normal result and throws an exception directly.
+
+Exceptions:
+
+- [UnimplementedException](../../core/core_package_api/core_package_exceptions.md#class-unimplementedexception) - Thrown when the call is bound to the `@local?` default implementation inherited from the [Hashable](core_package_interfaces.md#interface-hashable) interface.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // The Box instance constructed on the heap is bound as an @local? view
+    let box: Box<Int64> @local? = Box<Int64>(42)
+    // Box does not override the @local? form of hashCode; the call hits the default implementation of the Hashable interface
+    try {
+        box.hashCode()
+        println("no exception")
+    } catch (e: UnimplementedException) {
+        println("caught: ${e.message}")
+    }
+}
+```
+
+Output:
+
+```text
+caught: Current Type does not implement 'hashCode' method for its @local? instance
+```
+
+<!--DelEnd_sink-->
 ### extend\<T> Box\<T> <: ToString where T <: ToString
 
 ```cangjie
@@ -831,6 +980,98 @@ Output:
 Abstract subclass initialized successfully
 ```
 
+<!--Del_sink-->
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Constructs an [Iterator](core_package_classes.md#class-iteratort)\<T> object.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main(): Int64 {
+    // The abstract class Iterator cannot be initialized directly; construct it in a local region through a subclass
+    let it: MyIterator<Int64> @local! = MyIterator<Int64>() @local!
+    println("Local iterator initialized successfully")
+    return 0
+}
+
+public class MyIterator<T> <: Iterator<T> {
+    public init() {}
+    public exclave init(this @local!) {}
+    public func next(): ?T {
+        return None<T>
+    }
+}
+```
+
+Output:
+
+```text
+Local iterator initialized successfully
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### init(this @local?)
+
+```cangjie
+public exclave init(this @local?)
+```
+
+Function: Constructs an [Iterator](core_package_classes.md#class-iteratort)\<T> object.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main(): Int64 {
+    // The abstract class Iterator cannot be initialized directly; construct it in a local region through a subclass
+    let it: MyIterator<Int64> @local? = MyIterator<Int64>() @local?
+    println("Local iterator initialized successfully")
+    return 0
+}
+
+public class MyIterator<T> <: Iterator<T> {
+    public init() {}
+    public exclave init(this @local!) {}
+    public exclave init(this @local?) {}
+    public func next(): ?T {
+        return None<T>
+    }
+}
+```
+
+Output:
+
+```text
+Local iterator initialized successfully
+```
+
+<!--DelEnd_sink-->
 ### func iterator()
 
 ```cangjie
@@ -878,6 +1119,101 @@ Third element from iter: Some(30)
 Fourth element from iter2: None
 ```
 
+<!--Del_sink-->
+### func iterator()
+
+```cangjie
+public func iterator(this @local!): Iterator<T> @local!
+```
+
+Function: Returns the iterator itself.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Iterator](core_package_classes.md#class-iteratort)\<T> @local! - The iterator itself.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    let it: Iterator<Int64> @local! = arr.iterator()
+    // iterator returns the iterator itself
+    let it2: Iterator<Int64> @local! = it.iterator()
+    println("refEq: ${refEq(it, it2)}")
+    match (it2.next()) {
+        case Some(v) => println("first=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+refEq: true
+first=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func iterator()
+
+```cangjie
+public func iterator(this @local?): Iterator<T> @local?
+```
+
+Function: Returns the iterator itself.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Iterator](core_package_classes.md#class-iteratort)\<T> @local? - The iterator itself.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [1, 2, 3]
+    let it: Iterator<Int64> @local? = arr.iterator()
+    // iterator returns the iterator itself
+    let it2: Iterator<Int64> @local? = it.iterator()
+    println("refEq: ${refEq(it, it2)}")
+    match (it2.next()) {
+        case Some(v) => println("first=${v}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+refEq: true
+first=1
+```
+
+<!--DelEnd_sink-->
 ### func next()
 
 ```cangjie
@@ -919,6 +1255,122 @@ Output:
 5
 ```
 
+<!--Del_sink-->
+### func next()
+
+```cangjie
+public open func next(this @local!): ?T @local!
+```
+
+Function: Obtains the next element in the iteration.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Option](core_package_enums.md#enum-optiont)\<T> @local! - The next element in the iteration.
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown when the current iterator does not provide the corresponding `@local!` implementation.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let it: MyIterator<Int64> @local! = MyIterator<Int64>() @local!
+    // MyIterator does not provide the @local! implementation of next; the call hits the default implementation of Iterator
+    try {
+        it.next()
+        println("no exception")
+    } catch (e: IllegalStateException) {
+        println("caught: ${e.message}")
+    }
+}
+
+public class MyIterator<T> <: Iterator<T> {
+    public init() {}
+    public exclave init(this @local!) {}
+    public func next(): ?T {
+        return None<T>
+    }
+}
+```
+
+Output:
+
+```text
+caught: Current Iterator does not implement 'next' method for its @local! instance
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func next()
+
+```cangjie
+public open func next(this @local?): ?T @local?
+```
+
+Function: Obtains the next element in the iteration.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Option](core_package_enums.md#enum-optiont)\<T> @local? - The next element in the iteration.
+
+Exceptions:
+
+- [IllegalStateException](../../core/core_package_api/core_package_exceptions.md#class-illegalstateexception) - Thrown when the current iterator does not provide the corresponding `@local?` implementation.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let it: MyIterator<Int64> @local? = MyIterator<Int64>() @local?
+    // MyIterator does not provide the @local? implementation of next; the call hits the default implementation of Iterator
+    try {
+        it.next()
+        println("no exception")
+    } catch (e: IllegalStateException) {
+        println("caught: ${e.message}")
+    }
+}
+
+public class MyIterator<T> <: Iterator<T> {
+    public init() {}
+    public exclave init(this @local!) {}
+    public exclave init(this @local?) {}
+    public func next(): ?T {
+        return None<T>
+    }
+}
+```
+
+Output:
+
+```text
+caught: Current Iterator does not implement 'next' method for its @local? instance
+```
+
+<!--DelEnd_sink-->
 ### extend\<T> Iterator\<T>
 
 ```cangjie
@@ -1548,7 +2000,7 @@ Execution result:
 public func isEmpty(): Bool
 ```
 
-Function: Determines whether the current iterator is empty. This method calls [next()](#func-next-1) and determines whether the current iterator is empty based on its return value. Therefore, if the current iterator is not empty, one element will be consumed.
+Function: Determines whether the current iterator is empty. This method calls [next()](#func-next-3) and determines whether the current iterator is empty based on its return value. Therefore, if the current iterator is not empty, one element will be consumed.
 
 Returns:
 
@@ -2109,7 +2561,7 @@ Parent type:
 
 - [Any](core_package_interfaces.md#interface-any)
 
-### init()
+### const init()
 
 ```cangjie
 public const init()
@@ -2127,6 +2579,85 @@ main(): Int64 {
 }
 ```
 
+<!--Del_sink-->
+### const init(this @local!)
+
+```cangjie
+public exclave const init(this @local!)
+```
+
+Function: Constructs an `object` instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let o1: Object @local! = Object() @local!
+    let o2: Object @local! = Object() @local!
+    // Reference comparison of the same instance returns true, different instances return false
+    println("refEq(o1, o1): ${refEq(o1, o1)}")
+    println("refEq(o1, o2): ${refEq(o1, o2)}")
+}
+```
+
+Output:
+
+```text
+refEq(o1, o1): true
+refEq(o1, o2): false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### const init(this @local?)
+
+```cangjie
+public exclave const init(this @local?)
+```
+
+Function: Constructs an `object` instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The `@local?` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let o1: Object @local? = Object() @local?
+    let o2: Object @local? = Object() @local?
+    // Reference comparison of the same instance returns true, different instances return false
+    println("refEq(o1, o1): ${refEq(o1, o1)}")
+    println("refEq(o1, o2): ${refEq(o1, o2)}")
+}
+```
+
+Output:
+
+```text
+refEq(o1, o1): true
+refEq(o1, o2): false
+```
+
+<!--DelEnd_sink-->
 ## class RangeIterator\<T> <: Iterator\<T> where T <: Countable\<T> & Comparable\<T> & Equatable\<T>
 
 ```cangjie
@@ -2755,6 +3286,90 @@ After append - Size: 22
 After append - Content: 'Hello, World! Welcome!'
 ```
 
+<!--Del_sink-->
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Constructs an empty StringBuilder instance, with an initial capacity of 32 bytes.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb: StringBuilder @local! = StringBuilder() @local!
+    let n: Int64 @local! = 42
+    let s: String @local! = n.toString()
+    sb.append(s)
+    let r: String @local! = sb.toString()
+    println(r)
+}
+```
+
+Output:
+
+```text
+42
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, capacity: Int64)
+```
+
+Function: Constructs a StringBuilder instance with the specified initial capacity.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The `@local!` instance being constructed.
+- capacity: [Int64](core_package_intrinsics.md#int64) - The specified initial capacity, which must be greater than 0.
+
+Exceptions:
+
+- [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception) - Thrown when capacity is less than or equal to 0.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb: StringBuilder @local! = StringBuilder(64) @local!
+    let n: Int64 @local! = 42
+    let s: String @local! = n.toString()
+    sb.append(s)
+    let r: String @local! = sb.toString()
+    println(r)
+}
+```
+
+Output:
+
+```text
+42
+```
+
+<!--DelEnd_sink-->
 ### func append(Array\<Rune>)
 
 ```cangjie
@@ -3490,6 +4105,130 @@ Content: 'UInt8 value: 123'
 Size: 16
 ```
 
+<!--Del_sink-->
+### func append(String)
+
+```cangjie
+public func append(str: String @local?): Unit
+```
+
+Function: Appends the content of `str` to the end of the [StringBuilder](core_package_classes.md#class-stringbuilder). The bytes of the string are copied into the internal buffer; the appended content does not depend on the lifetime of the local region where the input string resides.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- str: [String](core_package_structs.md#struct-string) @local? - The string to be appended; `@local!` and `@local?` arguments are supported. An empty string does not change the existing content.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb = StringBuilder()
+    let n: Int64 @local! = 42
+    let s: String @local! = n.toString()
+    // Append a local string to the heap StringBuilder
+    sb.append(s)
+    println(sb.toString())
+}
+```
+
+Output:
+
+```text
+42
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func append(String)
+
+```cangjie
+public exclave func append(this @local!, str: String @local?): Unit
+```
+
+Function: Appends string content to a StringBuilder. An empty string does not change the existing content; the buffer grows when the capacity is insufficient.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- str: [String](core_package_structs.md#struct-string) @local? - The string to be appended.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb: StringBuilder @local! = StringBuilder() @local!
+    let n1: Int64 @local! = 42
+    let n2: Int64 @local! = 7
+    let s1: String @local! = n1.toString()
+    let s2: String @local! = n2.toString()
+    sb.append(s1)
+    sb.append(s2)
+    let r: String @local! = sb.toString()
+    println(r)
+}
+```
+
+Output:
+
+```text
+427
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+### func append\<T>(T) where T <: ToString
+
+```cangjie
+public exclave func append<T>(this @local!, v: T @local?): Unit where T <: ToString
+```
+
+Function: Calls the local `toString` method of the argument and appends the result to the StringBuilder. The argument type must implement the corresponding local `toString` method.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- v: T @local? - The value to be converted and appended.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb: StringBuilder @local! = StringBuilder() @local!
+    let n: Int64 @local! = 123
+    // Append an Int64 value that implements the local toString
+    sb.append(n)
+    let r: String @local! = sb.toString()
+    println(r)
+}
+```
+
+Output:
+
+```text
+123
+```
+
+<!--DelEnd_sink-->
 ### func appendFromUtf8(Array\<Byte>)
 
 ```cangjie
@@ -3721,6 +4460,54 @@ Size: 13
 Type check: true
 ```
 
+<!--Del_sink-->
+### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Copies the current content of the StringBuilder into a string in the caller's local region. Subsequent appends do not change the returned string.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - A string copy of the current content.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let sb: StringBuilder @local! = StringBuilder() @local!
+    let n: Int64 @local! = 42
+    let s: String @local! = n.toString()
+    sb.append(s)
+    let view: StringBuilder @local? = sb
+    let r: String @local! = view.toString()
+    // Subsequent appends do not change the returned string
+    let n2: Int64 @local! = 7
+    let s2: String @local! = n2.toString()
+    sb.append(s2)
+    println(r)
+}
+```
+
+Output:
+
+```text
+42
+```
+
+<!--DelEnd_sink-->
 ## class Thread
 
 ```cangjie
@@ -3933,7 +4720,6 @@ Multiple registrations will overwrite previous handlers.
 When multiple threads terminate due to exceptions concurrently, the handler will be executed concurrently for each thread, so thread safety must be ensured in the handler.
 
 The handler's parameter is the uncaught [Error](core_package_exceptions.md#class-error).
-
 
 > **Note：**
 >

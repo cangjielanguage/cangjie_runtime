@@ -73,7 +73,7 @@ id: 30, name: A
 public func get(): T
 ```
 
-功能：尝试从 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 中获取对象， 若从 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 中获取对象失败，则调用 newFunc 创建新的对象并返回该对象 get 的对象不使用之后应该通过 put 归还给 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated)。
+功能：尝试从 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 中获取对象，若从 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 中获取对象失败，则调用 newFunc 创建新的对象并返回该对象。get 得到的对象不再使用后，应该通过 put 归还给 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated)。
 
 返回值：
 
@@ -119,7 +119,7 @@ id: 30, name: A
 public func put(item: T): Unit
 ```
 
-功能：尝试将对象放入 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 中，不保证一定会将对象放入 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated) 在对一个对象调用 put 后不应该再对该对象进行任何操作，否则可能导致非预期问题。
+功能：将对象归还给 [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated)。对象将被放入当前线程对应的子队列中，供同一线程后续的 get 操作获取并复用。对一个对象调用 put 后不应该再对该对象进行任何操作，否则可能导致非预期问题。
 
 参数：
 

@@ -80,40 +80,15 @@ void WinModuleManager::Init() { ReadWinModuleAtInit(); }
 
 void WinModuleManager::ReadWinModuleAtInit()
 {
-    // get windows PEB(Process Environment Block)
-    PPEB ppeb = (PPEB)__readgsqword(0x60); // 60: gs:0x60 is the address of PEB
-    PLIST_ENTRY head = ppeb->Ldr->InMemoryOrderModuleList.Flink;
-    PLIST_ENTRY iterator = head;
-    do {
-        Uptr entryAddress = reinterpret_cast<Uptr>(iterator) - offsetof(LdrDataTableEntry, inMemoryOrderLinks);
-        LdrDataTableEntry* ldrDataEntry = reinterpret_cast<LdrDataTableEntry*>(entryAddress);
-        // get moduleName
-        if (ldrDataEntry->baseDllName.Buffer == nullptr) {
-            iterator = iterator->Flink;
-            continue;
-        }
-        std::wstring wstr(ldrDataEntry->baseDllName.Buffer);
-        std::string moduleName(wstr.begin(), wstr.end());
-
-        // exclude nativeLibNames
-        if (!moduleName.empty() && nativeLibNames.count(moduleName) == 0) {
-            ULONG funcTableSize = 0;
-            RuntimeFunction* funcTable = reinterpret_cast<RuntimeFunction*>(ImageDirectoryEntryToData(
-                ldrDataEntry->dllBase, true, IMAGE_DIRECTORY_ENTRY_EXCEPTION, &funcTableSize));
-            uint32_t funcTableCount = funcTableSize / sizeof(RuntimeFunction);
-
-            Uptr imageBaseStart = reinterpret_cast<Uptr>(ldrDataEntry->dllBase);
-            Uptr imageBaseEnd = imageBaseStart + ldrDataEntry->sizeOfImage;
-            WinModule* winModule = new (std::nothrow)
-                WinModule(imageBaseStart, imageBaseEnd, funcTable, funcTableCount, moduleName.c_str());
-            if (UNLIKELY(winModule == nullptr)) {
-                LOG(RTLOG_FATAL, "new WinModule failed.");
-            }
-            winModules.emplace(winModule);
-        }
-
-        iterator = iterator->Flink;
-    } while (iterator != head);
+    // Enumerate modules through documented Win32 APIs instead of walking the
+    // PEB loader list with hardcoded LDR_DATA_TABLE_ENTRY offsets. Recent
+    // Windows builds embed some loader nodes in ntdll's static data with a
+    // shifted layout, so the legacy baseDllName.Buffer slot holds a
+    // {Length, MaximumLength} header (e.g. 0x0000000000620026) instead of a
+    // pointer, and std::wstring construction (wcslen) faults at startup
+    // (issue #920). EnumProcessModules / GetModuleInformation are stable
+    // across Windows versions.
+    ReadWinModuleAtRunning();
 }
 
 void WinModuleManager::ReadModuleInfo(HMODULE* moduleHandlers, int moduleHandlersCapacity)
@@ -156,7 +131,7 @@ void WinModuleManager::ReadModuleInfo(HMODULE* moduleHandlers, int moduleHandler
         uint32_t funcTableCount = funcTableSize / sizeof(RuntimeFunction);
 
         WinModule* winModule =
-            new (std::nothrow) WinModule(imageBaseStart, imageBaseEnd, funcTable, funcTableCount, moduleFName.c_str());
+            new (std::nothrow) WinModule(imageBaseStart, imageBaseEnd, funcTable, funcTableCount, moduleName.c_str());
         if (UNLIKELY(winModule == nullptr)) {
             LOG(RTLOG_FATAL, "new WinModule failed.");
         }

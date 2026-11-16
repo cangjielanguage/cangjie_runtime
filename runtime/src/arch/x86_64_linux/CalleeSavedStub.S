@@ -75,6 +75,51 @@
     .size \funcNameStub, .-\funcNameStub
     .endm
 
+    .macro LocalRegionStub, funcName, funcNameStub
+    .text
+    .align 2
+    .global \funcNameStub
+    .type \funcNameStub, @function
+\funcNameStub:
+    .cfi_startproc
+    pushq   %rbp
+    .cfi_def_cfa_offset 16
+    .cfi_offset %rbp, -16
+    movq    %rsp, %rbp
+    .cfi_def_cfa_register %rbp
+    subq    $CalleeSavedRegistersStubFrameSize, %rsp
+
+    movq    %r15, -8(%rbp)
+    movq    %r14, -16(%rbp)
+    movq    %r13, -24(%rbp)
+    movq    %r12, -32(%rbp)
+    movq    %rbx, -40(%rbp)
+    .cfi_rel_offset %rbx, -40
+    .cfi_rel_offset %r12, -32
+    .cfi_rel_offset %r13, -24
+    .cfi_rel_offset %r14, -16
+    .cfi_rel_offset %r15, -8
+
+    movq    0(%rbp), %rdi
+    callq   \funcName
+
+    callq   MRT_GetThreadLocalData@PLT
+    movq    %rax,  %r15
+
+    addq    $CalleeSavedRegistersStubFrameSize, %rsp
+
+    movq    -16(%rbp), %r14
+    movq    -24(%rbp), %r13
+    movq    -32(%rbp), %r12
+    movq    -40(%rbp), %rbx
+
+    popq    %rbp
+    .cfi_def_cfa %rsp, 8
+    retq
+    .cfi_endproc
+    .size \funcNameStub, .-\funcNameStub
+    .endm
+
 .global unwindPCForC2RStubStart
 unwindPCForC2RStubStart:
 CalleeSavedRegistersStub MCC_NewObject CJ_MCC_NewObject
@@ -117,5 +162,18 @@ CalleeSavedRegistersStub MCC_NewArrayGeneric CJ_MCC_NewArrayGeneric
 CalleeSavedRegistersStub MCC_DumpCJHeapData CJ_MCC_DumpCJHeapData
 CalleeSavedRegistersStub MCC_NewAndInitEnumTupleObject CJ_MCC_NewAndInitEnumTupleObject
 CalleeSavedRegistersStub MCC_GetAssociatedValues CJ_MCC_GetAssociatedValues
+LocalRegionStub MCC_StartLocalRegion CJ_MCC_StartLocalRegion
+LocalRegionStub MCC_EndLocalRegion CJ_MCC_EndLocalRegion
+CalleeSavedRegistersStub MCC_NewLocalObject CJ_MCC_NewLocalObject
+CalleeSavedRegistersStub MCC_NewLocalFinalizer CJ_MCC_NewLocalFinalizer
+CalleeSavedRegistersStub MCC_NewLocalArray CJ_MCC_NewLocalArray
+CalleeSavedRegistersStub MCC_NewLocalObjArray CJ_MCC_NewLocalObjArray
+CalleeSavedRegistersStub MCC_NewLocalArray8 CJ_MCC_NewLocalArray8
+CalleeSavedRegistersStub MCC_NewLocalArray16 CJ_MCC_NewLocalArray16
+CalleeSavedRegistersStub MCC_NewLocalArray32 CJ_MCC_NewLocalArray32
+CalleeSavedRegistersStub MCC_NewLocalArray64 CJ_MCC_NewLocalArray64
+CalleeSavedRegistersStub MCC_NewLocalGenericObject CJ_MCC_NewLocalGenericObject
+CalleeSavedRegistersStub MCC_NewLocalGenericArray CJ_MCC_NewLocalGenericArray
+CalleeSavedRegistersStub MCC_NewLocalWeakRefObject CJ_MCC_NewLocalWeakRefObject
 .global unwindPCForC2RStubEnd
 unwindPCForC2RStubEnd:

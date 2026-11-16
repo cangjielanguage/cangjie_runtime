@@ -96,7 +96,24 @@ public func exists(path: Path): Bool {
     exists(path._rawPath)
 }
 
+@When[env != "ohos"]
+public func exists(path: Path @local?): Bool {
+    exists(path._rawPath)
+}
+
 public func exists(path: String): Bool {
+    PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
+
+    unsafe {
+        let cPath = LibC.mallocCString(path)
+        var ret: Int8 = CJ_FS_Exists(cPath)
+        LibC.free(cPath)
+        return ret == 0
+    }
+}
+
+@When[env != "ohos"]
+public func exists(path: String @local?): Bool {
     PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
 
     unsafe {

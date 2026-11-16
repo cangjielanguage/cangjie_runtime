@@ -37,6 +37,10 @@ public class ByteBuffer <: IOStream & Seekable {
     public init() {
         this(DEFAULT_CAPACITY)
     }
+    @When[env != "ohos"]
+    public exclave init(this @local!) {
+        this(DEFAULT_CAPACITY)
+    }
 
     /**
      * Constructors
@@ -48,6 +52,15 @@ public class ByteBuffer <: IOStream & Seekable {
     public init(capacity: Int64) {
         if (capacity < 0) {
             throw IllegalArgumentException("Invalid argument 'capacity': expected a non-negative value, got '${capacity}'.")
+        }
+        this.myData = Array<Byte>(capacity, repeat: 0)
+        this.start = 0
+        this._length = 0
+    }
+    @When[env != "ohos"]
+    public exclave init(this @local!, capacity: Int64) {
+        if (capacity < 0) {
+            throw IllegalArgumentException("The capacity must be greater than or equal to 0: ${capacity}.")
         }
         this.myData = Array<Byte>(capacity, repeat: 0)
         this.start = 0
@@ -127,6 +140,25 @@ public class ByteBuffer <: IOStream & Seekable {
         _length -= len
         return len
     }
+    @When[env != "ohos"]
+    public exclave func read(this @local!, buffer: Array<Byte> @local!): Int64 {
+        if (_length == 0) {
+            return 0
+        }
+        let bufSize = buffer.size
+        if (bufSize == 0) {
+            throw IllegalArgumentException("The buffer is empty.")
+        }
+        let len = if (_length > bufSize) {
+            bufSize
+        } else {
+            _length
+        }
+        myData.copyTo(buffer, start, 0, len)
+        start += len
+        _length -= len
+        return len
+    }
 
     /**
      * Read a byte from the buffer.
@@ -152,6 +184,32 @@ public class ByteBuffer <: IOStream & Seekable {
      */
     @OverflowWrapping
     public func write(buffer: Array<Byte>): Unit {
+        let bufSize = buffer.size
+        reserve(bufSize)
+        if (_length >= 0) {
+            buffer.copyTo(myData, 0, start + _length, bufSize)
+            _length += bufSize
+        } else {
+            buffer.copyTo(myData, 0, start, bufSize)
+            _length = bufSize
+        }
+    }
+    @When[env != "ohos"]
+    @OverflowWrapping
+    public exclave func write(this @local!, buffer: Array<Byte>): Unit {
+        let bufSize = buffer.size
+        reserve(bufSize)
+        if (_length >= 0) {
+            buffer.copyTo(myData, 0, start + _length, bufSize)
+            _length += bufSize
+        } else {
+            buffer.copyTo(myData, 0, start, bufSize)
+            _length = bufSize
+        }
+    }
+    @When[env != "ohos"]
+    @OverflowWrapping
+    public exclave func write(this @local!, buffer: Array<Byte> @local!): Unit {
         let bufSize = buffer.size
         reserve(bufSize)
         if (_length >= 0) {
@@ -228,6 +286,28 @@ public class ByteBuffer <: IOStream & Seekable {
 
         grow(growSize)
     }
+    @When[env != "ohos"]
+    public exclave func reserve(this @local!, additional: Int64): Unit {
+        if (additional < 0) {
+            throw IllegalArgumentException("The additional must be greater than or equal to 0.")
+        }
+
+        if (_length >= 0 && myData.size - start - _length >= additional) {
+            return
+        }
+
+        if (_length < 0 && myData.size - start >= additional) {
+            return
+        }
+
+        let growSize = if (_length >= 0) {
+            checkGrowSize(myData.size, additional)
+        } else {
+            checkGrowSize(this.start, additional)
+        }
+
+        grow(growSize)
+    }
 
     /**
      * Seek to an offset, in bytes, in a stream.
@@ -256,6 +336,23 @@ public class ByteBuffer <: IOStream & Seekable {
 
         this.start
     }
+    @When[env != "ohos"]
+    public func seek(this @local!, sp: SeekPosition): Int64 {
+        let pos: Int64 = match (sp) {
+            case Current(offset) => this.start + offset
+            case Begin(offset) => offset
+            case End(offset) => this.start + this._length + offset
+        }
+
+        if (pos < 0) {
+            throw IOException("Can't move the position before the beginning of the stream.")
+        }
+
+        this._length += this.start - pos
+        this.start = pos
+
+        this.start
+    }
 
     private func grow(minCapacity: Int64): Unit {
         let oldCapacity = myData.size
@@ -268,8 +365,20 @@ public class ByteBuffer <: IOStream & Seekable {
         myData.copyTo(itemData, 0, 0, start + _length)
         myData = itemData
     }
+    @When[env != "ohos"]
+    private exclave func grow(this @local!, minCapacity: Int64): Unit {
+        let oldCapacity = myData.size
+        var newCapacity = checkGrowSize(oldCapacity, (oldCapacity >> 1))
+        if (newCapacity < minCapacity) {
+            newCapacity = minCapacity
+        }
 
-    private func checkGrowSize(oldSize: Int64, additional: Int64): Int64 {
+        let itemData = Array<Byte>(newCapacity, repeat: 0) @local!
+        myData.copyTo(itemData, 0, 0, start + _length)
+        myData = itemData
+    }
+
+    private func checkGrowSize(this @local?, oldSize: Int64, additional: Int64): Int64 {
         try {
             return oldSize + additional
         } catch (_: OverflowException) {

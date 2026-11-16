@@ -36,6 +36,8 @@ SECTIONS
       *(.rela.plt)
       *(.rela.iplt)
     }
+  /* Explicitly place RELR in the read-only segment instead of relying on lld orphan placement. */
+  .relr.dyn       : { *(.relr.dyn) }
   .init           :
   {
     KEEP (*(SORT_NONE(.init)))
@@ -140,7 +142,7 @@ SECTIONS
   .data1          : { *(.data1) }
   /* Cangjie Metadata sections start */
   . = ALIGN(16);
-  _CJMetadataStart = .;
+  PROVIDE_HIDDEN(_CJMetadataStart = .);
   PROVIDE_HIDDEN(__CJMetadataStart = .);
   .cjmetadata : {
       KEEP(*cjstart.o(.cjmetadata.rw.header))
@@ -285,10 +287,10 @@ SECTIONS
   PROVIDE_HIDDEN(__CJReflectGISize = __CJReflectGIEnd - __CJReflectGI);
   PROVIDE_HIDDEN(__CJMetaDataSize = . - __CJMetadataStart);
   /* Cangjie Metadata sections end */
-  _edata = .; PROVIDE (edata = .);
+  PROVIDE_HIDDEN(_edata = .); PROVIDE (edata = .);
   . = .;
-  __bss_start = .;
-  __bss_start__ = .;
+  PROVIDE_HIDDEN(__bss_start = .);
+  PROVIDE_HIDDEN(__bss_start__ = .);
   .bss            :
   {
    *(.dynbss)
@@ -299,12 +301,12 @@ SECTIONS
       .bss section disappears because there are no input sections. */
    . = ALIGN(. != 0 ? 64 / 8 : 1);
   }
-  _bss_end__ = . ; __bss_end__ = . ;
+  PROVIDE_HIDDEN(_bss_end__ = .) ; PROVIDE_HIDDEN(__bss_end__ = .) ;
   . = ALIGN(64 / 8);
   . = SEGMENT_START("ldata-segment", .);
   . = ALIGN(64 / 8);
-  __end__ = . ;
-  _end = .; PROVIDE (end = .);
+  PROVIDE_HIDDEN(__end__ = .) ;
+  PROVIDE_HIDDEN(_end = .); PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }

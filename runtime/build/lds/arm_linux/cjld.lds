@@ -57,7 +57,7 @@ SECTIONS
     *(SORT(.text.*MRT*))
     *(SORT(.text.*MCC*))
     *(SORT(.text.*MapleRuntime*))
-    *(SORT(.text.*Monitor*))
+    *(SORT(.text.Monitor*))
     *(.text_thread)
     g_runtimeStaticEnd = .;
     *(SORT(.text.*))

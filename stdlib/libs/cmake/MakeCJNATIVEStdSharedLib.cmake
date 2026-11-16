@@ -34,7 +34,13 @@ function(make_cangjie_lib target_name)
 
     set(clang_compiler "${CMAKE_C_COMPILER}")
     if(OHOS)
+        list(APPEND flags_to_compile -z max-page-size=${OHOS_MAX_PAGE_SIZE})
         list(APPEND flags_to_compile -z relro -z now -z noexecstack)
+        # Standard system images pack relative relocations for all native components by default
+        # (build/config/compiler/BUILD.gn) and musl ldso handles DT_RELR, so pack them here too.
+        # Std shared libraries are linked by ld.lld directly here, bypassing the cjc driver, hence
+        # the toolchain-level default does not reach this link and the flag is passed explicitly.
+        list(APPEND flags_to_compile -z pack-relative-relocs)
         # Unfortunately, a bug in library `winpthread` our ld.lld depends causes deadlock occasionally
         # while linking. We disable multi-threading for now until we have a work-around.
         list(APPEND flags_to_compile --threads=1)
@@ -179,7 +185,15 @@ function(make_cangjie_lib target_name)
         endif()
         set(boundscheck_link_option "boundscheck")
         to_link_library_option(boundscheck_link_option)
-        list(APPEND flags_to_compile "${boundscheck_link_option}")
+        # --as-needed is only supported by ELF linkers; MachO/PE keep the
+        # unconditional link.
+        if(DARWIN OR MINGW)
+            list(APPEND flags_to_compile "${boundscheck_link_option}")
+        else()
+            list(APPEND flags_to_compile "${LINKER_OPTION_PREFIX}--as-needed")
+            list(APPEND flags_to_compile "${boundscheck_link_option}")
+            list(APPEND flags_to_compile "${LINKER_OPTION_PREFIX}--no-as-needed")
+        endif()
         if(NOT DARWIN)
             if(TRIPLE STREQUAL "arm-linux-ohos")
                 list(APPEND flags_to_compile "-L${CANGJIE_TARGET_SYSROOT}/usr/lib/arm-linux-ohos")
@@ -281,7 +295,7 @@ function(make_cangjie_lib target_name)
 
         set(link_std_libraries_flag)
         if(ANDROID)
-            list(APPEND link_std_libraries_flag ${ANDROID_16K_LINKER_FLAGS})
+            list(APPEND link_std_libraries_flag "-Wl,-z,max-page-size=${ANDROID_MAX_PAGE_SIZE}")
         endif()
         foreach(library_name ${CANGJIE_LIBRARY_CANGJIE_STD_LIB_DEPENDS})
             set(lib_link_option "cangjie-${library_name}")

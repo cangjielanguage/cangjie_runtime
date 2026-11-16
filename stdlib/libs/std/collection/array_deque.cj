@@ -97,17 +97,20 @@ public class ArrayDeque<T> <: Deque<T> {
 
     @OverflowWrapping
     public func addLast(element: T): Unit {
-        _data[_tail] = element
-        _tail = if (_tail == _data.size - 1) {
+        let tail = _tail
+        let capacity = _data.size
+        unsafe { _data.setUnchecked(tail, element) }
+        let newTail = if (tail == capacity - 1) {
             0
         } else {
-            _tail + 1
+            tail + 1
         }
+        _tail = newTail
 
-        if (_tail == _head) {
-            grow(_data.size + 1, full: true)
+        if (newTail == _head) {
+            grow(capacity + 1, full: true)
         }
-        incModCount()
+        _version++
     }
 
     @OverflowWrapping

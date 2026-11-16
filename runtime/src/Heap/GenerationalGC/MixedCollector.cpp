@@ -232,8 +232,9 @@ void MixedCollector::ClearDeadObjectRSetSlots()
     MixedRegionManager& manager = MixedRegionSpace::CastDown(space.GetRegionManager());
     manager.GetOldSweptRegionList().VisitAllRegions([](RegionInfo* region) {
         region->VisitAllObjects([region](BaseObject* object) {
-            if (!region->IsMarkedObject(object)) {
-                const uintptr_t start = reinterpret_cast<uintptr_t>(object);
+            const uintptr_t start = reinterpret_cast<uintptr_t>(object);
+            // Finalizable objects and their children may survive through resurrection only.
+            if (!region->IsSurvivedObject(start - region->GetRegionStart())) {
                 region->ClearRSetSlots(start, RegionSpace::GetAllocSize(*object));
             }
         });

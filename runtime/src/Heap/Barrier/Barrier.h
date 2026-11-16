@@ -61,6 +61,9 @@ public:
     virtual void ReadGeneric(const ObjectPtr dstPtr, ObjectPtr obj, void* fieldPtr, size_t size) const;
 
 protected:
+    void ReadGenericToLocalObject(const ObjectPtr dstObj, void* fieldPtr, size_t size) const;
+    void ReadGenericFromLocalObject(const ObjectPtr dstObj, ObjectPtr obj, void* fieldPtr, size_t size) const;
+
     class LocalRefFieldContainer {
     public:
         // multi-thread unsafe.

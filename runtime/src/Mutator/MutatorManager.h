@@ -27,7 +27,7 @@
 
 namespace MapleRuntime {
 const uint64_t WAIT_LOCK_INTERVAL = 5000; // 5us
-const uint64_t WAIT_LOCK_TIMEOUT = 30;    // seconds
+const uint64_t WAIT_LOCK_TIMEOUT = 60;    // seconds
 const uint32_t MAX_TIMEOUT_TIMES = 1;
 const int STW_TIMEOUTS_THREADS_BASE_COUNT = 100;
 // STW wait base timeout in milliseconds, for every 100 threads, the time is increased by 240000ms.

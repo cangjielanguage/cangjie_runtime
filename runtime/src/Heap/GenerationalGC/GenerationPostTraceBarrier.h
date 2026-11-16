@@ -16,6 +16,8 @@ class GenerationPostTraceBarrier : public PostTraceBarrier {
 public:
     explicit GenerationPostTraceBarrier(Collector& collector) : PostTraceBarrier(collector) {}
 
+    BaseObject* ReadWeakRef(BaseObject* obj, RefField<false>& field) const override;
+
     void WriteReference(BaseObject* obj, RefField<false>& field, BaseObject* ref) const override
     {
         PostTraceBarrier::WriteReference(obj, field, ref);

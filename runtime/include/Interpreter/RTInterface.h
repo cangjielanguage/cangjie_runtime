@@ -127,6 +127,7 @@ typedef void (*INT_IterateFramesWithStateFn)(
 // - state - visiting state that was initialized in iterateFramesWithState callback. This state is passed between
 // consecutive calls to this function for different frames.
 // - frameDesc - description of the frame which slots are being visited.
+// - refVisitor - visitor callback provided by CJNative runtime for processing pointers to objects.
 // - stackPtrVisitor - visitor callback provided by CJNative runtime for processing slots with stack pointers.
 // - derivedPtrVisitor - derived pointers visitor callback provided by CJNative runtime for processing slots with
 // intrapointers (which point to stack).
@@ -134,7 +135,9 @@ typedef void (*INT_IterateFramesWithStateFn)(
 // Provided visitors cannot be called directly by interpreter. Interpreter should pass visitor to the callbacks defined
 // in `DYN_CJNativeInterface` to process slots.
 typedef void (*INT_VisitFrameRootsExpansionFn)(DYN_VisitingState state, INT_FrameDesc frameDesc,
-    DYN_RootVisitor stackPtrVisitor, DYN_DerivedPtrVisitor derivedPtrVisitor);
+    DYN_RootVisitor stackPtrVisitor,
+    DYN_DerivedPtrVisitor derivedPtrVisitor,
+    DYN_RootVisitor refVisitor);
 
 // Visit frame roots (local variables) of interpreted code with marking visitor.
 // params:
@@ -616,6 +619,37 @@ typedef DYN_ObjRef (*DYN_PostThrowExceptionFn)(DYN_ExceptionWrapper exceptionWra
 // - message - log message
 typedef void (*DYN_NativeLoggerFn)(int logLevel, char* tag, char* message);
 
+// Atomically reads the reference.
+// params:
+// - obj - pointer to AtomicReference object
+// - field - pointer to field within AtomicReference object
+// return: reference
+typedef DYN_ObjRef (*DYN_AtomicReadRef)(DYN_ObjRef obj, DYN_FieldRef field);
+
+// Atomically writes the reference.
+// params:
+// - ref - new reference
+// - obj - pointer to AtomicReference object
+// - field - pointer to field within AtomicReference object
+typedef void (*DYN_AtomicWriteRef)(DYN_ObjRef ref, DYN_ObjRef obj, DYN_FieldRef field);
+
+// Atomically swaps the reference.
+// params:
+// - ref - new reference
+// - obj - pointer to AtomicReference object
+// - field - pointer to field within AtomicReference object
+// return: old reference
+typedef DYN_ObjRef (*DYN_AtomicSwapRef)(DYN_ObjRef ref, DYN_ObjRef obj, DYN_FieldRef field);
+
+// CAS.
+// params:
+// - oldRef - reference to compare
+// - newRef - new reference
+// - obj - pointer to AtomicReference object
+// - field - pointer to field within AtomicReference object
+// return: 1, if oldRef matches current field value, 0 otherwise
+typedef int (*DYN_AtomicCompareAndSwapRef)(DYN_ObjRef oldRef, DYN_ObjRef newRef, DYN_ObjRef obj, DYN_FieldRef field);
+
 // endregion CJNative interface
 
 // region Interfaces
@@ -711,6 +745,11 @@ struct DYN_CJNativeInterface {
     DYN_I2NStubFn i2nStub;
 
     DYN_NativeLoggerFn nativeLogger;
+
+    DYN_AtomicReadRef atomicReadRef;
+    DYN_AtomicWriteRef atomicWriteRef;
+    DYN_AtomicSwapRef atomicSwapRef;
+    DYN_AtomicCompareAndSwapRef atomicCompareAndSwapRef;
 };
 
 // Initalize interpreter and fill it`s interface.

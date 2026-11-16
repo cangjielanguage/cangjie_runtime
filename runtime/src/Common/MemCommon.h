@@ -27,7 +27,7 @@ constexpr size_t MAX_BYTES = 256 * 1024;
 constexpr size_t NFREELIST = 208;
 constexpr int MIN_ALIGN_NUM = 8;
 
-enum AlignNmu { ALIGN_8 = 8, ALIGN_16 = 16, ALIGN_128 = 128, ALIGN_1024 = 1024, ALIGN_8192 = 8 * 1028 };
+enum class AlignNum { ALIGN_8 = 8, ALIGN_16 = 16, ALIGN_128 = 128, ALIGN_1024 = 1024, ALIGN_8192 = 8 * 1024 };
 
 enum MemberSize {
     ALING_8_BYTE = 128,
@@ -125,15 +125,15 @@ public:
     static inline size_t RoundUp(size_t bytes)
     {
         if (bytes <= MemberSize::ALING_8_BYTE) {
-            return RoundUp(bytes, AlignNmu::ALIGN_8);
+            return RoundUp(bytes, AlignNum::ALIGN_8);
         } else if (bytes <= MemberSize::ALING_16_BYTE) {
-            return RoundUp(bytes, AlignNmu::ALIGN_16);
+            return RoundUp(bytes, AlignNum::ALIGN_16);
         } else if (bytes <= MemberSize::ALING_128_BYTE) {
-            return RoundUp(bytes, AlignNmu::ALIGN_128);
+            return RoundUp(bytes, AlignNum::ALIGN_128);
         } else if (bytes <= MemberSize::ALING_1024_BYTE) {
-            return RoundUp(bytes, AlignNmu::ALIGN_1024);
+            return RoundUp(bytes, AlignNum::ALIGN_1024);
         } else if (bytes <= MemberSize::ALING_8192_BYTE) {
-            return RoundUp(bytes, AlignNmu::ALIGN_8192);
+            return RoundUp(bytes, AlignNum::ALIGN_8192);
         } else {
             return -1;
         }
@@ -196,7 +196,11 @@ public:
     }
 
 private:
-    static inline size_t RoundUp(size_t bytes, size_t alignNum) { return ((bytes + alignNum - 1) & ~(alignNum - 1)); }
+    static inline size_t RoundUp(size_t bytes, AlignNum alignment)
+    {
+        size_t alignNum = static_cast<size_t>(alignment);
+        return ((bytes + alignNum - 1) & ~(alignNum - 1));
+    }
 
     static inline size_t Index(size_t bytes, size_t alignShift)
     {

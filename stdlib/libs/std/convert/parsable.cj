@@ -54,6 +54,49 @@ public interface RadixConvertible<T> {
     func toString(radix!: Int64): String
 }
 
+@When[env != "ohos"]
+func parseCompInt(rawData: Array<Byte> @local?, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
+    var num: UInt64 = 0
+    var lineLength = 0
+    var rawDataSlice = rawData
+    if (isMark && formatBaseNum != 10) {
+        rawDataSlice = rawData[2..]
+    }
+    var digitCount: Int64 = 0
+    var lastWasUnderscore: Bool = false
+    for (i in 0..rawDataSlice.size) {
+        var digit: UInt64 = 0
+        if (rawDataSlice[i] == b'_') {
+            if (digitCount == 0 || lastWasUnderscore) {
+                throw IllegalArgumentException("The part of value convert failed.")
+            }
+            lastWasUnderscore = true
+            lineLength++
+            continue
+        }
+        lastWasUnderscore = false
+        digit = DIGITS_UI64[Int64(rawDataSlice[i])]
+        if (digit >= formatBaseNum || lineLength >= rawDataSlice.size) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        if (num > multmin) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        num *= formatBaseNum
+        if (maxAbsVal - num < digit) {
+            throw IllegalArgumentException("The part of value convert failed.")
+        }
+        num += digit
+        digitCount++
+    }
+    if (digitCount == 0 || lastWasUnderscore) {
+        throw IllegalArgumentException("The part of value convert failed.")
+    }
+    return num
+}
+
+// OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
+@When[env == "ohos"]
 func parseCompInt(rawData: Array<Byte>, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
     var num: UInt64 = 0
     var lineLength = 0
@@ -756,6 +799,25 @@ extend Int64 <: Parsable<Int64> {
         return Int64(num)
     }
 
+    @When[env != "ohos"]
+    @OverflowWrapping
+    public static func parse(data: String @local?): Int64 {
+        let (rawData, isNegative) = getDataAndFlag(data, true, "Int64")
+        var (formatBaseNum, multmin, maxAbsVal): (UInt64, UInt64, UInt64) = if (isNegative == 0) {
+            (FOTMAT_BASE_NUM_UI64_10, DECIMAL_OVERFLOW_LIMIT_MAXABSVAL_I64, MAXABSVAL_I64)
+        } else {
+            (FOTMAT_BASE_NUM_UI64_10, DECIMAL_OVERFLOW_LIMIT_I64, MAXVAL_I64)
+        }
+        if (rawData.size > 1 && rawData[0] == b'0') {
+            (formatBaseNum, multmin, maxAbsVal) = getBaseInfos(TypeBase.I64, isNegative, rawData)
+        }
+        var num: UInt64 = parseCompInt(rawData, formatBaseNum, multmin, maxAbsVal)
+        if (isNegative == 0) {
+            return Int64(-num)
+        }
+        return Int64(num)
+    }
+
     /**
      * @Description Convert a string of Int64 literals to an Option<Int64> value. If the failure occurs, Option<Int64>.None will be returned.
      *
@@ -880,6 +942,18 @@ extend UInt64 <: Parsable<UInt64> {
         return UInt64(parseCompInt(rawData, formatBaseNum, multmin, maxAbsVal))
     }
 
+    @When[env != "ohos"]
+    @OverflowWrapping
+    public static func parse(data: String @local?): UInt64 {
+        let (rawData, isNegative) = getDataAndFlag(data, false, "UInt64")
+        var (formatBaseNum, multmin, maxAbsVal): (UInt64, UInt64, UInt64) = (FOTMAT_BASE_NUM_UI64_10,
+            DECIMAL_OVERFLOW_LIMIT_UI64, MAXVAL_UI64)
+        if (rawData.size > 1 && rawData[0] == b'0') {
+            (formatBaseNum, multmin, maxAbsVal) = getBaseInfos(TypeBase.UI64, isNegative, rawData)
+        }
+        return UInt64(parseCompInt(rawData, formatBaseNum, multmin, maxAbsVal))
+    }
+
     /**
      * @Description Convert a string of UInt64 literals to an Option<UInt64> value. If the failure occurs, Option<UInt64>.None will be returned.
      *
@@ -948,6 +1022,27 @@ extend UInt64 <: RadixConvertible<UInt64> {
 func getDataAndFlag(data: String, isSigned: Bool, typeName: String): (Array<Byte>, Int64) {
     checkParseDataNotEmpty(data)
     getDataAndFlagCore(data, isSigned, typeName, false)
+}
+
+@When[env != "ohos"]
+exclave func getDataAndFlag(data: String @local?, isSigned: Bool, typeName: String): (Array<Byte>, Int64) @local? {
+    if (data.isEmpty()) {
+        throw IllegalArgumentException("The string is empty.")
+    }
+    let (rawData, isNegative) = match (data[0]) {
+        case '+' => throw IllegalArgumentException("Starting with \"+\" is illegal in ${typeName}.") // r'+'
+        case '-' =>
+            if (isSigned) {
+                (unsafe { data.rawData() }[1..], 0)
+            } else {
+                throw IllegalArgumentException("Starting with \"-\" is illegal in ${typeName}.")
+            }
+        case _ => (unsafe { data.rawData() }, 1)
+    }
+    if (rawData.size == 0) {
+        throw IllegalArgumentException("The value part is empty.")
+    }
+    return (rawData, isNegative)
 }
 
 func getTryDataAndFlag(data: String, isSigned: Bool, _: String): (Array<Byte>, Int64) {
@@ -1295,6 +1390,12 @@ extend Float64 <: Parsable<Float64> {
     @Frozen
     public static func parse(data: String): Float64 {
         parseFloat<Float64>(data)
+    }
+
+    @When[env != "ohos"]
+    @Frozen
+    public static func parse(data: String @local?): Float64 {
+        parseFloat<Float64>(String(data))
     }
 
     /**

@@ -2279,7 +2279,7 @@ Parameters:
 
 Returns:
 
-- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The length of the read data.
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The length of the read data. Returns `0` when the remote peer closed the stream or when the local socket is closed via `close`.
 
 Exceptions:
 

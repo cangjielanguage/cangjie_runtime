@@ -62,6 +62,7 @@ public:
     ObjectState GetObjectState() const { return stateWord.GetObjectState(); }
 
     bool IsForwarded() const { return GetObjectState().IsForwardedState(); }
+    bool IsLocalObject() const { return stateWord.IsLocalObject(); }
 
     void SetClassInfo(TypeInfo* klassRef) { stateWord.SetTypeInfo(klassRef); }
     void SetStateCode(ObjectState::ObjectStateCode state) { stateWord.SetStateCode(state); }
@@ -91,6 +92,13 @@ protected:
     {
         auto ref = reinterpret_cast<BaseObject*>(address);
         ref->stateWord.SetTypeInfo(klass);
+        return ref;
+    }
+
+    static inline BaseObject* SetLocalClassInfo(MAddress address, TypeInfo* klass)
+    {
+        auto ref = reinterpret_cast<BaseObject*>(address);
+        ref->stateWord.InitializeLocal(klass);
         return ref;
     }
 

@@ -389,6 +389,61 @@ main() {
 捕获到异常: Value is None
 ```
 
+<!--Del_sink-->
+### func getOrThrow(() -> Exception)
+
+```cangjie
+public exclave func getOrThrow(this @local!, exception: () -> Exception): T @local!
+```
+
+功能：获得值或抛出指定异常。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+- exception: () ->[Exception](core_package_exceptions.md#class-exception) - 异常函数，如果当前实例值是 [None](#none)，将执行该函数并将其返回值作为异常抛出。
+
+返回值：
+
+- T @local! - 如果当前实例值是 [Some](#somet)\<T>，返回类型为 `T` 的实例。
+
+异常：
+
+- [Exception](core_package_exceptions.md#class-exception) - 如果当前实例是 [None](#none)，抛出异常函数返回的异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    let o: Option<Int64> @local! = arr.first
+    let v: Int64 @local! = o.getOrThrow({=> IllegalArgumentException("empty option")})
+    println("v=${v}")
+    let empty: Array<Int64> @local! = []
+    let n: Option<Int64> @local! = empty.first
+    try {
+        n.getOrThrow({=> IllegalArgumentException("empty option")})
+        println("no exception")
+    } catch (e: IllegalArgumentException) {
+        println("caught: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+v=1
+caught: empty option
+```
+
+<!--DelEnd_sink-->
 ### func getOrThrow()
 
 ```cangjie
@@ -437,6 +492,60 @@ main() {
 捕获到NoneValueException异常
 ```
 
+<!--Del_sink-->
+### func getOrThrow()
+
+```cangjie
+public exclave func getOrThrow(this @local!): T @local!
+```
+
+功能：获得值或抛出异常。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+
+返回值：
+
+- T @local! - 如果当前实例值是 [Some](#somet)\<T>，返回类型为 `T` 的实例。
+
+异常：
+
+- [NoneValueException](core_package_exceptions.md#class-nonevalueexception) - 如果当前实例是 [None](#none)，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    let o: Option<Int64> @local! = arr.first
+    let v: Int64 @local! = o.getOrThrow()
+    println("v=${v}")
+    let empty: Array<Int64> @local! = []
+    let n: Option<Int64> @local! = empty.first
+    try {
+        n.getOrThrow()
+        println("no exception")
+    } catch (e: NoneValueException) {
+        println("caught NoneValueException")
+    }
+}
+```
+
+运行结果：
+
+```text
+v=1
+caught NoneValueException
+```
+
+<!--DelEnd_sink-->
 ### func isNone()
 
 ```cangjie
@@ -475,6 +584,50 @@ Some(42) is None: false
 None is None: true
 ```
 
+<!--Del_sink-->
+### func isNone()
+
+```cangjie
+public func isNone(this @local?): Bool
+```
+
+功能：判断当前实例值是否为 [None](#none)。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果当前实例值是 [None](#none)，则返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("o isNone: ${o.isNone()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("n isNone: ${n.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+o isNone: false
+n isNone: true
+```
+
+<!--DelEnd_sink-->
 ### func isSome()
 
 ```cangjie
@@ -513,6 +666,50 @@ Some(42) is Some: true
 None is Some: false
 ```
 
+<!--Del_sink-->
+### func isSome()
+
+```cangjie
+public func isSome(this @local?): Bool
+```
+
+功能：判断当前实例值是否为 [Some](#somet)。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果当前实例值是 [Some](#somet)，则返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("o isSome: ${o.isSome()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("n isSome: ${n.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+o isSome: true
+n isSome: false
+```
+
+<!--DelEnd_sink-->
 ### func map\<R>((T)->R)
 
 ```cangjie
@@ -821,6 +1018,52 @@ Some(42)和Some(42)的哈希码是否相等: true
 Some(42)和Some(24)的哈希码是否相等: false
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+功能：计算当前实例的哈希值。
+
+[Some](#somet)\<T> 的哈希值等于 `T` 的值对应的哈希值，[None](#none) 的哈希值等于 [Int64](core_package_intrinsics.md#int64)(0)。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [Int64](core_package_intrinsics.md#int64) - 哈希值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local? = [5, 6, 7]
+    let o: Option<Int64> @local? = arr.first
+    println("h=${o.hashCode()}")
+    let empty: Array<Int64> @local? = []
+    let n: Option<Int64> @local? = empty.first
+    println("h2=${n.hashCode()}")
+}
+```
+
+运行结果：
+
+```text
+h=5
+h2=0
+```
+
+<!--DelEnd_sink-->
 ### extend\<T> Option\<T> <: ToString where T <: ToString
 
 ```cangjie
@@ -984,6 +1227,327 @@ LT.compare(GT): Ordering.LT
 GT.compare(GT): Ordering.EQ
 ```
 
+<!--Del_sink-->
+#### func compare(Ordering)
+
+```cangjie
+public func compare(this @local?, other: Ordering @local?): Ordering
+```
+
+功能：判断当前 [Ordering](core_package_enums.md#enum-ordering) 实例与指定实例的大小关系。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Ordering](core_package_enums.md#enum-ordering) - 如果大于，返回 [Ordering](core_package_enums.md#enum-ordering).GT；如果等于，返回 [Ordering](core_package_enums.md#enum-ordering).EQ；如果小于，返回 [Ordering](core_package_enums.md#enum-ordering).LT。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let eq: Ordering @local? = Ordering.EQ
+    let r1 = lt.compare(gt)
+    println("LT.compare(GT): ${r1}")
+    let r2 = gt.compare(eq)
+    println("GT.compare(EQ): ${r2}")
+    let r3 = eq.compare(eq)
+    println("EQ.compare(EQ): ${r3}")
+}
+```
+
+运行结果：
+
+```text
+LT.compare(GT): Ordering.LT
+GT.compare(EQ): Ordering.GT
+EQ.compare(EQ): Ordering.EQ
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func ==(Ordering)
+
+```cangjie
+public operator func ==(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例与指定实例是否相等。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果相等，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let lt2: Ordering @local? = Ordering.LT
+    println("lt == lt2: ${lt == lt2}")
+    println("lt == gt: ${lt == gt}")
+}
+```
+
+运行结果：
+
+```text
+lt == lt2: true
+lt == gt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func !=(Ordering)
+
+```cangjie
+public operator func !=(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例与指定实例是否不等。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果不相等，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    let lt2: Ordering @local? = Ordering.LT
+    println("lt != lt2: ${lt != lt2}")
+    println("lt != gt: ${lt != gt}")
+}
+```
+
+运行结果：
+
+```text
+lt != lt2: false
+lt != gt: true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func <(Ordering)
+
+```cangjie
+public operator func <(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例是否小于指定实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果小于，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    println("lt < gt: ${lt < gt}")
+    println("gt < lt: ${gt < lt}")
+}
+```
+
+运行结果：
+
+```text
+lt < gt: true
+gt < lt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func >(Ordering)
+
+```cangjie
+public operator func >(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例是否大于指定实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果大于，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let gt: Ordering @local? = Ordering.GT
+    println("gt > lt: ${gt > lt}")
+    println("lt > gt: ${lt > gt}")
+}
+```
+
+运行结果：
+
+```text
+gt > lt: true
+lt > gt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func <=(Ordering)
+
+```cangjie
+public operator func <=(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例是否小于等于指定实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果小于等于，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let lt: Ordering @local? = Ordering.LT
+    let eq: Ordering @local? = Ordering.EQ
+    println("lt <= eq: ${lt <= eq}")
+    println("eq <= lt: ${eq <= lt}")
+}
+```
+
+运行结果：
+
+```text
+lt <= eq: true
+eq <= lt: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+
+#### operator func >=(Ordering)
+
+```cangjie
+public operator func >=(this @local?, other: Ordering @local?): Bool
+```
+
+功能：判断当前实例是否大于等于指定实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+- other: [Ordering](core_package_enums.md#enum-ordering) @local? - 待比较的另一个 `@local?` 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果大于等于，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let gt: Ordering @local? = Ordering.GT
+    let eq: Ordering @local? = Ordering.EQ
+    println("gt >= eq: ${gt >= eq}")
+    println("eq >= gt: ${eq >= gt}")
+}
+```
+
+运行结果：
+
+```text
+gt >= eq: true
+eq >= gt: false
+```
+
+<!--DelEnd_sink-->
 ### extend Ordering <: Hashable
 
 ```cangjie
@@ -1037,6 +1601,86 @@ EQ的哈希值: 2
 LT的哈希值: 1
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+功能：计算当前实例的哈希值，GT 的哈希值是 3，EQ 的哈希值是 2，LT 的哈希值是 1。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [Int64](core_package_intrinsics.md#int64) - 哈希值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local? = Ordering.LT
+    let h = ord.hashCode()
+    println("h=${h}")
+}
+```
+
+运行结果：
+
+```text
+h=1
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+功能：计算当前实例的哈希值，GT 的哈希值是 3，EQ 的哈希值是 2，LT 的哈希值是 1。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- this @local! - 调用该方法的当前 `@local!` 实例。
+
+返回值：
+
+- [Int64](core_package_intrinsics.md#int64) - 哈希值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local! = Ordering.GT
+    println("h=${ord.hashCode()}")
+}
+```
+
+运行结果：
+
+```text
+h=3
+```
+
+<!--DelEnd_sink-->
 ### extend Ordering <: ToString
 
 ```cangjie
@@ -1096,6 +1740,47 @@ EQ转换为字符串: Ordering.EQ
 LT转换为字符串: Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public func toString(this @local?): String @local!
+```
+
+功能：将当前 [Ordering](core_package_enums.md#enum-ordering) 实例转换为可输出的字符串（`Ordering.GT`、`Ordering.LT` 或 `Ordering.EQ`），结果字符串绑定在调用者的 local region 中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+> - 当前编译器/运行时版本下，`Ordering` 枚举的 `@local?` 分派存在已知缺陷：在部分调用形态下该方法可能抛出 [UnimplementedException](core_package_exceptions.md#class-unimplementedexception)（默认实现未被覆写分派命中），请以实际 SDK 版本行为为准。
+
+参数：
+
+- this @local? - 调用该方法的当前 `@local?` 实例。
+
+返回值：
+
+- [String](core_package_structs.md#struct-string) @local! - 转化后的字符串。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let ord: Ordering @local? = Ordering.LT
+    let s: String @local! = ord.toString()
+    println(s)
+}
+```
+
+运行结果：
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
 ## enum ThreadState
 
 ```cangjie

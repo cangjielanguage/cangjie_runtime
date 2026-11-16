@@ -24,7 +24,6 @@
 #include "StackManager.h"
 #include "TypeInfoManager.h"
 #include "dlfcn.h"
-#include <cstdint>
 #include <cstring>
 
 namespace MapleRuntime {
@@ -47,6 +46,13 @@ extern "C" void MCC_WriteStructField(
     const ObjectPtr obj, MAddress dst, size_t dstLen, MAddress src, size_t srcLen, GCTib gctib);
 extern "C" void MCC_WriteStaticStruct(MAddress dst, size_t dstLen, MAddress src, size_t srcLen, const GCTib gcTib);
 extern "C" void CJ_MCC_WriteGeneric(const ObjectPtr obj, void* fieldPtr, const ObjectPtr src, size_t size);
+extern "C" ObjectPtr MCC_AtomicReadReference(const ObjectPtr obj, RefField<true>* field, MemoryOrder order);
+extern "C" void MCC_AtomicWriteReference(
+    const ObjectPtr ref, const ObjectPtr obj, RefField<true>* field, MemoryOrder order);
+extern "C" ObjectPtr MCC_AtomicSwapReference(
+    const ObjectPtr ref, const ObjectPtr obj, RefField<true>* field, MemoryOrder order);
+extern "C" bool MCC_AtomicCompareSwapReference(const ObjectPtr oldRef, const ObjectPtr newRef, const ObjectPtr obj,
+    RefField<true>* field, MemoryOrder succOrder, MemoryOrder failOrder);
 
 namespace {
 static_assert(sizeof(uintptr_t) == sizeof(MAddress), "uintptr_t must be able to carry MAddress");
@@ -146,12 +152,13 @@ INT_FrameDesc toFrameDesc(FrameInfo frameInfo)
     };
 }
 
-void VisitInterpreterFrameRootsExpansion(DYN_VisitingState state, FrameInfo frameDesc, DYN_RootVisitor stackPtrVisitor,
-    DYN_DerivedPtrVisitor derivedPtrVisitor)
+void VisitInterpreterFrameRootsExpansion(DYN_VisitingState state, FrameInfo frameDesc,
+    DYN_RootVisitor traceAndFixPtrVisitor, DYN_RootVisitor stackPtrVisitor, DYN_DerivedPtrVisitor derivedPtrVisitor)
 {
     if (g_interpreterInterface) {
         INT_FrameDesc fd = toFrameDesc(frameDesc);
-        g_interpreterInterface->visitFrameRootsExpansion(state, fd, stackPtrVisitor, derivedPtrVisitor);
+        g_interpreterInterface->visitFrameRootsExpansion(state, fd,
+            stackPtrVisitor, derivedPtrVisitor, traceAndFixPtrVisitor);
     }
 }
 
@@ -557,6 +564,37 @@ void NativeLogger(int logLevel, char* tag, char* message)
     VLOG(static_cast<LogType>(logLevel), "[%s] %s", logTag, logMessage);
 }
 
+DYN_ObjRef AtomicReadRef(DYN_ObjRef obj, DYN_FieldRef field)
+{
+    DLOG(INTERPRETER, "AtomicReadRef obj %p, field %p", obj, field);
+    return MCC_AtomicReadReference(static_cast<BaseObject*>(obj),
+        static_cast<RefField<true>*>(field), std::memory_order_seq_cst);
+}
+
+void AtomicWriteRef(DYN_ObjRef ref, DYN_ObjRef obj, DYN_FieldRef field)
+{
+    DLOG(INTERPRETER, "AtomicWriteRef ref %p, obj %p, field %p", ref, obj, field);
+    return MCC_AtomicWriteReference(static_cast<BaseObject*>(ref), static_cast<BaseObject*>(obj),
+        static_cast<RefField<true>*>(field), std::memory_order_seq_cst);
+}
+
+DYN_ObjRef AtomicSwapRef(DYN_ObjRef ref, DYN_ObjRef obj, DYN_FieldRef field)
+{
+    DLOG(INTERPRETER, "AtomicSwapRef ref %p, obj %p, field %p", ref, obj, field);
+    return MCC_AtomicSwapReference(static_cast<BaseObject*>(ref), static_cast<BaseObject*>(obj),
+        static_cast<RefField<true>*>(field), std::memory_order_seq_cst);
+}
+
+int AtomicCompareAndSwapRef(DYN_ObjRef oldRef, DYN_ObjRef newRef, DYN_ObjRef obj, DYN_FieldRef field)
+{
+    DLOG(INTERPRETER, "AtomicCompareAndSwapRef old ref %p, new ref %p, obj %p, field %p",
+        oldRef, newRef, obj, field);
+    return MCC_AtomicCompareSwapReference(
+        static_cast<BaseObject*>(oldRef), static_cast<BaseObject*>(newRef),
+        static_cast<BaseObject*>(obj), static_cast<RefField<true>*>(field),
+        std::memory_order_seq_cst, std::memory_order_seq_cst);
+}
+
 size_t ComputeCJThreadDataOffset()
 {
     union MutatorTmpContainer {
@@ -672,6 +710,10 @@ DYN_CJNativeInterface CreateCJNativeInterface(void* symbolHandle)
         .stackGrowStub = reinterpret_cast<DYN_StackGrowStubFn>(&CJ_MCC_StackGrowStub),
         .i2nStub = i2nStub,
         .nativeLogger = &NativeLogger,
+        .atomicReadRef = &AtomicReadRef,
+        .atomicWriteRef = &AtomicWriteRef,
+        .atomicSwapRef = &AtomicSwapRef,
+        .atomicCompareAndSwapRef = &AtomicCompareAndSwapRef,
     };
     return cjnativeInterface;
 }

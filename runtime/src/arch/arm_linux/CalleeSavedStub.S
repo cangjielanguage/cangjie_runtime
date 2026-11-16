@@ -97,6 +97,69 @@ CalleeSavedStubFrameSize:
     .size \funcNameStub, .-\funcNameStub
     .endm
 
+    .macro LocalRegionStub, funcName, funcNameStub
+    .text
+    .p2align 2
+    .global \funcNameStub
+    .type \funcNameStub, %function
+\funcNameStub:
+    .cfi_startproc
+
+    sub  sp, sp, #StubFrameContextSize
+    str  r11, [sp]
+    str  lr, [sp, #4]
+    cfi_adjust_cfa_offset (StubFrameContextSize)
+    cfi_rel_offset (r11, 0)
+    cfi_rel_offset (lr, 4)
+
+    mov  r11, sp
+    cfi_def_cfa_register (sp)
+
+    str  r4, [sp, #StubCalleeSaveAreaSize]
+    str  r5, [sp, #StubCalleeSaveAreaSize+4]
+    str  r6, [sp, #StubCalleeSaveAreaSize+8]
+    str  r7, [sp, #StubCalleeSaveAreaSize+12]
+    str  r8, [sp, #StubCalleeSaveAreaSize+16]
+    str  r9, [sp, #StubCalleeSaveAreaSize+20]
+    str  r10, [sp, #StubCalleeSaveAreaSize+24]
+    cfi_rel_offset(r4, StubCalleeSaveAreaSize)
+    cfi_rel_offset(r5, StubCalleeSaveAreaSize+4)
+    cfi_rel_offset(r6, StubCalleeSaveAreaSize+8)
+    cfi_rel_offset(r7, StubCalleeSaveAreaSize+12)
+    cfi_rel_offset(r8, StubCalleeSaveAreaSize+16)
+    cfi_rel_offset(r9, StubCalleeSaveAreaSize+20)
+    cfi_rel_offset(r10, StubCalleeSaveAreaSize+24)
+
+    ldr  r0, [r11]
+    bl  \funcName
+
+    ldr  r4, [sp, #StubCalleeSaveAreaSize]
+    ldr  r5, [sp, #StubCalleeSaveAreaSize+4]
+    ldr  r6, [sp, #StubCalleeSaveAreaSize+8]
+    ldr  r7, [sp, #StubCalleeSaveAreaSize+12]
+    ldr  r8, [sp, #StubCalleeSaveAreaSize+16]
+    ldr  r9, [sp, #StubCalleeSaveAreaSize+20]
+    ldr  r10, [sp, #StubCalleeSaveAreaSize+24]
+    cfi_restore(r4)
+    cfi_restore(r5)
+    cfi_restore(r6)
+    cfi_restore(r7)
+    cfi_restore(r8)
+    cfi_restore(r9)
+    cfi_restore(r10)
+
+    ldr  r11, [sp]
+    ldr  lr, [sp, #4]
+    add  sp, sp, #StubFrameContextSize
+    cfi_adjust_cfa_offset (-StubFrameContextSize)
+    cfi_restore(r11)
+    cfi_restore(lr)
+
+    bx lr
+    .cfi_endproc
+    .size \funcNameStub, .-\funcNameStub
+    .endm
+
 #define StubFrameContextSizeForStackArgs    (4 * 20)
 #define StubCalleeSaveAreaSizeForStackArgs  (4 * 12)
 #define StubFrameAddrAreaSizeForStackArgs   (4 * 8)
@@ -253,5 +316,18 @@ unwindPCForC2RStubStart:
     CalleeSavedRegistersStub MCC_ThrowException CJ_MCC_ThrowException
     CalleeSavedRegistersStub MCC_ThrowStackOverflowError CJ_MCC_ThrowStackOverflowError
 #endif
+    LocalRegionStub MCC_StartLocalRegion CJ_MCC_StartLocalRegion
+    LocalRegionStub MCC_EndLocalRegion CJ_MCC_EndLocalRegion
+    CalleeSavedRegistersStub MCC_NewLocalObject CJ_MCC_NewLocalObject
+    CalleeSavedRegistersStub MCC_NewLocalFinalizer CJ_MCC_NewLocalFinalizer
+    CalleeSavedRegistersStub MCC_NewLocalArray CJ_MCC_NewLocalArray
+    CalleeSavedRegistersStub MCC_NewLocalObjArray CJ_MCC_NewLocalObjArray
+    CalleeSavedRegistersStub MCC_NewLocalArray8 CJ_MCC_NewLocalArray8
+    CalleeSavedRegistersStub MCC_NewLocalArray16 CJ_MCC_NewLocalArray16
+    CalleeSavedRegistersStub MCC_NewLocalArray32 CJ_MCC_NewLocalArray32
+    CalleeSavedRegistersStub MCC_NewLocalArray64 CJ_MCC_NewLocalArray64
+    CalleeSavedRegistersStub MCC_NewLocalGenericObject CJ_MCC_NewLocalGenericObject
+    CalleeSavedRegistersStub MCC_NewLocalGenericArray CJ_MCC_NewLocalGenericArray
+    CalleeSavedRegistersStub MCC_NewLocalWeakRefObject CJ_MCC_NewLocalWeakRefObject
     .global unwindPCForC2RStubEnd
 unwindPCForC2RStubEnd:

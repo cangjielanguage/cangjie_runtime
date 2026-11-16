@@ -482,6 +482,45 @@ extern int64_t CJ_OS_WaitSubProcessExit(int32_t pid)
     return status;
 }
 
+/*
+ * Non-blocking wait for process exit (Linux/macOS).
+ *
+ * Polls the child once with waitpid(pid, &status, WNOHANG) and parses the raw
+ * status, so the caller never needs to spawn a background reaper thread. This is
+ * the building block for a timeout-correct `SubProcess.wait(timeout:)`:
+ * a timed-out poll leaves NO residual waiter behind, and a subsequent wait()
+ * can still reap the (possibly already-zombie) child and read its real exit code.
+ *
+ * Return values:
+ *    1  - child has been reaped; *exitCode is set to the exit code (normal exit)
+ *         or the terminating signal number (killed by signal), matching the
+ *         documented semantics of SubProcess.wait().
+ *    0  - child is still running (or the wait was interrupted by a signal;
+ *         caller should poll again later).
+ *   -1  - error (e.g. ECHILD, meaning the child was already reaped elsewhere);
+ *         *exitCode is untouched.
+ */
+extern int32_t CJ_OS_WaitSubProcessExitNonBlocking(int32_t pid, int64_t* exitCode)
+{
+    errno = 0;
+    int status;
+    pid_t ret = waitpid(pid, &status, WNOHANG);
+    if (ret == pid) {
+        if (WIFEXITED(status)) {
+            *exitCode = WEXITSTATUS(status);
+        } else if (WIFSIGNALED(status)) {
+            *exitCode = WTERMSIG(status);
+        } else {
+            *exitCode = (int64_t)status;
+        }
+        return 1;
+    }
+    if (ret == 0 || errno == EINTR) {
+        return 0;
+    }
+    return -1;
+}
+
 /* Terminate a process. */
 extern int32_t CJ_OS_Terminate(int32_t pid, bool force)
 {

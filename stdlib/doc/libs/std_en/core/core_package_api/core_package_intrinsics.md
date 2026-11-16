@@ -59,6 +59,88 @@ Execution result:
 1
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Bool instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Bool @local? = true
+    let b: Bool @local? = true
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Bool instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Bool @local! = true
+    let b: Bool @local! = true
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Bool <: ToString
 
 ```cangjie
@@ -103,6 +185,47 @@ Execution result:
 false
 true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Bool instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Bool @local? = true
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
 
 ## CPointer\<T>
 
@@ -1549,6 +1672,384 @@ Output:
 Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func compare(Float16)
+
+```cangjie
+public func compare(this @local?, other: Float16 @local?): Ordering
+```
+
+Function: Compares the current Float16 value with the specified Float16 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 2.5f16
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float16)
+
+```cangjie
+public operator func ==(this @local!, other: Float16 @local!): Bool
+```
+
+Function: Checks whether the current Float16 value is equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float16 @local! - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local! = 1.5f16
+    let b: Float16 @local! = 1.5f16
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float16)
+
+```cangjie
+public operator func ==(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 1.5f16
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float16)
+
+```cangjie
+public operator func !=(this @local!, other: Float16 @local!): Bool
+```
+
+Function: Checks whether the current Float16 value is not equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float16 @local! - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local! = 1.5f16
+    let b: Float16 @local! = 1.5f16
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float16)
+
+```cangjie
+public operator func !=(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is not equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 1.5f16
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Float16)
+
+```cangjie
+public operator func <(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is less than the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 2.5f16
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Float16)
+
+```cangjie
+public operator func >(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is greater than the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 2.5f16
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Float16)
+
+```cangjie
+public operator func <=(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is less than or equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 2.5f16
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Float16)
+
+```cangjie
+public operator func >=(this @local?, other: Float16 @local?): Bool
+```
+
+Function: Checks whether the current Float16 value is greater than or equal to the specified Float16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float16 @local? - The other Float16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 2.5f16
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
 ### extend Float16
 
 ```cangjie
@@ -1668,9 +2169,92 @@ Output:
 
 ```text
 Hash value of 1.5f16: 7729828949621302189
-Hash value of 1.5f16: 772982894962130## Float32
+Hash value of 1.5f16: 7729828949621302189
+Hash value of 2.0f16: 396734039217596648
+Do equal values have the same hash: true
+```
 
-Function: Represents a 32-bit floating-point number, conforming to the single-precision format (`binary32`) in `IEEE 754`.
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Float16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let b: Float16 @local? = 1.5f16
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Float16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local! = 1.5f16
+    let b: Float16 @local! = 1.5f16
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
 
 ### extend Float16 <: ToString
 
@@ -1728,6 +2312,47 @@ Execution Result:
 -0.001f16 converted to string: "-0.001000"
 Is the converted type String: true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Float16 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float16 @local? = 1.5f16
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+1.500000
+```
+
+<!--DelEnd_sink-->
 
 ## Float32
 
@@ -2185,6 +2810,384 @@ Output:
 Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func compare(Float32)
+
+```cangjie
+public func compare(this @local?, other: Float32 @local?): Ordering
+```
+
+Function: Compares the current Float32 value with the specified Float32 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 2.5f32
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float32)
+
+```cangjie
+public operator func ==(this @local!, other: Float32 @local!): Bool
+```
+
+Function: Checks whether the current Float32 value is equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float32 @local! - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local! = 1.5f32
+    let b: Float32 @local! = 1.5f32
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float32)
+
+```cangjie
+public operator func ==(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 1.5f32
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float32)
+
+```cangjie
+public operator func !=(this @local!, other: Float32 @local!): Bool
+```
+
+Function: Checks whether the current Float32 value is not equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float32 @local! - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local! = 1.5f32
+    let b: Float32 @local! = 1.5f32
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float32)
+
+```cangjie
+public operator func !=(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is not equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 1.5f32
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Float32)
+
+```cangjie
+public operator func <(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is less than the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 2.5f32
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Float32)
+
+```cangjie
+public operator func >(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is greater than the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 2.5f32
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Float32)
+
+```cangjie
+public operator func <=(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is less than or equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 2.5f32
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Float32)
+
+```cangjie
+public operator func >=(this @local?, other: Float32 @local?): Bool
+```
+
+Function: Checks whether the current Float32 value is greater than or equal to the specified Float32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float32 @local? - The other Float32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 2.5f32
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
 ### extend Float32
 
 ```cangjie
@@ -2309,6 +3312,88 @@ Hash value of 2.0f32: 396734039217596648
 Do equal values have the same hash: true
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Float32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let b: Float32 @local? = 1.5f32
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Float32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local! = 1.5f32
+    let b: Float32 @local! = 1.5f32
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Float32 <: ToString
 
 ```cangjie
@@ -2365,6 +3450,47 @@ Execution Result:
 -0.001f32 converted to string: "-0.001000"
 Is converted type String: true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Float32 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float32 @local? = 1.5f32
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+1.500000
+```
+
+<!--DelEnd_sink-->
 
 ## Float64
 
@@ -2822,6 +3948,384 @@ Output:
 Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func compare(Float64)
+
+```cangjie
+public func compare(this @local?, other: Float64 @local?): Ordering
+```
+
+Function: Compares the current Float64 value with the specified Float64 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 2.5
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float64)
+
+```cangjie
+public operator func ==(this @local!, other: Float64 @local!): Bool
+```
+
+Function: Checks whether the current Float64 value is equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float64 @local! - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local! = 1.5
+    let b: Float64 @local! = 1.5
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Float64)
+
+```cangjie
+public operator func ==(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 1.5
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float64)
+
+```cangjie
+public operator func !=(this @local!, other: Float64 @local!): Bool
+```
+
+Function: Checks whether the current Float64 value is not equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Float64 @local! - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local! = 1.5
+    let b: Float64 @local! = 1.5
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Float64)
+
+```cangjie
+public operator func !=(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is not equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 1.5
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Float64)
+
+```cangjie
+public operator func <(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is less than the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 2.5
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Float64)
+
+```cangjie
+public operator func >(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is greater than the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 2.5
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Float64)
+
+```cangjie
+public operator func <=(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is less than or equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 2.5
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Float64)
+
+```cangjie
+public operator func >=(this @local?, other: Float64 @local?): Bool
+```
+
+Function: Checks whether the current Float64 value is greater than or equal to the specified Float64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Float64 @local? - The other Float64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 2.5
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
 ### extend Float64
 
 ```cangjie
@@ -2946,6 +4450,88 @@ Hash value of 2.0f64: 8889205371494514623
 Do equal values have the same hash: true
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Float64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let b: Float64 @local? = 1.5
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Float64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local! = 1.5
+    let b: Float64 @local! = 1.5
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Float64 <: ToString
 
 ```cangjie
@@ -3002,6 +4588,47 @@ Execution result:
 -0.001f64 converted to string: "-0.001000"
 Is converted type String: true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Float64 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Float64 @local? = 1.5
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+1.500000
+```
+
+<!--DelEnd_sink-->
 
 ## Int16
 
@@ -3121,6 +4748,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(Int16)
+
+```cangjie
+public func compare(this @local?, other: Int16 @local?): Ordering
+```
+
+Function: Compares the current Int16 value with the specified Int16 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 200
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int16)
+
+```cangjie
+public operator func ==(this @local!, other: Int16 @local!): Bool
+```
+
+Function: Checks whether the current Int16 value is equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int16 @local! - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local! = 100
+    let b: Int16 @local! = 100
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int16)
+
+```cangjie
+public operator func ==(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 100
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int16)
+
+```cangjie
+public operator func !=(this @local!, other: Int16 @local!): Bool
+```
+
+Function: Checks whether the current Int16 value is not equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int16 @local! - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local! = 100
+    let b: Int16 @local! = 100
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int16)
+
+```cangjie
+public operator func !=(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is not equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 100
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Int16)
+
+```cangjie
+public operator func <(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is less than the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 200
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Int16)
+
+```cangjie
+public operator func >(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is greater than the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 200
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Int16)
+
+```cangjie
+public operator func <=(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is less than or equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 200
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Int16)
+
+```cangjie
+public operator func >=(this @local?, other: Int16 @local?): Bool
+```
+
+Function: Checks whether the current Int16 value is greater than or equal to the specified Int16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int16 @local? - The other Int16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 200
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend Int16 <: Countable\<Int16>
 
@@ -3257,6 +5262,88 @@ Hash value of -100: -100
 Do equal values have the same hash: true
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Int16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let b: Int16 @local? = 100
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Int16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local! = 100
+    let b: Int16 @local! = 100
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Int16 <: ToString
 
 ```cangjie
@@ -3313,6 +5400,47 @@ Output:
 0 converted to string: "0"
 Is converted type String: true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Int16 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int16 @local? = 100
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+100
+```
+
+<!--DelEnd_sink-->
 
 ## Int32
 
@@ -3432,6 +5560,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(Int32)
+
+```cangjie
+public func compare(this @local?, other: Int32 @local?): Ordering
+```
+
+Function: Compares the current Int32 value with the specified Int32 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int32)
+
+```cangjie
+public operator func ==(this @local!, other: Int32 @local!): Bool
+```
+
+Function: Checks whether the current Int32 value is equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int32 @local! - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local! = 10
+    let b: Int32 @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int32)
+
+```cangjie
+public operator func ==(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int32)
+
+```cangjie
+public operator func !=(this @local!, other: Int32 @local!): Bool
+```
+
+Function: Checks whether the current Int32 value is not equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int32 @local! - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local! = 10
+    let b: Int32 @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int32)
+
+```cangjie
+public operator func !=(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is not equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Int32)
+
+```cangjie
+public operator func <(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is less than the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Int32)
+
+```cangjie
+public operator func >(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is greater than the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Int32)
+
+```cangjie
+public operator func <=(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is less than or equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Int32)
+
+```cangjie
+public operator func >=(this @local?, other: Int32 @local?): Bool
+```
+
+Function: Checks whether the current Int32 value is greater than or equal to the specified Int32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int32 @local? - The other Int32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend Int32 <: Countable\<Int32>
 
@@ -3562,6 +6068,88 @@ Hash value of -100: -100
 Do equal values have the same hash: true
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Int32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let b: Int32 @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Int32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local! = 10
+    let b: Int32 @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Int32 <: ToString
 
 ```cangjie
@@ -3618,6 +6206,47 @@ Output:
 0 converted to string: "0"
 Is converted type String: true
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Int32 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int32 @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
 
 ## Int64
 
@@ -3737,6 +6366,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(Int64)
+
+```cangjie
+public func compare(this @local?, other: Int64 @local?): Ordering
+```
+
+Function: Compares the current Int64 value with the specified Int64 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int64)
+
+```cangjie
+public operator func ==(this @local!, other: Int64 @local!): Bool
+```
+
+Function: Checks whether the current Int64 value is equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int64 @local! - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local! = 10
+    let b: Int64 @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int64)
+
+```cangjie
+public operator func ==(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int64)
+
+```cangjie
+public operator func !=(this @local!, other: Int64 @local!): Bool
+```
+
+Function: Checks whether the current Int64 value is not equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int64 @local! - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local! = 10
+    let b: Int64 @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int64)
+
+```cangjie
+public operator func !=(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is not equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Int64)
+
+```cangjie
+public operator func <(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is less than the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Int64)
+
+```cangjie
+public operator func >(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is greater than the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Int64)
+
+```cangjie
+public operator func <=(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is less than or equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Int64)
+
+```cangjie
+public operator func >=(this @local?, other: Int64 @local?): Bool
+```
+
+Function: Checks whether the current Int64 value is greater than or equal to the specified Int64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int64 @local? - The other Int64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend Int64 <: Countable\<Int64>
 
@@ -3870,6 +6877,88 @@ Int64 value: 0
 hashCode: 0
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Int64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let b: Int64 @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Int64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local! = 10
+    let b: Int64 @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Int64 <: ToString
 
 ```cangjie
@@ -3944,6 +7033,47 @@ Converted string: 9223372036854775807
 Int64 minimum value: -9223372036854775808
 Converted string: -9223372036854775808
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Int64 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int64 @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
 
 ## Int8
 
@@ -4063,6 +7193,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(Int8)
+
+```cangjie
+public func compare(this @local?, other: Int8 @local?): Ordering
+```
+
+Function: Compares the current Int8 value with the specified Int8 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 5
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int8)
+
+```cangjie
+public operator func ==(this @local!, other: Int8 @local!): Bool
+```
+
+Function: Checks whether the current Int8 value is equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int8 @local! - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local! = 3
+    let b: Int8 @local! = 3
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(Int8)
+
+```cangjie
+public operator func ==(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 3
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int8)
+
+```cangjie
+public operator func !=(this @local!, other: Int8 @local!): Bool
+```
+
+Function: Checks whether the current Int8 value is not equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: Int8 @local! - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local! = 3
+    let b: Int8 @local! = 3
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(Int8)
+
+```cangjie
+public operator func !=(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is not equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 3
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(Int8)
+
+```cangjie
+public operator func <(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is less than the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 5
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(Int8)
+
+```cangjie
+public operator func >(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is greater than the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 5
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(Int8)
+
+```cangjie
+public operator func <=(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is less than or equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 5
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(Int8)
+
+```cangjie
+public operator func >=(this @local?, other: Int8 @local?): Bool
+```
+
+Function: Checks whether the current Int8 value is greater than or equal to the specified Int8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Int8 @local? - The other Int8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 5
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend Int8 <: Countable\<Int8>
 
@@ -4211,6 +7719,88 @@ Int8 minimum value: -128
 hashCode: -128
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Int8 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let b: Int8 @local? = 3
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Int8 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local! = 3
+    let b: Int8 @local! = 3
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Int8 <: ToString
 
 ```cangjie
@@ -4275,9 +7865,9 @@ Execution results:
 
 ```text
 Int8 value: 42
-Converted to string: 42
+Converted string: 42
 Int8 value: -42
-Converted to string: -42
+Converted string: -42
 Int8 value: 0
 Converted to string: 0
 Int8 maximum value: 127
@@ -4285,6 +7875,47 @@ Converted to string: 127
 Int8 minimum value: -128
 Converted to string: -128
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Int8 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Int8 @local? = 3
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+3
+```
+
+<!--DelEnd_sink-->
 
 ## IntNative
 
@@ -4404,6 +8035,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(IntNative)
+
+```cangjie
+public func compare(this @local?, other: IntNative @local?): Ordering
+```
+
+Function: Compares the current IntNative value with the specified IntNative value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(IntNative)
+
+```cangjie
+public operator func ==(this @local!, other: IntNative @local!): Bool
+```
+
+Function: Checks whether the current IntNative value is equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: IntNative @local! - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local! = 10
+    let b: IntNative @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(IntNative)
+
+```cangjie
+public operator func ==(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(IntNative)
+
+```cangjie
+public operator func !=(this @local!, other: IntNative @local!): Bool
+```
+
+Function: Checks whether the current IntNative value is not equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: IntNative @local! - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local! = 10
+    let b: IntNative @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(IntNative)
+
+```cangjie
+public operator func !=(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is not equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(IntNative)
+
+```cangjie
+public operator func <(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is less than the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(IntNative)
+
+```cangjie
+public operator func >(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is greater than the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(IntNative)
+
+```cangjie
+public operator func <=(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is less than or equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(IntNative)
+
+```cangjie
+public operator func >=(this @local?, other: IntNative @local?): Bool
+```
+
+Function: Checks whether the current IntNative value is greater than or equal to the specified IntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: IntNative @local? - The other IntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend IntNative <: Countable\<IntNative>
 
@@ -4552,6 +8561,88 @@ IntNative minimum value: -9223372036854775808
 hashCode: -9223372036854775808
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current IntNative instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let b: IntNative @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current IntNative instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local! = 10
+    let b: IntNative @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend IntNative <: ToString
 
 ```cangjie
@@ -4627,6 +8718,47 @@ IntNative minimum value: -9223372036854775808
 Converted string: -9223372036854775808
 ```
 
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current IntNative instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: IntNative @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
+
 ## Rune
 
 Function: Represents a character in the Unicode character set.
@@ -4680,6 +8812,54 @@ Output:
 A
 1
 ```
+
+<!--Del_sink-->
+#### static func fromUtf8(Array\<UInt8>, Int64)
+
+```cangjie
+public static func fromUtf8(arr: Array<UInt8> @local?, index: Int64): (Rune, Int64)
+```
+
+Function: Decodes one UTF-8 character from the specified position in a byte array and returns the character together with the number of bytes it occupies. The encoding validation is the same as that of the non-local overload.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- arr: Array\<UInt8> @local? - The byte array to decode from.
+- index: Int64 - The starting byte index.
+
+Returns:
+
+- ([Rune](core_package_intrinsics.md#rune), [Int64](core_package_intrinsics.md#int64)) - The converted character and the number of bytes it occupies.
+
+Exceptions:
+
+- [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception) - Invalid UTF-8 byte sequence.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<UInt8> @local? = [4, 8, 65]
+    let tuple = Rune.fromUtf8(arr, 2)
+    println(tuple[0])
+    println(tuple[1])
+}
+```
+
+Output:
+
+```text
+A
+1
+```
+
+<!--DelEnd_sink-->
 
 #### static func getPreviousFromUtf8(Array\<UInt8>, Int64)
 
@@ -4766,6 +8946,55 @@ Output:
 3
 231
 ```
+
+<!--Del_sink-->
+#### static func intoUtf8Array(Rune, Array\<UInt8>, Int64)
+
+```cangjie
+public static func intoUtf8Array(c: Rune, arr: Array<UInt8> @local?, index: Int64): Int64
+```
+
+Function: Encodes the character into UTF-8 bytes, writes them to the specified position in the array, and returns the number of bytes written. The boundary validation is the same as that of the non-local overload.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- c: Rune - The character to encode.
+- arr: Array\<UInt8> @local? - The byte array to write to.
+- index: Int64 - The starting byte index. It must satisfy `0 <= index <= arr.size`, and the remaining capacity from this index must accommodate the UTF-8 encoding of the character.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The byte length of the character; for example, a Chinese character occupies three bytes.
+
+Exceptions:
+
+- [IllegalArgumentException](core_package_exceptions.md#class-illegalargumentexception) - Thrown when `index < 0`, `index > arr.size`, or the remaining capacity cannot accommodate the UTF-8 encoding of the character. Validation completes before any array element is written.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<UInt8> @local? = [1, 2, 3, 230, 136, 145]
+    let len: Int64 = Rune.intoUtf8Array(r'爱', arr, 2)
+    println(len)
+    println(arr[2])
+}
+```
+
+Output:
+
+```text
+3
+231
+```
+
+<!--DelEnd_sink-->
 
 #### static func utf8Size(Array\<UInt8>, Int64)
 
@@ -5370,6 +9599,58 @@ Output:
 Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func compare(Rune)
+
+```cangjie
+public func compare(this @local?, other: Rune @local?): Ordering
+```
+
+Function: When the call is bound to the inherited default implementation, throws [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) instead of returning an ordering result.
+
+[Rune](core_package_intrinsics.md#rune) does not override the `@local?` form of `compare`; this default implementation does not compare the ordering of two [Rune](core_package_intrinsics.md#rune) values and returns no [Ordering](core_package_enums.md#enum-ordering) result. When a call is bound to this default implementation, [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) is thrown.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: Rune @local? - The other Rune value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - The signature is [Ordering](core_package_enums.md#enum-ordering), but the current default implementation returns no normal result and throws an exception directly.
+
+Exceptions:
+
+- [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) - Thrown when the call is bound to the `@local?` default implementation inherited from the [Comparable](core_package_interfaces.md#interface-comparablet) interface.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Rune @local? = r'A'
+    let b: Rune @local? = r'B'
+    try {
+        println(a.compare(b))
+    } catch (e: UnimplementedException) {
+        println("caught UnimplementedException")
+    }
+}
+```
+
+Output:
+
+```text
+caught UnimplementedException
+```
+
+<!--DelEnd_sink-->
+
 ### extend Rune <: Countable\<Rune>
 
 ```cangjie
@@ -5519,6 +9800,88 @@ Character: 爱
 Hash value: 29233
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Rune instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Rune @local? = r'A'
+    let b: Rune @local? = r'A'
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Rune instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Rune @local! = r'A'
+    let b: Rune @local! = r'A'
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend Rune <: ToString
 
 ```cangjie
@@ -5570,6 +9933,47 @@ Converted string: A
 Character: 爱
 Converted string: 爱
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Rune instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Rune @local? = r'A'
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+A
+```
+
+<!--DelEnd_sink-->
 
 ## UInt16
 
@@ -5698,6 +10102,384 @@ Output:
 Ordering.LT
 ```
 
+<!--Del_sink-->
+#### func compare(UInt16)
+
+```cangjie
+public func compare(this @local?, other: UInt16 @local?): Ordering
+```
+
+Function: Compares the current UInt16 value with the specified UInt16 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 200
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt16)
+
+```cangjie
+public operator func ==(this @local!, other: UInt16 @local!): Bool
+```
+
+Function: Checks whether the current UInt16 value is equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt16 @local! - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local! = 100
+    let b: UInt16 @local! = 100
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt16)
+
+```cangjie
+public operator func ==(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 100
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt16)
+
+```cangjie
+public operator func !=(this @local!, other: UInt16 @local!): Bool
+```
+
+Function: Checks whether the current UInt16 value is not equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt16 @local! - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local! = 100
+    let b: UInt16 @local! = 100
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt16)
+
+```cangjie
+public operator func !=(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is not equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 100
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(UInt16)
+
+```cangjie
+public operator func <(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is less than the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 200
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(UInt16)
+
+```cangjie
+public operator func >(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is greater than the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 200
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(UInt16)
+
+```cangjie
+public operator func <=(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is less than or equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 200
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(UInt16)
+
+```cangjie
+public operator func >=(this @local?, other: UInt16 @local?): Bool
+```
+
+Function: Checks whether the current UInt16 value is greater than or equal to the specified UInt16 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt16 @local? - The other UInt16 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 200
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
 ### extend UInt16 <: Countable\<UInt16>
 
 ```cangjie
@@ -5822,6 +10604,88 @@ Maximum UInt16 value: 65535
 Hash value: 65535
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current UInt16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let b: UInt16 @local? = 100
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current UInt16 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local! = 100
+    let b: UInt16 @local! = 100
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend UInt16 <: ToString
 
 ```cangjie
@@ -5873,6 +10737,47 @@ Converted string: 42
 Maximum UInt16 value: 65535
 Converted string: 65535
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current UInt16 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt16 @local? = 100
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+100
+```
+
+<!--DelEnd_sink-->
 
 ## UInt32
 
@@ -5982,6 +10887,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(UInt32)
+
+```cangjie
+public func compare(this @local?, other: UInt32 @local?): Ordering
+```
+
+Function: Compares the current UInt32 value with the specified UInt32 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt32)
+
+```cangjie
+public operator func ==(this @local!, other: UInt32 @local!): Bool
+```
+
+Function: Checks whether the current UInt32 value is equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt32 @local! - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local! = 10
+    let b: UInt32 @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt32)
+
+```cangjie
+public operator func ==(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt32)
+
+```cangjie
+public operator func !=(this @local!, other: UInt32 @local!): Bool
+```
+
+Function: Checks whether the current UInt32 value is not equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt32 @local! - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local! = 10
+    let b: UInt32 @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt32)
+
+```cangjie
+public operator func !=(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is not equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(UInt32)
+
+```cangjie
+public operator func <(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is less than the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(UInt32)
+
+```cangjie
+public operator func >(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is greater than the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(UInt32)
+
+```cangjie
+public operator func <=(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is less than or equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(UInt32)
+
+```cangjie
+public operator func >=(this @local?, other: UInt32 @local?): Bool
+```
+
+Function: Checks whether the current UInt32 value is greater than or equal to the specified UInt32 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt32 @local? - The other UInt32 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend UInt32 <: Countable\<UInt32>
 
@@ -6096,6 +11379,88 @@ Output:
 42
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current UInt32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let b: UInt32 @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current UInt32 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local! = 10
+    let b: UInt32 @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend UInt32 <: ToString
 
 ```cangjie
@@ -6136,6 +11501,47 @@ Output:
 ```text
 42
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current UInt32 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt32 @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
 
 ## UInt64
 
@@ -6245,6 +11651,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(UInt64)
+
+```cangjie
+public func compare(this @local?, other: UInt64 @local?): Ordering
+```
+
+Function: Compares the current UInt64 value with the specified UInt64 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt64)
+
+```cangjie
+public operator func ==(this @local!, other: UInt64 @local!): Bool
+```
+
+Function: Checks whether the current UInt64 value is equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt64 @local! - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local! = 10
+    let b: UInt64 @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt64)
+
+```cangjie
+public operator func ==(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt64)
+
+```cangjie
+public operator func !=(this @local!, other: UInt64 @local!): Bool
+```
+
+Function: Checks whether the current UInt64 value is not equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt64 @local! - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local! = 10
+    let b: UInt64 @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt64)
+
+```cangjie
+public operator func !=(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is not equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(UInt64)
+
+```cangjie
+public operator func <(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is less than the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(UInt64)
+
+```cangjie
+public operator func >(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is greater than the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(UInt64)
+
+```cangjie
+public operator func <=(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is less than or equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(UInt64)
+
+```cangjie
+public operator func >=(this @local?, other: UInt64 @local?): Bool
+```
+
+Function: Checks whether the current UInt64 value is greater than or equal to the specified UInt64 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt64 @local? - The other UInt64 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend UInt64 <: Countable\<UInt64>
 
@@ -6359,6 +12143,88 @@ Output:
 42
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current UInt64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let b: UInt64 @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current UInt64 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local! = 10
+    let b: UInt64 @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend UInt64 <: ToString
 
 ```cangjie
@@ -6399,6 +12265,47 @@ Output:
 ```text
 42
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current UInt64 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt64 @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
 
 ## UInt8
 
@@ -6508,6 +12415,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(UInt8)
+
+```cangjie
+public func compare(this @local?, other: UInt8 @local?): Ordering
+```
+
+Function: Compares the current UInt8 value with the specified UInt8 value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 5
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt8)
+
+```cangjie
+public operator func ==(this @local!, other: UInt8 @local!): Bool
+```
+
+Function: Checks whether the current UInt8 value is equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt8 @local! - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local! = 3
+    let b: UInt8 @local! = 3
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UInt8)
+
+```cangjie
+public operator func ==(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 3
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt8)
+
+```cangjie
+public operator func !=(this @local!, other: UInt8 @local!): Bool
+```
+
+Function: Checks whether the current UInt8 value is not equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UInt8 @local! - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local! = 3
+    let b: UInt8 @local! = 3
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UInt8)
+
+```cangjie
+public operator func !=(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is not equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 3
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(UInt8)
+
+```cangjie
+public operator func <(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is less than the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 5
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(UInt8)
+
+```cangjie
+public operator func >(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is greater than the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 5
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(UInt8)
+
+```cangjie
+public operator func <=(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is less than or equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 5
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(UInt8)
+
+```cangjie
+public operator func >=(this @local?, other: UInt8 @local?): Bool
+```
+
+Function: Checks whether the current UInt8 value is greater than or equal to the specified UInt8 value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UInt8 @local? - The other UInt8 value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 5
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend UInt8 <: Countable\<UInt8>
 
@@ -6622,6 +12907,88 @@ Output:
 42
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current UInt8 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let b: UInt8 @local? = 3
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current UInt8 instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local! = 3
+    let b: UInt8 @local! = 3
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend UInt8 <: ToString
 
 ```cangjie
@@ -6662,6 +13029,47 @@ Output:
 ```text
 42
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current UInt8 instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UInt8 @local? = 3
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+3
+```
+
+<!--DelEnd_sink-->
 
 ## UIntNative
 
@@ -6771,6 +13179,384 @@ Output:
 ```text
 Ordering.LT
 ```
+
+<!--Del_sink-->
+#### func compare(UIntNative)
+
+```cangjie
+public func compare(this @local?, other: UIntNative @local?): Ordering
+```
+
+Function: Compares the current UIntNative value with the specified UIntNative value to determine their ordering.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Ordering](core_package_enums.md#enum-ordering) - Returns [Ordering](core_package_enums.md#enum-ordering).GT if greater, [Ordering](core_package_enums.md#enum-ordering).EQ if equal, or [Ordering](core_package_enums.md#enum-ordering).LT if less.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 20
+    println(a.compare(b))
+}
+```
+
+Output:
+
+```text
+Ordering.LT
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UIntNative)
+
+```cangjie
+public operator func ==(this @local!, other: UIntNative @local!): Bool
+```
+
+Function: Checks whether the current UIntNative value is equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UIntNative @local! - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local! = 10
+    let b: UIntNative @local! = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func ==(UIntNative)
+
+```cangjie
+public operator func ==(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 10
+    println(a == b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UIntNative)
+
+```cangjie
+public operator func !=(this @local!, other: UIntNative @local!): Bool
+```
+
+Function: Checks whether the current UIntNative value is not equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+- other: UIntNative @local! - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local! = 10
+    let b: UIntNative @local! = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func !=(UIntNative)
+
+```cangjie
+public operator func !=(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is not equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if not equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 10
+    println(a != b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <(UIntNative)
+
+```cangjie
+public operator func <(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is less than the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 20
+    println(a < b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >(UIntNative)
+
+```cangjie
+public operator func >(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is greater than the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 20
+    println(a > b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func <=(UIntNative)
+
+```cangjie
+public operator func <=(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is less than or equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if less than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 20
+    println(a <= b)
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### operator func >=(UIntNative)
+
+```cangjie
+public operator func >=(this @local?, other: UIntNative @local?): Bool
+```
+
+Function: Checks whether the current UIntNative value is greater than or equal to the specified UIntNative value.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+- other: UIntNative @local? - The other UIntNative value to compare.
+
+Returns:
+
+- [Bool](core_package_intrinsics.md#bool) - Returns true if greater than or equal, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 20
+    println(a >= b)
+}
+```
+
+Output:
+
+```text
+false
+```
+
+<!--DelEnd_sink-->
 
 ### extend UIntNative <: Countable
 
@@ -6885,6 +13671,88 @@ Output:
 42
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current UIntNative instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let b: UIntNative @local? = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current UIntNative instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local! = 10
+    let b: UIntNative @local! = 10
+    println(a.hashCode() == b.hashCode())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+<!--DelEnd_sink-->
+
 ### extend UIntNative <: ToString
 
 ```cangjie
@@ -6925,6 +13793,47 @@ Output:
 ```text
 The string representation is: 12345
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current UIntNative instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: UIntNative @local? = 10
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+10
+```
+
+<!--DelEnd_sink-->
 
 ## Unit
 
@@ -6987,6 +13896,86 @@ Output:
 0
 ```
 
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local?): Int64
+```
+
+Function: Computes the hash value of the current Unit instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Unit @local? = ()
+    println(a.hashCode())
+}
+```
+
+Output:
+
+```text
+0
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+#### func hashCode()
+
+```cangjie
+public func hashCode(this @local!): Int64
+```
+
+Function: Computes the hash value of the current Unit instance.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local! - The current `@local!` instance on which the method is called.
+
+Returns:
+
+- [Int64](core_package_intrinsics.md#int64) - The hash value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Unit @local! = ()
+    println(a.hashCode())
+}
+```
+
+Output:
+
+```text
+0
+```
+
+<!--DelEnd_sink-->
+
 ### extend Unit <: ToString
 
 ```cangjie
@@ -7029,3 +14018,44 @@ Output:
 ```text
 The string representation is: ()
 ```
+
+<!--Del_sink-->
+#### func toString()
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current Unit instance into an output-ready string; the result string is bound to the caller's local region.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parameters:
+
+- this @local? - The current `@local?` instance on which the method is called.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    let a: Unit @local? = ()
+    let s: String @local! = a.toString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+()
+```
+
+<!--DelEnd_sink-->

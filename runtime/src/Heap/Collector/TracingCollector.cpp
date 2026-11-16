@@ -727,7 +727,7 @@ void TracingCollector::DFSTraceExportObject(BaseObject *exportObj)
                 BaseObject* targetObj = oldField.GetTargetObject();
                 latest = FindLatestVersion(targetObj);
             } else {
-                latest = field.GetTargetObject();
+                latest = oldField.GetTargetObject();
             }
 
             // target object could be null or non-heap for some static variable.

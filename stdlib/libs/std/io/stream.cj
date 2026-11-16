@@ -35,6 +35,10 @@ public interface InputStream {
      * @return number of bytes read and copied to the buffer (never zero) or 0 when end of stream reached
      */
     func read(buffer: Array<Byte>): Int64
+    @When[env != "ohos"]
+    func read(this @local!, buffer: Array<Byte> @local!): Int64 {
+        throw Exception()
+    }
 }
 
 /**
@@ -52,6 +56,12 @@ public interface OutputStream {
      * Flush the OutputStream.
      */
     func flush(): Unit {}
+
+    // Keep new receiver-mode members after existing members to preserve dispatch slots.
+    @When[env != "ohos"]
+    func write(this @local!, buffer: Array<Byte> @local!): Unit {
+        throw Exception()
+    }
 }
 
 /**
@@ -108,6 +118,46 @@ public interface Seekable {
             }
 
             length
+        }
+    }
+
+    // Keep new receiver-mode members after existing members to preserve dispatch slots.
+    @When[env != "ohos"]
+    func seek(this @local!, sp: SeekPosition): Int64 {
+        throw Exception()
+    }
+    @When[env != "ohos"]
+    prop position: Int64 @local! {
+        get() {
+            exclave {seek(Current(0))}
+        }
+    }
+    @When[env != "ohos"]
+    prop remainLength: Int64 @local! {
+        get() {
+            exclave {
+                let oldPos = this.seek(Current(0))
+                let length = this.seek(End(0))
+                if (length != oldPos) {
+                    this.seek(Begin(oldPos))
+                }
+
+                length - oldPos
+            }
+        }
+    }
+    @When[env != "ohos"]
+    prop length: Int64 @local! {
+        get() {
+            exclave {
+                let oldPos = this.seek(Current(0))
+                let length = this.seek(End(0))
+                if (length != oldPos) {
+                    this.seek(Begin(oldPos))
+                }
+
+                length
+            }
         }
     }
 }

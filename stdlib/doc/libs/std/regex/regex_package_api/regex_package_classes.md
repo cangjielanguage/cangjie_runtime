@@ -817,7 +817,6 @@ public init(pattern: String, flags: Array<RegexFlag>)
 异常：
 
 - [RegexException](regex_package_exceptions.md#class-regexexception) - 当初始化失败时，抛出异常。
-- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 处理非 ASCII 字符并且没有指定 [Unicode](./regex_package_enums.md#unicode) 匹配模式时，可能抛出该异常。
 
 示例：
 

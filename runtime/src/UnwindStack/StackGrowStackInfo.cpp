@@ -84,11 +84,16 @@ void StackGrowStackInfo::RecordStackPtrs(const StackPtrVisitor& traceAndFixPtrVi
                                     regSlotsMap, frame, mutator);
                 break;
             }
+            case FrameType::C2R_STUB:
+            case FrameType::C2N_STUB:
+            case FrameType::EXSLUSIVE:
 #ifdef INTERPRETER_ENABLED
             case FrameType::INTERPRETER_C2I:
+#endif
+                // Bridge frames save the caller's callee-saved registers. Use these slots
+                // when resolving register roots in the managed frames above the bridge.
                 RegRoot::RecordStubCalleeSaved(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
                 break;
-#endif
             case FrameType::STACKGROW:
                 RegRoot::RecordRegs(regSlotsMap, reinterpret_cast<Uptr>(frame.mFrame.GetFA()));
                 break;
@@ -99,11 +104,12 @@ void StackGrowStackInfo::RecordStackPtrs(const StackPtrVisitor& traceAndFixPtrVi
     }
 
 #ifdef INTERPRETER_ENABLED
-    auto expansionStackVisitor = [this, &fixPtrVisitor, &derivedPtrVisitor](DYN_VisitingState state) {
+    auto expansionStackVisitor = [&](DYN_VisitingState state) {
         for (const auto& frame : stack) {
             switch (frame.GetFrameType()) {
                 case FrameType::INTERPRETER:
-                    VisitInterpreterFrameRootsExpansion(state, frame, &fixPtrVisitor, &derivedPtrVisitor);
+                    VisitInterpreterFrameRootsExpansion(state, frame,
+                        &traceAndFixPtrVisitor, &fixPtrVisitor, &derivedPtrVisitor);
                     break;
                 default: {
                     break;

@@ -29,6 +29,11 @@ else()
         set(SECURE_LDFLAG_FOR_SHARED_LIBRARY "-Wl,-z,relro,-z,now,-z,noexecstack")
     endif()
 endif()
+# Match the OHOS system-wide default of packing relative relocations for native
+# components (build/config/compiler/BUILD.gn). Applied via the clang driver.
+if(OHOS)
+    list(APPEND SECURE_LDFLAG_FOR_SHARED_LIBRARY "-Wl,-z,pack-relative-relocs")
+endif()
 set(STRIP_FLAG "-s")
 set(CMAKE_C_FLAGS "${SECURE_CFLAG_FOR_SHARED_LIBRARY} ${WARNING_FLAGS}")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g")

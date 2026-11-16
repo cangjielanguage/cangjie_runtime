@@ -87,6 +87,53 @@ public func readToEnd<T>(from: T): Array<Byte> where T <: InputStream & Seekable
     arr.slice(0, readSize)
 }
 
+@When[env != "ohos"]
+public exclave func readToEnd<T>(from: T @local!): Array<Byte> @local! where T <: InputStream & Seekable {
+    let sum = from.length
+    const MAX_DIRECT_ALLOC_SIZE: Int64 = 1 << 30  // 1 GB
+    if (sum <= 0 || sum > MAX_DIRECT_ALLOC_SIZE) {
+        let tempSize: Int64 = BLOCK_SIZE
+        let temp: Array<Byte> @local! = Array<Byte>(tempSize, repeat: 0)
+        var buffer: ByteBuffer @local! = ByteBuffer(tempSize)
+
+        while (true) {
+            let readLen = from.read(temp)
+            if (readLen == 0) {
+                break
+            } else if (readLen == tempSize) {
+                buffer.write(temp)
+            } else {
+                buffer.write(temp.slice(0, readLen))
+            }
+        }
+
+        var res: Array<Byte> @local! = Array<Byte>(buffer.length, repeat: 0)
+        buffer.read(res)
+        return res
+    }
+
+    let arr: Array<Byte> @local! = Array<Byte>(sum, repeat: 0)
+    let onceMax = 1 << 30
+    var readSize = 0
+    var emptySize = arr.size
+    while (readSize < sum) {
+        let oneSize = if (emptySize > onceMax) {
+            onceMax
+        } else {
+            emptySize
+        }
+
+        let len = from.read(arr.slice(readSize, oneSize))
+        if (len == 0) {
+            break
+        }
+        readSize += len
+        emptySize -= len
+    }
+
+    arr.slice(0, readSize)
+}
+
 public func copy(from: InputStream, to!: OutputStream): Int64 {
     let tempArr = Array<Byte>(BLOCK_SIZE, repeat: 0)
     var readCount = 0

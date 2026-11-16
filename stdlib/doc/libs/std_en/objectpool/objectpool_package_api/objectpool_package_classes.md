@@ -85,7 +85,7 @@ Returns:
 public func put(item: T): Unit
 ```
 
-Function: Attempts to return an object to [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated). There is no guarantee the object will actually be stored in [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated). After calling put on an object, no further operations should be performed on that object, as this may lead to undefined behavior.
+Function: Returns an object to [ObjectPool](objectpool_package_classes.md#class-objectpoolt-where-t--object-deprecated). The object will be stored in the subqueue corresponding to the current thread, and can be retrieved and reused by subsequent get operations on the same thread. After calling put on an object, no further operations should be performed on that object, as this may lead to undefined behavior.
 
 Parameters:
 

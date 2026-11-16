@@ -1445,7 +1445,7 @@ Function: This extension primarily implements operations for converting string l
 
 Parent Type:
 
-- [Parsable](#interface-parsablet)\<[Int8](../../core/core_package_api/core极客时间_package_intrinsics.md#int8)>
+- [Parsable](#interface-parsablet)\<[Int8](../../core/core_package_api/core_package_intrinsics.md#int8)>
 
 #### static func parse(String)
 
@@ -1490,7 +1490,7 @@ After the conversion of parse, "-128" became -128
 #### static func tryParse(String)
 
 ```cangjie
-public static func tryParse(data极客时间: String): Option<Int8>
+public static func tryParse(data: String): Option<Int8>
 ```
 
 Function: Converts a string literal of type [Int8](../../core/core_package_api/core_package_intrinsics.md#int8) to an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[Int8](../../core/core_package_api/core_package_intrinsics.md#int8)> value.
@@ -1549,7 +1549,7 @@ Parameters:
 
 Returns:
 
-- [R极客时间une](../../core/core_package_api/core_package_intrinsics.md#rune) - Returns the converted [Rune](../../core/core_package_api/core_package_intrinsics.md#rune) value.
+- [Rune](../../core/core_package_api/core_package_intrinsics.md#rune) - Returns the converted [Rune](../../core/core_package_api/core_package_intrinsics.md#rune) value.
 
 Exceptions:
 
@@ -1669,7 +1669,7 @@ After the conversion of parse, "65535" became 65535
 public static func tryParse(data: String): Option<UInt16>
 ```
 
-Function: Converts a string literal of type [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) to an [Option](../../core/core_package_api/core_package_enums.md极客时间#enum-optiont)\<[UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16)> value.
+Function: Converts a string literal of type [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) to an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16)> value.
 
 Parameters:
 
@@ -1739,7 +1739,7 @@ import std.convert.*
 
 main() {
     var strUInt: String = "4294967295"
-   极客时间 var res = UInt32.parse(strUInt)
+    var res = UInt32.parse(strUInt)
     
     println("After the conversion of parse, \"4294967295\" became ${res}")
 }
@@ -1757,7 +1757,7 @@ After the conversion of parse, "4294967295" became 4294967295
 public static func tryParse(data: String): Option<UInt32>
 ```
 
-Function: Converts a string literal of type [极客时间UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) to an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32)> value.
+Function: Converts a string literal of type [UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) to an [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32)> value.
 
 Parameters:
 
@@ -2413,6 +2413,8 @@ Execution result:
 
 ```text
 After the conversion of toString, 71 in base-36 became "1z"
+```
+
 ### extend Int64 <: RadixConvertible\<Int64>
 
 ```cangjie

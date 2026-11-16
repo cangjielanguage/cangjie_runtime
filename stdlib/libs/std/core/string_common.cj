@@ -45,7 +45,7 @@ const HIGH_6_UInt8: UInt8 = 0b11111100 // 0xfc
 @ConstSafe
 const EMPTY_UINT8_ARRAY: Array<UInt8> = Array<UInt8>()
 @ConstSafe
-const EMPTY_UINT8_RAW_ARRAY: RawArray<UInt8> = RawArray<UInt8>()
+const EMPTY_UINT8_RAW_ARRAY: RawArray<UInt8> = rawArrayAllocate<UInt8>(0)
 let EMPTY_INT64_ARRAY: Array<Int64> = Array<Int64>()
 let EMPTY_STRING_ARRAY: Array<String> = Array<String>()
 const STRING_C_THRESHOLD = 32
@@ -57,6 +57,18 @@ const STRING_C_THRESHOLD = 32
  *                 C2..DF     80..BF
  */
 func checkUtf8Of2Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 2 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    if ((byte1 & 0x1e) == 0 || (byte2 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 2-byte UTF-8 encoding.")
+    }
+    Rune(((UInt32(byte1) & LOW_5_MASK) << SHIFT_6) | (UInt32(byte2) & LOW_6_MASK))
+}
+
+func checkUtf8Of2Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 2 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
     }
@@ -88,6 +100,34 @@ func checkUtf8Of2BytesWithoutException(arr: RawArray<UInt8>, startIndex: Int64, 
  * U+1000..U+FFFF    E1..EF     80..BF     80..BF
  */
 func checkUtf8Of3Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 3 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
+    // ensure b2 and b3 start with 0b10
+    if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 3-byte UTF-8 encoding.")
+    }
+
+    // when the first equals E0, second byte cannot less then A0
+    if ((byte1 & 0b1111) == 0 && (byte2 & 0b00100000) == 0) {
+        throw IllegalArgumentException("Invalid UTF-8: overlong encoding at index '${startIndex}' (code point should use 2 bytes, not 3).")
+    }
+
+    // Unicode does not have any characters in the range D800-DFFF
+    if ((byte1 & 0b1111) == 0b1101 && (byte2 & 0b00100000) != 0) {
+        throw IllegalArgumentException("Invalid UTF-8: surrogate code point U+D800-U+DFFF is not allowed at index '${startIndex}'.")
+    }
+
+    let code = ((UInt32(byte1) & LOW_4_MASK) << SHIFT_12) |
+                ((UInt32(byte2) & LOW_6_MASK) << SHIFT_6) |
+                (UInt32(byte3) & LOW_6_MASK)
+    Rune(code)
+}
+
+func checkUtf8Of3Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 3 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
     }
@@ -182,6 +222,40 @@ func checkUtf8Of4Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64)
     Rune(code)
 }
 
+func checkUtf8Of4Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
+    if (startIndex + 4 > endIndex) {
+        throw IllegalArgumentException("Invalid UTF-8: need 4 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
+    }
+
+    let byte1 = arrayGetUnchecked<UInt8>(arr, startIndex)
+    let byte2 = arrayGetUnchecked<UInt8>(arr, startIndex + 1)
+    let byte3 = arrayGetUnchecked<UInt8>(arr, startIndex + 2)
+    let byte4 = arrayGetUnchecked<UInt8>(arr, startIndex + 3)
+    if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 || (byte4 & 0xc0) != 0x80) {
+        throw IllegalArgumentException("Invalid UTF-8: byte sequence starting at index '${startIndex}' is not a valid 4-byte UTF-8 encoding.")
+    }
+
+    // byte 1 cannot bigger then 0xF4
+    if ((byte1 & 0b111) > 0b100) {
+        throw IllegalArgumentException("Invalid UTF-8: code point at index '${startIndex}' exceeds Unicode maximum U+10FFFF.")
+    }
+
+    // in the range of U+10000..U+3FFFF, when b1 equals 0xF0, b2 should not less then 0x90
+    if ((byte1 & 0b111) == 0 && (byte2 & 0b00110000) == 0) {
+        throw IllegalArgumentException("Invalid UTF-8: overlong encoding at index '${startIndex}' (code point should use 3 bytes, not 4).")
+    }
+
+    // in the range of U+100000..U10FFFF, when b1 equals 0xF4, b2 no bigger then 8F
+    if ((byte1 & 0b111) == 0b100 && (byte2 & 0b00110000) != 0) {
+        throw IllegalArgumentException("Invalid UTF-8: code point at index '${startIndex}' exceeds Unicode maximum U+10FFFF.")
+    }
+    let code = ((UInt32(byte1) & LOW_3_MASK) << SHIFT_18) |
+                ((UInt32(byte2) & LOW_6_MASK) << SHIFT_12) |
+                ((UInt32(byte3) & LOW_6_MASK) << SHIFT_6) |
+                (UInt32(byte4) & LOW_6_MASK)
+    Rune(code)
+}
+
 func checkUtf8Of4BytesWithoutException(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64): Bool {
     if (startIndex + 4 > endIndex) {
         return false
@@ -241,6 +315,26 @@ func checkInvalid(arr: RawArray<Byte>, startIndex: Int64, endIndex: Int64): Unit
         }
     }
 }
+func checkInvalid(arr: RawArray<Byte> @local?, startIndex: Int64, endIndex: Int64): Unit {
+    var i = startIndex
+    while (i < endIndex) {
+        var nowByte: UInt8 = arrayGetUnchecked<UInt8>(arr, i)
+        match {
+            case nowByte < HIGH_1_UInt8 => i += 1
+            case nowByte < HIGH_2_UInt8 => throw IllegalArgumentException("Invalid UTF-8: unexpected continuation byte '${nowByte}' at index '${i}' (missing leading byte).")
+            case nowByte < HIGH_3_UInt8 =>
+                checkUtf8Of2Bytes(arr, i, endIndex)
+                i += 2
+            case nowByte < HIGH_4_UInt8 =>
+                checkUtf8Of3Bytes(arr, i, endIndex)
+                i += 3
+            case nowByte < HIGH_5_UInt8 =>
+                checkUtf8Of4Bytes(arr, i, endIndex)
+                i += 4
+            case _ => throw IllegalArgumentException("Invalid UTF-8: byte '${nowByte}' at index '${i}' is not a valid UTF-8 leading byte.")
+        }
+    }
+}
 
 class StringIteratorData {
     let myData: Array<UInt8>
@@ -258,12 +352,47 @@ class StringIteratorData {
         this.end = myData.size
         this.nextPos = 0
     }
+
+    @When[env != "ohos"]
+    exclave init(this @local!, data: Array<UInt8> @local!) {
+        myData = data
+        end = myData.size
+        nextPos = 0
+    }
+    @When[env != "ohos"]
+    exclave init(this @local!, data: RawArray<UInt8> @local!) {
+        this.myData = toArray(data)
+        this.end = myData.size
+        this.nextPos = 0
+    }
+    @When[env != "ohos"]
+    exclave init(this @local?, data: Array<UInt8> @local?) {
+        myData = data
+        end = myData.size
+        nextPos = 0
+    }
+    @When[env != "ohos"]
+    exclave init(this @local?, data: RawArray<UInt8> @local?) {
+        this.myData = toArray(data)
+        this.end = myData.size
+        this.nextPos = 0
+    }
 }
 
 // String's Rune Iterator.
 class StringRuneIterator <: Iterator<Rune> {
     @Frozen
     StringRuneIterator(let iteratorData: StringIteratorData) {}
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local!, iteratorData: StringIteratorData @local!) {
+        this.iteratorData = iteratorData
+    }
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local?, iteratorData: StringIteratorData @local?) {
+        this.iteratorData = iteratorData
+    }
     /**
      * @return the next element in the iteration.
      * @throws IllegalArgumentException if there is an invalid utf8 leading code
@@ -279,12 +408,44 @@ class StringRuneIterator <: Iterator<Rune> {
         iteratorData.nextPos += num
         return Some<Rune>(rune)
     }
+    @When[env != "ohos"]
+    @OverflowWrapping
+    @Frozen
+    public exclave func next(this @local!): Option<Rune> @local! {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        var (rune, num): (Rune, Int64) = Rune.fromUtf8(iteratorData.myData, iteratorData.nextPos)
+        iteratorData.nextPos += num
+        return Some<Rune>(rune)
+    }
+    @When[env != "ohos"]
+    @OverflowWrapping
+    @Frozen
+    public exclave func next(this @local?): Option<Rune> @local? {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        var (rune, num): (Rune, Int64) = Rune.fromUtf8(iteratorData.myData, iteratorData.nextPos)
+        iteratorData.nextPos += num
+        return Some<Rune>(rune)
+    }
 }
 
 // String's Byte Iterator.
 class StringByteIterator <: Iterator<Byte> {
     @Frozen
     StringByteIterator(let iteratorData: StringIteratorData) {}
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local!, iteratorData: StringIteratorData @local!) {
+        this.iteratorData = iteratorData
+    }
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local?, iteratorData: StringIteratorData @local?) {
+        this.iteratorData = iteratorData
+    }
     /**
      * @return the next element in the iteration.
      * @throws IllegalArgumentException if there is an invalid utf8 leading code
@@ -300,6 +461,28 @@ class StringByteIterator <: Iterator<Byte> {
         iteratorData.nextPos = iteratorData.nextPos + 1
         return byte
     }
+    @When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    public exclave func next(this @local!): Option<Byte> @local! {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        let byte = iteratorData.myData.get(iteratorData.nextPos)
+        iteratorData.nextPos = iteratorData.nextPos + 1
+        return byte
+    }
+    @When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    public exclave func next(this @local?): Option<Byte> @local? {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        let byte = iteratorData.myData.get(iteratorData.nextPos)
+        iteratorData.nextPos = iteratorData.nextPos + 1
+        return byte
+    }
 }
 
 // String's Line `Iterator`.
@@ -307,6 +490,16 @@ class StringByteIterator <: Iterator<Byte> {
 class StringLineIterator <: Iterator<String> {
     @Frozen
     StringLineIterator(let iteratorData: StringIteratorData) {}
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local!, iteratorData: StringIteratorData @local!) {
+        this.iteratorData = iteratorData
+    }
+    @Frozen
+    @When[env != "ohos"]
+    exclave init(this @local?, iteratorData: StringIteratorData @local?) {
+        this.iteratorData = iteratorData
+    }
 
     @Frozen
     @OverflowWrapping
@@ -350,6 +543,88 @@ class StringLineIterator <: Iterator<String> {
         iteratorData.nextPos = iteratorData.end
         return Some(str)
     }
+
+@When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    public exclave func next(this @local!): Option<String> @local! {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        var pos = iteratorData.nextPos
+        var haveCR = false
+        while (pos < iteratorData.end) {
+            match (iteratorData.myData[pos]) {
+                case '\r' =>
+                    if (haveCR) {
+                        let str = String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                        iteratorData.nextPos = pos
+                        return Some<String>(str)
+                    }
+                    haveCR = true
+                case '\n' =>
+                    let str = if (haveCR) {
+                        String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                    } else {
+                        String(iteratorData.myData[iteratorData.nextPos..pos])
+                    }
+                    iteratorData.nextPos = pos + 1
+                    return Some<String>(str)
+                case _ =>
+                    if (haveCR) {
+                        let str = String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                        iteratorData.nextPos = pos
+                        return Some<String>(str)
+                    }
+            }
+            pos++
+        }
+        let end = if (haveCR) { iteratorData.end - 1 } else { iteratorData.end }
+        let str = String(iteratorData.myData[iteratorData.nextPos..end])
+        iteratorData.nextPos = iteratorData.end
+        Some<String>(str)
+    }
+
+@When[env != "ohos"]
+    @Frozen
+    @OverflowWrapping
+    public exclave func next(this @local?): Option<String> @local? {
+        if (iteratorData.nextPos >= iteratorData.end) {
+            return None
+        }
+        var pos = iteratorData.nextPos
+        var haveCR = false
+        while (pos < iteratorData.end) {
+            match (iteratorData.myData[pos]) {
+                case '\r' =>
+                    if (haveCR) {
+                        let str = String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                        iteratorData.nextPos = pos
+                        return Some<String>(str)
+                    }
+                    haveCR = true
+                case '\n' =>
+                    let str = if (haveCR) {
+                        String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                    } else {
+                        String(iteratorData.myData[iteratorData.nextPos..pos])
+                    }
+                    iteratorData.nextPos = pos + 1
+                    return Some<String>(str)
+                case _ =>
+                    if (haveCR) {
+                        let str = String(iteratorData.myData[iteratorData.nextPos..pos - 1])
+                        iteratorData.nextPos = pos
+                        return Some<String>(str)
+                    }
+            }
+            pos++
+        }
+        let end = if (haveCR) { iteratorData.end - 1 } else { iteratorData.end }
+        let str = String(iteratorData.myData[iteratorData.nextPos..end])
+        iteratorData.nextPos = iteratorData.end
+        Some<String>(str)
+    }
 }
 
 // String lazySplit Iterator.
@@ -384,6 +659,43 @@ class StringLazySplitIterator <: Iterator<String> {
             unsafe {
                 let org: CPointerHandle<UInt8> = acquireArrayRawData<UInt8>(this.orgData)
                 let pat: CPointerHandle<UInt8> = acquireArrayRawData<UInt8>(str.rawData())
+                var res: CPointer<Int64> = CJ_CORE_CountAndIndexString(
+                    org.pointer,
+                    pat.pointer,
+                    this.orgData.size,
+                    this.separatorLen
+                )
+                releaseArrayRawData(org)
+                releaseArrayRawData(pat)
+                if (res.isNull()) {
+                    throw OutOfMemoryError("Failed to allocate memory in C code.")
+                }
+                try {
+                    convertCPointer2Array(res, maxSplits, removeEmpty)
+                } finally {
+                    LibC.free(res)
+                }
+            }
+        }
+    }
+
+    @When[env != "ohos"]
+    init(orgStrData: Array<UInt8>, orgStrSize: Int64, str: String @local?, maxSplits: Int64, removeEmpty: Bool) {
+        this.orgData = orgStrData
+        this.separatorLen = str.size
+        this.maxSplits = maxSplits
+        this.removeEmpty = removeEmpty
+        this.itemArr = EMPTY_INT64_ARRAY
+        if (this.separatorLen == 0) {
+            if (0 < maxSplits && maxSplits < orgStrSize) {
+                this.resLen = maxSplits
+            } else {
+                this.resLen = orgStrSize
+            }
+        } else {
+            unsafe {
+                let org: CPointerHandle<UInt8> @local? = acquireArrayRawData<UInt8>(this.orgData)
+                let pat: CPointerHandle<UInt8> @local? = acquireArrayRawData<UInt8>(str.rawData())
                 var res: CPointer<Int64> = CJ_CORE_CountAndIndexString(
                     org.pointer,
                     pat.pointer,

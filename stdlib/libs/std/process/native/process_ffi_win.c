@@ -536,6 +536,48 @@ extern ExitInfo* CJ_OS_WaitSubProcessExit(HANDLE processHandle)
     return exitInfo;
 }
 
+/**
+ * @brief Waits for a process to exit, blocking the caller for at most the given timeout.
+ *
+ * This is the Windows building block for a timeout-correct `SubProcess.wait(timeout:)`.
+ * Unlike CJ_OS_WaitSubProcessExit(), it never spawns a background waiter thread and
+ * never allocates an ExitInfo, so a timed-out wait leaves no residual thread behind
+ * and leaks no memory; a later wait can still observe the real exit code because the
+ * process handle stays open until the SubProcess is destroyed.
+ *
+ * @param processHandle The process handle to wait on (from CreateProcess).
+ * @param timeoutMilliseconds Maximum time to wait, in milliseconds. Pass INFINITE
+ *                            (UInt32.Max) to wait indefinitely.
+ * @param exitCode Out parameter receiving the process exit code when it exits.
+ * @return One of the following status codes:
+ *         - `1`: the process has exited and *exitCode is set.
+ *         - `0`: the wait timed out; the process is still running, *exitCode untouched.
+ *         - `-1`: error (NULL handle or GetExitCodeProcess failure).
+ */
+extern int32_t CJ_OS_WaitSubProcessExitTimeout(HANDLE processHandle, uint32_t timeoutMilliseconds, int64_t* exitCode)
+{
+    if (processHandle == NULL || exitCode == NULL) {
+        return -1;
+    }
+
+    DWORD waitRes = WaitForSingleObject(processHandle, (DWORD)timeoutMilliseconds);
+    if (waitRes == WAIT_TIMEOUT) {
+        return 0;
+    }
+
+    if (waitRes != WAIT_OBJECT_0) {
+        return -1;
+    }
+
+    DWORD processExitCode = 0;
+    if (!GetExitCodeProcess(processHandle, &processExitCode)) {
+        return -1;
+    }
+
+    *exitCode = (int64_t)processExitCode;
+    return 1;
+}
+
 extern int32_t CJ_OS_Terminate(int32_t pid, bool force)
 {
     DWORD pidW = (DWORD)pid;

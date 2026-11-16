@@ -170,6 +170,47 @@ main() {
 当前分配的堆内存大小: 255208 字节
 ```
 
+<!--Del_sink-->
+## func getAllocatedLocalObjectSize()
+
+```cangjie
+public func getAllocatedLocalObjectSize(): Int64
+```
+
+功能：获取已激活 local region 占用的内存大小，单位为 byte。
+
+局部对象的内存使用量不计入 [getAllocatedHeapSize](runtime_package_funcs.md#func-getallocatedheapsize) 的统计结果。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+返回值：
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - 已激活 local region 占用的内存大小，单位为 byte。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.runtime.*
+
+main(): Unit {
+    // 返回值对活跃 backing chunk 逐一计量：当前分配 chunk 仅计入已使用的部分（不含未使用的尾部），
+    // 其余 chunk 计入整个容量；数值随分配情况变化，没有稳定的固定值，这里仅验证其非负
+    let size = getAllocatedLocalObjectSize()
+    println("Local region size >= 0: ${size >= 0}")
+}
+```
+
+运行结果：
+
+```text
+Local region size >= 0: true
+```
+
+<!--DelEnd_sink-->
 ## func getBlockingThreadCount()
 
 ```cangjie
@@ -853,7 +894,6 @@ main() {
 ```text
 信号处理器注册成功
 信号处理器1，注销成功，期望仅调用信号处理器2
-25973 E CJNative Handle signal: 10.
 signalHandler2 接收到信号: 10
 signalHandler2 是否停止后续？false
 end

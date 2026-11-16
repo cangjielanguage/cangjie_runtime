@@ -125,174 +125,6 @@ Class name: ArithmeticException
 ArithmeticException's getClassName() method is used to get the class name
 ```
 
-## class Error
-
-```cangjie
-public open class Error <: ToString
-```
-
-Function: [Error](core_package_exceptions.md#class-error) is the base class for all error classes. This class cannot be inherited or instantiated, but can be caught.
-
-Parent Types:
-
-- [ToString](core_package_interfaces.md#interface-tostring)
-
-### prop message
-
-```cangjie
-public open prop message: String
-```
-
-Function: Gets the error message.
-
-Type: [String](core_package_structs.md#struct-string)
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming Error is thrown
-main() {
-    try {
-        // Assume memory error or stack overflow occurs
-    } catch (e: Error) {
-        println(e.message)
-    }
-}
-```
-
-### func getClassName()
-
-```cangjie
-protected open func getClassName(): String
-```
-
-Function: Gets the class name.
-
-Returns:
-
-- [String](core_package_structs.md#struct-string) - Class name.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming internal Error is thrown
-main() {
-    try {
-        // Assume stack overflow occurs
-    } catch (e: StackOverflowError) {
-        println(e.message)
-    }
-}
-
-extend Error {
-    public func printlnClassName(): Unit {
-        println(getClassName())
-    }
-}
-```
-
-### func getStackTrace()
-
-```cangjie
-public func getStackTrace(): Array<StackTraceElement>
-```
-
-Function: Gets stack trace information, where each stack trace is represented by a [StackTraceElement](core_package_classes.md#class-stacktraceelement) instance, returning an array of [StackTraceElement](core_package_classes.md#class-stacktraceelement).
-
-Returns:
-
-- [Array](core_package_structs.md#struct-arrayt)\<[StackTraceElement](core_package_classes.md#class-stacktraceelement)> - Stack trace array.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming internal Error is thrown
-main() {
-    try {
-        // Assume memory error, stack overflow, or internal error occurs
-    } catch (e: Error) {
-        println(e.getStackTrace()[0].methodName)
-    }
-}
-```
-
-### func getStackTraceMessage()
-
-```cangjie
-public open func getStackTraceMessage(): String
-```
-
-Function: Gets stack trace information.
-
-Returns:
-
-- [String](core_package_structs.md#struct-string) - Stack trace message.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming internal Error is thrown
-main() {
-    try {
-        // Assume memory error, stack overflow, or internal error occurs
-    } catch (e: Error) {
-        println(e.getStackTraceMessage())
-    }
-}
-```
-
-### func printStackTrace()
-
-```cangjie
-public open func printStackTrace(): Unit
-```
-
-Function: Prints stack trace to console.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming internal Error is thrown
-main() {
-    try {
-        // Assume memory error, stack overflow, or internal error occurs
-    } catch (e: Error) {
-        println(e.printStackTrace())
-    }
-}
-```
-
-### func toString()
-
-```cangjie
-public open func toString(): String
-```
-
-Function: Gets string representation of current [Error](core_package_exceptions.md#class-error) instance, including class name and error message.
-
-Returns:
-
-- [String](core_package_structs.md#struct-string) - Error message string.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming internal Error is thrown
-main() {
-    try {
-        // Assume memory error, stack overflow, or internal error occurs
-    } catch (e: Error) {
-        println(e)
-    }
-}
-```
-
 ## class Exception
 
 <!--RP1-->
@@ -324,7 +156,6 @@ public mut prop causedBy: ?Exception
 Function: Cause of exception.
 
 Type: ?[Exception](core_package_exceptions.md#class-exception)
-
 
 > **Note：**
 >
@@ -440,7 +271,6 @@ public init(causedBy: Exception)
 
 Function: Constructs a [Exception](core_package_exceptions.md#class-exception) instance with the specified cause and empty default exception message.
 
-
 > **Note：**
 >
 > Unsupported platform：OpenHarmony
@@ -527,7 +357,6 @@ public init(message: String, causedBy: Exception)
 ```
 
 Function: Construct a [Exception](core_package_exceptions.md#class-exception) instance with the specified exception message and cause。
-
 
 > **Note：**
 >
@@ -737,6 +566,44 @@ Default exception string: Exception
 Exception with message string: Exception: Custom exception message
 ```
 
+## class ExclusiveScopeException
+
+```cangjie
+public class ExclusiveScopeException <: Exception
+```
+
+Purpose: Custom exception class used to wrap exceptions thrown in an exclusive scope. It preserves the stack trace information of the original exception, does not support actively constructing this exception, but it can be caught.
+
+Parent Type:
+
+- [Exception](#class-exception)
+
+### func toString()
+
+```cangjie
+public override func toString(): String
+```
+
+Purpose: Get class name.
+
+Return Value:
+
+- [String](core_package_structs.md#struct-string) - Class name.
+
+Example:
+
+<!-- code_no_check -->
+```cangjie
+// This example is for demonstration only, assuming an ExclusiveScopeException is thrown
+main() {
+    try {
+    // Assume memory error occurs
+    } catch (e: ExclusiveScopeException) {
+        println(e.message)
+    }
+}
+```
+
 ## class IllegalArgumentException
 
 ```cangjie
@@ -852,42 +719,6 @@ Output:
 
 ```text
 Exception class name: IllegalArgumentException
-```
-
-## class ExclusiveScopeException
-
-```cangjie
-public class ExclusiveScopeException <: Exception
-```
-
-Purpose: Custom exception class used to wrap exceptions thrown in an exclusive scope. It preserves the stack trace information of the original exception, does not support actively constructing this exception, but it can be caught.
-
-Parent Type: 
-- [Exception](#class-exception)
-
-### func toString()
-
-```cangjie
-public override func toString(): String
-```
-Purpose: Get class name.
-
-Return Value:
-
-- [String](core_package_structs.md#struct-string) - Class name.
-
-Example:
-
-<!-- code_no_check -->
-```cangjie
-// This example is for demonstration only, assuming an ExclusiveScopeException is thrown
-main() {
-    try {
-    // Assume memory error occurs
-    } catch (e: ExclusiveScopeException) {
-        println(e.message)
-    }
-}
 ```
 
 ## class IllegalFormatException
@@ -1445,50 +1276,6 @@ Exception message: Custom exception message
 Exception class name: NoneValueException: Custom exception message
 ```
 
-## class OutOfMemoryError
-
-```cangjie
-public class OutOfMemoryError <: Error
-```
-
-Function: Represents an error class for out-of-memory conditions. This class cannot be inherited or instantiated, but can be caught.
-
-Parent Types:
-
-- [Error](#class-error)
-
-### func getClassName()
-
-```cangjie
-protected override func getClassName(): String
-```
-
-Function: Gets the class name.
-
-Returns:
-
-- [String](core_package_structs.md#struct-string) - The class name.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming OutOfMemoryError is thrown
-main() {
-    try {
-        // Assume an out-of-memory error occurs
-    } catch (e: OutOfMemoryError) {
-        println(e.message)
-    }
-}
-
-extend Error {
-    public func printlnClassName(): Unit {
-        println(getClassName())
-    }
-}
-```
-
 ## class OverflowException
 
 ```cangjie
@@ -1635,72 +1422,6 @@ Exception message: Custom exception message
 Exception class name: SpawnException: Custom exception message
 ```
 
-## class StackOverflowError
-
-```cangjie
-public class StackOverflowError <: Error
-```
-
-Function: Represents the error class for stack overflow errors. This class cannot be inherited or instantiated but can be caught.
-
-Parent Type:
-
-- [Error](#class-error)
-
-### func printStackTrace()
-
-```cangjie
-public override func printStackTrace(): Unit
-```
-
-Function: Prints stack trace information to the console.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming a StackOverflowError is thrown
-main() {
-    try {
-        // Assume a stack overflow error occurs
-    } catch (e: StackOverflowError) {
-        println(e.printStackTrace())
-    }
-}
-```
-
-### func getClassName()
-
-```cangjie
-protected override func getClassName(): String
-```
-
-Function: Retrieves the class name.
-
-Returns:
-
-- [String](core_package_structs.md#struct-string) - The class name.
-
-Example:
-
-<!-- compile -->
-```cangjie
-// This example is for demonstration only, assuming a StackOverflowError is thrown
-main() {
-    try {
-        // Assume a stack overflow error occurs
-    } catch (e: StackOverflowError) {
-        println(e.message)
-    }
-}
-
-extend Error {
-    public func printlnClassName(): Unit {
-        println(getClassName())
-    }
-}
-```
-
 ## class TimeoutException
 
 ```cangjie
@@ -1774,6 +1495,120 @@ Error message: Custom error message
 Exception class name: TimeoutException: Custom error message
 ```
 
+<!--Del_sink-->
+## class UnimplementedException
+
+```cangjie
+public class UnimplementedException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents the exception thrown when the current type has not yet provided the `@local!` or `@local?` adaptation implementation required by some interfaces.
+
+When a type does not provide the corresponding local implementation, the default implementations of interfaces such as [ToString](core_package_interfaces.md#interface-tostring) and [Hashable](core_package_interfaces.md#interface-hashable) throw this exception. The local default implementations of [Iterable](core_package_interfaces.md#interface-iterablee) and [Iterator](core_package_classes.md#class-iteratort) throw [IllegalStateException](#class-illegalstateexception) instead.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parent Type:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) instance with the default error message "UnimplementedException".
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an UnimplementedException instance using the default constructor
+    let exception = UnimplementedException()
+    println("created: ${exception.message}")
+}
+```
+
+Execution Result:
+
+```text
+created: UnimplementedException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [UnimplementedException](core_package_exceptions.md#class-unimplementedexception) instance with the specified error message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The error message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    try {
+        throw UnimplementedException("test message")
+    } catch (e: UnimplementedException) {
+        println("caught: ${e.message}")
+    }
+}
+```
+
+Execution Result:
+
+```text
+caught: test message
+```
+
+### func getClassName()
+
+```cangjie
+protected override func getClassName(): String
+```
+
+Function: Obtains the class name.
+
+This function is a `protected` member and can only be accessed inside the class or its subclasses; external code that needs to display exception information can use the public `toString` function.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - The class name "UnimplementedException".
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    try {
+        throw UnimplementedException("test message")
+    } catch (e: UnimplementedException) {
+        // Use the public toString to obtain the exception information containing the class name
+        println(e.toString())
+    }
+}
+```
+
+Execution Result:
+
+```text
+UnimplementedException: test message
+```
+
+<!--DelEnd_sink-->
 ## class UnsupportedException
 
 ```cangjie
@@ -1845,4 +1680,330 @@ Execution Result:
 ```text
 Error message: Custom error message
 Exception class name: UnsupportedException: Custom error message
+```
+
+## class Error
+
+```cangjie
+public open class Error <: ToString
+```
+
+Function: [Error](core_package_exceptions.md#class-error) is the base class for all error classes. This class cannot be inherited or instantiated, but can be caught.
+
+Parent Types:
+
+- [ToString](core_package_interfaces.md#interface-tostring)
+
+### prop message
+
+```cangjie
+public open prop message: String
+```
+
+Function: Gets the error message.
+
+Type: [String](core_package_structs.md#struct-string)
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming Error is thrown
+main() {
+    try {
+        // Assume memory error or stack overflow occurs
+    } catch (e: Error) {
+        println(e.message)
+    }
+}
+```
+
+### func getClassName()
+
+```cangjie
+protected open func getClassName(): String
+```
+
+Function: Gets the class name.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - Class name.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming internal Error is thrown
+main() {
+    try {
+        // Assume stack overflow occurs
+    } catch (e: StackOverflowError) {
+        println(e.message)
+    }
+}
+
+extend Error {
+    public func printlnClassName(): Unit {
+        println(getClassName())
+    }
+}
+```
+
+### func getStackTrace()
+
+```cangjie
+public func getStackTrace(): Array<StackTraceElement>
+```
+
+Function: Gets stack trace information, where each stack trace is represented by a [StackTraceElement](core_package_classes.md#class-stacktraceelement) instance, returning an array of [StackTraceElement](core_package_classes.md#class-stacktraceelement).
+
+Returns:
+
+- [Array](core_package_structs.md#struct-arrayt)\<[StackTraceElement](core_package_classes.md#class-stacktraceelement)> - Stack trace array.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming internal Error is thrown
+main() {
+    try {
+        // Assume memory error, stack overflow, or internal error occurs
+    } catch (e: Error) {
+        println(e.getStackTrace()[0].methodName)
+    }
+}
+```
+
+### func getStackTraceMessage()
+
+```cangjie
+public open func getStackTraceMessage(): String
+```
+
+Function: Gets stack trace information.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - Stack trace message.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming internal Error is thrown
+main() {
+    try {
+        // Assume memory error, stack overflow, or internal error occurs
+    } catch (e: Error) {
+        println(e.getStackTraceMessage())
+    }
+}
+```
+
+### func printStackTrace()
+
+```cangjie
+public open func printStackTrace(): Unit
+```
+
+Function: Prints stack trace to console.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming internal Error is thrown
+main() {
+    try {
+        // Assume memory error, stack overflow, or internal error occurs
+    } catch (e: Error) {
+        println(e.printStackTrace())
+    }
+}
+```
+
+### func toString()
+
+```cangjie
+public open func toString(): String
+```
+
+Function: Gets string representation of current [Error](core_package_exceptions.md#class-error) instance, including class name and error message.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - Error message string.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming internal Error is thrown
+main() {
+    try {
+        // Assume memory error, stack overflow, or internal error occurs
+    } catch (e: Error) {
+        println(e)
+    }
+}
+```
+
+<!--Del_sink-->
+## class LocalRegionOutOfMemoryError
+
+```cangjie
+public class LocalRegionOutOfMemoryError <: Error {}
+```
+
+Function: Represents the error raised when memory allocation in a local region fails. This error is thrown when the runtime fails to allocate memory for an object in a local region.
+
+The memory usage of local objects is not counted in the result of `getAllocatedHeapSize`.
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Parent Type:
+
+- [Error](#class-error)
+
+Example:
+
+<!-- verify -->
+```cangjie
+func allocateAndPrint() {
+    // Allocate a small array in the local region; the allocation normally succeeds
+    let arr: Array<Int64> @local! = [1, 2, 3]
+    println("allocated: ${arr.size}")
+}
+
+main() {
+    try {
+        allocateAndPrint()
+    } catch (e: LocalRegionOutOfMemoryError) {
+        // This error is thrown when memory allocation in the local region fails
+        println("local region out of memory")
+    }
+}
+```
+
+Execution Result:
+
+```text
+allocated: 3
+```
+
+<!--DelEnd_sink-->
+
+## class OutOfMemoryError
+
+```cangjie
+public class OutOfMemoryError <: Error
+```
+
+Function: Represents an error class for out-of-memory conditions. This class cannot be inherited or instantiated, but can be caught.
+
+Parent Types:
+
+- [Error](#class-error)
+
+### func getClassName()
+
+```cangjie
+protected override func getClassName(): String
+```
+
+Function: Gets the class name.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - The class name.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming OutOfMemoryError is thrown
+main() {
+    try {
+        // Assume an out-of-memory error occurs
+    } catch (e: OutOfMemoryError) {
+        println(e.message)
+    }
+}
+
+extend Error {
+    public func printlnClassName(): Unit {
+        println(getClassName())
+    }
+}
+```
+
+## class StackOverflowError
+
+```cangjie
+public class StackOverflowError <: Error
+```
+
+Function: Represents the error class for stack overflow errors. This class cannot be inherited or instantiated but can be caught.
+
+Parent Type:
+
+- [Error](#class-error)
+
+### func getClassName()
+
+```cangjie
+protected override func getClassName(): String
+```
+
+Function: Retrieves the class name.
+
+Returns:
+
+- [String](core_package_structs.md#struct-string) - The class name.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming a StackOverflowError is thrown
+main() {
+    try {
+        // Assume a stack overflow error occurs
+    } catch (e: StackOverflowError) {
+        println(e.message)
+    }
+}
+
+extend Error {
+    public func printlnClassName(): Unit {
+        println(getClassName())
+    }
+}
+```
+
+### func printStackTrace()
+
+```cangjie
+public override func printStackTrace(): Unit
+```
+
+Function: Prints stack trace information to the console.
+
+Example:
+
+<!-- compile -->
+```cangjie
+// This example is for demonstration only, assuming a StackOverflowError is thrown
+main() {
+    try {
+        // Assume a stack overflow error occurs
+    } catch (e: StackOverflowError) {
+        println(e.printStackTrace())
+    }
+}
 ```

@@ -6,6 +6,8 @@
 
 
 #include "TypeInfoManager.h"
+#include <new> // placement new (std::operator new(size_t, void*))
+
 #include "Base/CString.h"
 #include "Base/MemUtils.h"
 #include "ObjectModel/MClass.h"
@@ -142,14 +144,19 @@ TypeInfoManager& TypeInfoManager::GetTypeInfoManager() { return *typeInfoManager
 
 void TypeInfoManager::Init()
 {
+    std::lock_guard<std::mutex> lock(allocationMutex);
     NewMMap(mapMemory);
 }
 
 void TypeInfoManager::Fini()
 {
+    std::lock_guard<std::mutex> lock(allocationMutex);
     // release resources
     for (const auto& mTable : mTableList) {
-        delete mTable.second;
+        // MTableDesc lives in the arena (see AllocateMTableDesc), so it is destroyed in place
+        // instead of deleted: this releases what its members own (e.g. the mTable hash map)
+        // while the arena is still mapped.
+        mTable.second->~MTableDesc();
     }
     mTableList.clear();
     for (const auto& m : mmapList) {
@@ -331,23 +338,31 @@ TypeInfoManager::GenericTiDesc* TypeInfoManager::GenericTiDescHashMap::InsertGen
     const U32 h = desc.GetHash();
     const size_t bucketIdx = h % buckets.size();
     auto &bucket = buckets[bucketIdx];
+    // Allocate/construct the descriptor OUTSIDE the write lock so that the
+    // bucket's critical section only performs the (cheap) lookup + publish.
+    // All contenders on the same bucket previously serialized on memory
+    // allocation inside the lock, which is the dominant cost under concurrent
+    // generic type instantiation.
+    GenericTiDesc* newDesc = new (std::nothrow) GenericTiDesc(desc);
+    CHECK_DETAIL(newDesc != nullptr, "fail to allocate GenericTiDesc");
     bucket.rwLock.LockWrite();
     auto it = bucket.maps.find(h);
     if (it != bucket.maps.end()) {
         for (auto descIt = it->second.begin(); descIt != it->second.end(); ++descIt) {
             if (**descIt == desc) {
-                // Same as GetGenericTiDesc: copy under the lock to avoid UAF.
-                GenericTiDesc* result = *descIt;
+                // Same as GetGenericTiDesc: read the pointer under the lock to
+                // avoid UAF (the vector may be reallocated after unlock). The
+                // speculative descriptor built outside the lock is released here.
+                GenericTiDesc* existed = *descIt;
                 bucket.rwLock.UnlockWrite();
-                return result;
+                delete newDesc;
+                return existed;
             }
         }
     }
-    GenericTiDesc* tiDesc = new (std::nothrow) GenericTiDesc(desc);
-    CHECK_DETAIL(tiDesc != nullptr, "fail to allocate GenericTiDesc");
-    bucket.maps[h].push_back(tiDesc);
+    bucket.maps[h].push_back(newDesc);
     bucket.rwLock.UnlockWrite();
-    return tiDesc;
+    return newDesc;
 }
 
 TypeInfoManager::GenericTiDesc* TypeInfoManager::GetTypeInfo(TypeTemplate* tt, U32 argSize, TypeInfo* args[])
@@ -367,6 +382,13 @@ TypeInfo* TypeInfoManager::GetOrCreateTypeInfo(TypeTemplate* tt, U32 argSize, Ty
         return typeInfoDesc->typeInfo;
     }
     const U32 currentTid = static_cast<U32>(GetTid());
+    // NOTE: currentTid is used as a "who owns this creation" token. GetTid() returns the OS
+    // thread id, which the OS can recycle after a thread exits; in principle a recycled id could
+    // match the `IsIniting() && tid == currentTid` branch for an unrelated new thread and let it
+    // observe a half-initialized typeInfo (offsets/fieldAddr not yet filled). This is not
+    // reachable under the current model because runtime creation aborts on failure and threads
+    // are never force-killed. If this is ever hardened, replace the token with a non-recyclable
+    // one (a thread-local monotonic id, or the Mutator*).
     do {
         if (typeInfoDesc->IsInited()) {
             return typeInfoDesc->typeInfo;
@@ -376,7 +398,14 @@ TypeInfo* TypeInfoManager::GetOrCreateTypeInfo(TypeTemplate* tt, U32 argSize, Ty
         }
         if (typeInfoDesc->IsNotCreated() && typeInfoDesc->tid.load() == currentTid) {
             CreatedTypeInfo(typeInfoDesc, tt, argSize, args);
+            continue;
         }
+        // Another thread owns the creation of this descriptor. Yield instead of
+        // busy-spinning, so the creator can make progress and we avoid burning
+        // CPU while waiting for the TYPEINFO_INITED state. Every creation path now terminates
+        // in TYPEINFO_INITED (CreatedTypeInfoImpl marks array/CPointer and CFunc instantiations
+        // initialized before returning), so this branch only waits for a live creator.
+        sched_yield();
     } while (true);
 }
 
@@ -428,6 +457,15 @@ void TypeInfoManager::CreatedTypeInfoImpl(GenericTiDesc* &tiDesc, TypeTemplate* 
     } else if (tt->IsCFunc()) {
         newTypeInfo->SetInstanceSize(ptrSize);
         newTypeInfo->SetAlign(ptrSize);
+        // Register the instantiation and mark the descriptor initialized, mirroring the
+        // array/CPointer branch above. Historically this branch returned while the descriptor
+        // was still TYPEINFO_INITING: the creator thread could return via the tid-owned branch
+        // in GetOrCreateTypeInfo, but any other thread querying the same generic-CFunc
+        // instantiation would spin/yield in that loop forever (Cangjie/cangjie_runtime issue
+        // #865). AddTypeInfo also assigns the monotonic UUID, so the stdlib pointer-keyed memo
+        // can validate address reuse for generic CFuncs exactly like any other instantiation.
+        AddTypeInfo(newTypeInfo);
+        tiDesc->SetTypeInfoStatus(TypeInfoStatus::TYPEINFO_INITED);
         return;
     }
     U32* offsets = reinterpret_cast<U32*>(Allocate(fieldNum * sizeof(U32)));
@@ -911,11 +949,38 @@ uintptr_t TypeInfoManager::Allocate(size_t size)
 #ifdef __arm__
     size = MRT_ALIGN(size, sizeof(uint32_t));
 #endif
-    uintptr_t addr = position.fetch_add(size);
-    if (addr + size > endAddress) {
-        NewMMap(mapMemory);
-        addr = position.fetch_add(size);
+
+    // `position`, `endAddress` and `mmapList` describe one allocator state.
+    // In particular, a thread must not compare an address from an exhausted
+    // segment with the end address of a segment installed by another thread.
+    std::lock_guard<std::mutex> lock(allocationMutex);
+    uintptr_t current = position.load(std::memory_order_relaxed);
+    if (current > endAddress || size > endAddress - current) {
+        // A single request is normally much smaller than mapMemory, but it
+        // must still fit if a future metadata layout exceeds that size.
+        NewMMap(size > mapMemory ? size : mapMemory);
+        current = position.load(std::memory_order_relaxed);
     }
-    return addr;
+    position.store(current + size, std::memory_order_relaxed);
+    return current;
+}
+
+MTableDesc* TypeInfoManager::AllocateMTableDesc(ArchUInt bitmap)
+{
+    // MTableDesc is built in the TypeInfoManager arena instead of the C++ heap: heap pointers
+    // are tagged by HWASan/TBI on some targets, and a tagged MTableDesc* can carry 0x80 in the
+    // top byte, which is exactly the marker of the compiler's inline short bitmap kept in
+    // TypeInfo::mTableDesc. Arena memory is never tagged, so a real pointer keeps a clear top
+    // byte and is always distinguishable from a bitmap. The object is kept alive via mTableList
+    // and destroyed in place by Fini(), so it must not be deleted.
+    constexpr size_t descAlign = alignof(MTableDesc);
+    // Allocate() just bumps the arena cursor and does no alignment, so reserve the worst-case
+    // padding and round the block start up here. It aborts instead of returning null.
+    uintptr_t addr = MRT_ALIGN(Allocate(sizeof(MTableDesc) + descAlign - 1), descAlign);
+    // Placement new does not allocate memory here: it invokes MTableDesc's constructor at
+    // the already allocated arena address. The returned pointer therefore remains an arena
+    // pointer, rather than a new C++ heap pointer that HWASan/TBI could tag. Do not replace
+    // this with `new (std::nothrow) MTableDesc(bitmap)`, which would reintroduce the conflict.
+    return new (reinterpret_cast<void*>(addr)) MTableDesc(bitmap);
 }
 } // namespace MapleRuntime

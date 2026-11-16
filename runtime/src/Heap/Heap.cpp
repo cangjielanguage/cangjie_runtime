@@ -40,7 +40,11 @@ static const GCMode gcMode = [] {
     const char* enableGC = std::getenv("cjEnableGC");
     if (enableGC == nullptr || strlen(enableGC) != 1) {
         if (enableGC != nullptr) {
+#if defined(_WIN64)
+            PRINT_ERROR("Unsupported cjEnableGC, cjEnableGC should be 0, 1 or 2.\n");
+#else
             LOG(RTLOG_ERROR, "Unsupported cjEnableGC, cjEnableGC should be 0, 1 or 2.\n");
+#endif
         }
         return GCMode::WGC;
     }
@@ -52,7 +56,11 @@ static const GCMode gcMode = [] {
         case '2':
             return GCMode::GENERATIONAL;
         default:
+#if defined(_WIN64)
+            PRINT_ERROR("Unsupported cjEnableGC, cjEnableGC should be 0, 1 or 2.\n");
+#else
             LOG(RTLOG_ERROR, "Unsupported cjEnableGC, cjEnableGC should be 0, 1 or 2.\n");
+#endif
             return GCMode::WGC;
     }
 }();

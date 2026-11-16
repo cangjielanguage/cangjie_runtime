@@ -20,6 +20,12 @@ extern "C" {
 void FreeTwoDimensionalArray(char** strArray);
 char** GetCurrentProcessEnvironment(int32_t pid);
 
+/*
+ * Non-blocking waitpid(WNOHANG) wrapper used by the timeout-correct
+ * SubProcess.wait(timeout:). See process_ffi_unix.c for the contract.
+ */
+int32_t CJ_OS_WaitSubProcessExitNonBlocking(int32_t pid, int64_t* exitCode);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

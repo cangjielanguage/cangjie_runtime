@@ -8,6 +8,10 @@ cmake_minimum_required(VERSION 3.16.5)
 project(cangjie)
 # add path for custom CMake modules and add cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+# This branch's standard library contains local-mode declarations. Opt in here;
+# consumers that only reuse AddCangjieSource retain the module's OFF default.
+option(CANGJIE_ENABLE_LOCAL_MODE "Build the standard library with experimental local mode" ON)
+message(STATUS "Cangjie standard library local mode: ${CANGJIE_ENABLE_LOCAL_MODE}")
 include(AddCangjieSource)
 
 set(CMAKE_CXX_STANDARD 17)

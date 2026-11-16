@@ -10,7 +10,7 @@ Function: Generates heap memory snapshot information and writes it to a file at 
 
 Parameters:
 
-- path: [Path](../../fs/fs_package_api/fs_package_structs.md/#struct-path) - The file path where the heap memory snapshot will be written.
+- path: [Path](../../fs/fs_package_api/fs_package_structs.md#struct-path) - The file path where the heap memory snapshot will be written.
 
 Exceptions:
 
@@ -56,6 +56,49 @@ Returns:
 
 - [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The allocated heap size of Cangjie in bytes.
 
+<!--Del_sink-->
+## func getAllocatedLocalObjectSize()
+
+```cangjie
+public func getAllocatedLocalObjectSize(): Int64
+```
+
+Function: Obtains the memory size accounted to active local regions, in bytes.
+
+The memory usage of local objects is not counted in the result of [getAllocatedHeapSize](runtime_package_funcs.md#func-getallocatedheapsize).
+
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
+
+Returns:
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - The memory size accounted to active local regions, in bytes.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import std.runtime.*
+
+main(): Unit {
+    // The return value accounts each active backing chunk: the current allocation chunk counts
+    // only its used prefix (the unused tail is excluded), while other chunks count at full
+    // capacity; the value varies with allocation behavior and has no stable fixed value, so
+    // only its non-negativity is verified here
+    let size = getAllocatedLocalObjectSize()
+    println("Local region size >= 0: ${size >= 0}")
+}
+```
+
+Output:
+
+```text
+Local region size >= 0: true
+```
+
+<!--DelEnd_sink-->
 ## func getBlockingThreadCount()
 
 ```cangjie
@@ -222,11 +265,11 @@ Function: Starts CPU profiler tracing.
 
 > **Note:**
 >
-> [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
+> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
 
 Exceptions:
 
-- ProfilingInfoException - Thrown if [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) is called again without first calling [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath).
+- ProfilingInfoException - Thrown if [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) is called again without first calling [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath).
 
 ## func stopCPUProfiling(Path)
 
@@ -238,12 +281,12 @@ Function: Stops CPU profiler tracing and writes the records to a file at the spe
 
 > **Note:**
 >
-> [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
+> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
 
 Parameters:
 
-- path: [Path](../../fs/fs_package_api/fs_package_structs.md/#struct-path) - The file path where the profiling records will be written.
+- path: [Path](../../fs/fs_package_api/fs_package_structs.md#struct-path) - The file path where the profiling records will be written.
 
 Exceptions:
 
-- ProfilingInfoException - Thrown if [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) is called without first calling [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling).
+- ProfilingInfoException - Thrown if [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) is called without first calling [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling).

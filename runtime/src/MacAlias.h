@@ -9,6 +9,10 @@
 
 extern "C" MRT_EXPORT ObjRef CJ_MCC_OnFinalizerCreated(ObjRef ref);
 __asm__(".global _CJ_MCC_OnFinalizerCreated\n\t.set _CJ_MCC_OnFinalizerCreated, _MCC_OnFinalizerCreated");
+extern "C" MRT_EXPORT void CJ_MCC_AddLocalFinalizer(ObjectPtr obj);
+__asm__(".global _CJ_MCC_AddLocalFinalizer\n\t.set _CJ_MCC_AddLocalFinalizer, _MCC_AddLocalFinalizer");
+extern "C" MRT_EXPORT void CJ_MCC_RemoveLocalFinalizer(ObjectPtr obj);
+__asm__(".global _CJ_MCC_RemoveLocalFinalizer\n\t.set _CJ_MCC_RemoveLocalFinalizer, _MCC_RemoveLocalFinalizer");
 extern "C" MRT_EXPORT void CJ_MCC_WriteRefField(const ObjectPtr ref, const ObjectPtr obj, RefField<false>* field);
 __asm__(".global _CJ_MCC_WriteRefField\n\t.set _CJ_MCC_WriteRefField, _MCC_WriteRefField");
 extern "C" MRT_EXPORT void CJ_MCC_WriteStructField(const ObjectPtr obj, MAddress dst, size_t dstLen, MAddress src,
@@ -19,6 +23,20 @@ __asm__(".global _CJ_MCC_WriteStaticRef\n\t.set _CJ_MCC_WriteStaticRef, _MCC_Wri
 extern "C" MRT_EXPORT void CJ_MCC_WriteStaticStruct(MAddress dst, size_t dstLen, MAddress src, size_t srcLen,
                                                     const GCTib gcTib);
 __asm__(".global _CJ_MCC_WriteStaticStruct\n\t.set _CJ_MCC_WriteStaticStruct, _MCC_WriteStaticStruct");
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                                      RefField<false>* field);
+__asm__(".global _CJ_MCC_MaybeLocalWriteRef\n\t.set _CJ_MCC_MaybeLocalWriteRef, _MCC_MaybeLocalWriteRef");
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteStruct(const ObjectPtr obj, MAddress dst, size_t dstLen,
+                                                        MAddress src, size_t srcLen, GCTib gctib);
+__asm__(".global _CJ_MCC_MaybeLocalWriteStruct\n\t.set _CJ_MCC_MaybeLocalWriteStruct, "
+        "_MCC_MaybeLocalWriteStruct");
+extern "C" MRT_EXPORT void CJ_MCC_MaybeLocalWriteGeneric(const ObjectPtr obj, void* fieldPtr,
+                                                          const ObjectPtr src, size_t size);
+__asm__(".global _CJ_MCC_MaybeLocalWriteGeneric\n\t.set _CJ_MCC_MaybeLocalWriteGeneric, "
+        "_MCC_MaybeLocalWriteGeneric");
+extern "C" MRT_EXPORT void CJ_MCC_DemodeWriteRef(const ObjectPtr value, const ObjectPtr obj,
+                                                  RefField<false>* field);
+__asm__(".global _CJ_MCC_DemodeWriteRef\n\t.set _CJ_MCC_DemodeWriteRef, _MCC_DemodeWriteRef");
 
 extern "C" MRT_EXPORT void CJ_MCC_AtomicWriteReference(const ObjectPtr ref, const ObjectPtr obj, RefField<true>* field,
                                                        MemoryOrder order);
@@ -46,6 +64,9 @@ __asm__(
     "_MCC_GetRealHeapSize");
 extern "C" MRT_EXPORT size_t CJ_MCC_GetAllocatedHeapSize();
 __asm__(".global _CJ_MCC_GetAllocatedHeapSize\n\t.set _CJ_MCC_GetAllocatedHeapSize, _MCC_GetAllocatedHeapSize");
+extern "C" MRT_EXPORT size_t CJ_MCC_GetAllocatedLocalObjectSize();
+__asm__(".global _CJ_MCC_GetAllocatedLocalObjectSize\n\t.set _CJ_MCC_GetAllocatedLocalObjectSize,"
+        " _MCC_GetAllocatedLocalObjectSize");
 extern "C" MRT_EXPORT size_t CJ_MCC_GetMaxHeapSize();
 __asm__(".global _CJ_MCC_GetMaxHeapSize\n\t.set _CJ_MCC_GetMaxHeapSize, _MCC_GetMaxHeapSize");
 extern "C" MRT_EXPORT size_t CJ_MCC_GetCJThreadNumber();

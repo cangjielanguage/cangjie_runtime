@@ -178,6 +178,8 @@ public enum TokenKind <: ToString {
     | THROWING /*  "throwing"         */
     | DOUBLE_COLON /*  "::"               */
     | FEATURES /*   "features"         */
+    | EXCLAVE /*  "exclave"          */
+    | DEMODE /*   "demode"           */
     | ...
 
     public operator func ==(right: TokenKind): Bool {
@@ -842,6 +844,14 @@ public enum TokenKind <: ToString {
                 case FEATURES => true
                 case _ => false
             }
+            case EXCLAVE => match (right) {
+                case EXCLAVE => true
+                case _ => false
+            }
+            case DEMODE => match (right) {
+                case DEMODE => true
+                case _ => false
+            }
             case ILLEGAL => match (right) {
                 case ILLEGAL => true
                 case _ => false
@@ -1021,6 +1031,8 @@ public enum TokenKind <: ToString {
             case RESUME => return "RESUME"
             case THROWING => return "THROWING"
             case FEATURES => return "FEATURES"
+            case EXCLAVE => return "EXCLAVE"
+            case DEMODE => return "DEMODE"
             case ILLEGAL => return "ILLEGAL"
             case _ => return "INVALID_TOKENKIND"
         }
@@ -1229,6 +1241,8 @@ let PATTERNS: Array<(TokenKind, String, String)> = [
     (TokenKind.ILLEGAL, "illegal", ""),
     (TokenKind.DOUBLE_COLON, "double_colon", "::"),
     (TokenKind.FEATURES, "features", "features"),
+    (TokenKind.EXCLAVE, "exclave", "exclave"),
+    (TokenKind.DEMODE, "demode", "demode"),
 ]
 
 /**
@@ -1401,6 +1415,8 @@ func getTokenID(tk: TokenKind): UInt16 {
         case TokenKind.HANDLE => return 161
         case TokenKind.DOUBLE_COLON => return 163
         case TokenKind.FEATURES => return 164
+        case TokenKind.EXCLAVE => return 165
+        case TokenKind.DEMODE => return 166
         case _ => return 162
     }
 }

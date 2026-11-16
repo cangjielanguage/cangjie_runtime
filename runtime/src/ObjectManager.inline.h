@@ -27,6 +27,13 @@ inline ObjRef ObjectManager::NewObject(const TypeInfo* ti, MSize size, AllocType
     return static_cast<ObjRef>(obj);
 }
 
+inline ObjRef ObjectManager::NewLocalObject(const TypeInfo* ti, MSize size)
+{
+    CHECK_DETAIL(ti != nullptr, "ti is nullptr");
+    auto obj = MObject::NewLocalObject(const_cast<TypeInfo*>(ti), size);
+    return static_cast<ObjRef>(obj);
+}
+
 inline ObjRef ObjectManager::NewWeakRefObject(const TypeInfo* ti, MSize size, AllocType allocType)
 {
     CHECK_DETAIL(ti != nullptr, "klass is nullptr");
@@ -60,10 +67,22 @@ inline ArrayRef ObjectManager::NewArray(MIndex nElems, const TypeInfo* arrayTi, 
     return MArray::NewArray(nElems, *const_cast<TypeInfo*>(arrayTi), allocType);
 }
 
+inline ArrayRef ObjectManager::NewLocalArray(MIndex nElems, const TypeInfo* arrayTi)
+{
+    CHECK_DETAIL(arrayTi != nullptr, "arrayTi is nullptr");
+    return MArray::NewLocalArray(nElems, *const_cast<TypeInfo*>(arrayTi));
+}
+
 inline ArrayRef ObjectManager::NewObjArray(MIndex nElems, const TypeInfo* arrayTi, AllocType allocType)
 {
     CHECK_DETAIL(arrayTi != nullptr, "arrayTi is nullptr");
     return MArray::NewRefArray(nElems, *const_cast<TypeInfo*>(arrayTi), allocType);
+}
+
+inline ArrayRef ObjectManager::NewLocalObjArray(MIndex nElems, const TypeInfo* arrayTi)
+{
+    CHECK_DETAIL(arrayTi != nullptr, "arrayTi is nullptr");
+    return MArray::NewLocalRefArray(nElems, *const_cast<TypeInfo*>(arrayTi));
 }
 
 inline ArrayRef ObjectManager::NewKnownWidthArray(MIndex nElems, const TypeInfo* arrayTi, ArrayElemBits elemBits,
@@ -74,6 +93,15 @@ inline ArrayRef ObjectManager::NewKnownWidthArray(MIndex nElems, const TypeInfo*
     // Note here we need Bytes instead of Bits
     return MArray::NewKnownWidthArray(nElems, *const_cast<TypeInfo*>(arrayTi),
                                       (static_cast<U32>(elemBits) >> bitsToByte), allocType);
+}
+
+inline ArrayRef ObjectManager::NewLocalKnownWidthArray(
+    MIndex nElems, const TypeInfo* arrayTi, ArrayElemBits elemBits)
+{
+    CHECK_DETAIL(arrayTi != nullptr, "arrayTi is nullptr");
+    constexpr U32 bitsToByte = 3;
+    return MArray::NewLocalKnownWidthArray(
+        nElems, *const_cast<TypeInfo*>(arrayTi), (static_cast<U32>(elemBits) >> bitsToByte));
 }
 } // namespace MapleRuntime
 

@@ -113,6 +113,40 @@ class InheritedAndExtendedMembers {}
  */
 sealed abstract class TypeInfo <: Equatable<TypeInfo> & Hashable & ToString {
     private static let CACHE = HashMap<String, TypeInfo>()
+    // Pointer-keyed integer memo consulted while holding TYPE_INFO_CREATE_LOCK. Keyed by
+    // the type-metadata address so a steady-state hit avoids the per-call uuid.toString()
+    // allocation and String hashing of the string cache.
+    //
+    // COMPATIBILITY-SAFE: loaded TypeInfo metadata carries a monotonically allocated UUID at
+    // UUID_OFFSET (see runtime/src/TypeInfoManager.cpp, tiMaxUUID). On a PTR_MEMO hit we re-read
+    // that UUID and compare it with the value captured when the entry was inserted; a mismatch
+    // means the metadata address was reused after an UnloadCJLibrary(dlclose)+reload, so the
+    // cached wrapper is stale. We then invalidate EVERY cache entry that aliases it - the
+    // pointer memo (PTR_MEMO / PTR_MEMO_UUID) and the string cache CACHE (keyed by the captured
+    // uuid and by the qualified name) - so the normal path rebuilds a fresh wrapper from current
+    // metadata instead of returning the stale one. This keeps the published
+    // UnloadCJLibrary/unload-reload flow correct and preserves the performance win: a
+    // steady-state hit only pays a 4-byte aligned native read + Int32 compare instead of
+    // uuid.toString() + String hashing.
+    //
+    // A zero UUID can never prove identity and is never trusted. Runtime creation now assigns a
+    // monotonic UUID to every instantiation (including generic CFuncs, which are registered by
+    // CreatedTypeInfoImpl's IsCFunc branch), but metadata produced outside that path, or by an
+    // older runtime, can still carry 0. Trusting it would let a reused address whose previous
+    // occupant also had UUID 0 accept the stale wrapper (0 == 0). UUID 0 therefore always takes
+    // the isGeneric/qualifiedName path, exactly as such types were resolved before this memo.
+    //
+    // Background: the metadata address is otherwise stable for the process lifetime for standard
+    // Cangjie applications (no module unload; PackageInfo.load has no unload counterpart), so the
+    // recheck almost always passes and the cache behaves exactly as before. If module unload is
+    // ever made first-class, a PTR_MEMO/CACHE invalidation hook on the unload notification chain
+    // is the alternative (stronger) fix; with both the pointer memo and the string cache
+    // invalidated on a UUID mismatch, the recheck below neutralizes the correctness risk (silent
+    // type confusion / use-after-free on address reuse) that an address reuse would otherwise
+    // introduce.
+    private static let PTR_MEMO = HashMap<UIntNative, TypeInfo>()
+    // UUID captured alongside each PTR_MEMO entry, used to validate hits after address reuse.
+    private static let PTR_MEMO_UUID = HashMap<UIntNative, Int32>()
 
     // this is a pointer to type metadata
     protected let _info: CPointer<Unit>
@@ -331,20 +365,71 @@ sealed abstract class TypeInfo <: Equatable<TypeInfo> & Hashable & ToString {
         if (typeInfoPointer.isNull()) {
             throw InfoNotFoundException("Failed to get TypeInfo from pointer.")
         }
-        let isGenericTypeInfo: Bool = isGeneric(typeInfoPointer)
+        let ptrKey = typeInfoPointer.toUIntNative()
         synchronized(TYPE_INFO_CREATE_LOCK) {
-            if (isGenericTypeInfo) {
-                let qualifiedName = getQualifiedName(typeInfoPointer)
-                return CACHE.get(qualifiedName) ?? createGenericTypeInfo(typeInfoPointer, qualifiedName)
+            // Snapshot the metadata UUID (monotonic, assigned per load via tiMaxUUID) so a
+            // reused address after UnloadCJLibrary+reload is detected on the fast path.
+            let metaUUID = unsafe { CPointer<Int32>(CPointer<Byte>(typeInfoPointer) + UUID_OFFSET).read() }
+            // Fast hit: the pointer-keyed memo short-circuits before any native isGeneric call,
+            // qualified-name build, or uuid.toString() allocation. A cached entry is trusted only
+            // when its captured UUID is non-zero and still matches the metadata at this address;
+            // UUID 0 cannot prove identity (metadata created outside the registering path, or by
+            // an older runtime) and must be rebuilt through the qualified-name path. On mismatch
+            // or UUID 0, invalidate the pointer memo AND the string cache entries (captured uuid
+            // + qualified name) that alias the stale wrapper, then rebuild a fresh one.
+            if (let Some(ti) <- PTR_MEMO.get(ptrKey)) {
+                let cachedUUID = PTR_MEMO_UUID.get(ptrKey)
+                if (let Some(c) <- cachedUUID) {
+                    if (c != 0 && c == metaUUID) {
+                        return ti
+                    }
+                }
+                // UUID mismatch (or unregistered/UUID-0 entry): the address was reused after
+                // UnloadCJLibrary+reload, so the cached wrapper aliases the previous (now stale)
+                // metadata. Drop it from the pointer memo and from the string cache CACHE - both
+                // the captured-uuid key (when non-zero) and the qualified-name key (plus its
+                // slash-to-coloncolon variant, covering the concrete path; generics are keyed
+                // only by name) - so the normal path below rebuilds a fresh wrapper from current
+                // metadata instead of short-circuiting on the stale CACHE entry and re-memoizing it.
+                PTR_MEMO.remove(ptrKey)
+                PTR_MEMO_UUID.remove(ptrKey)
+                if (let Some(c) <- cachedUUID) {
+                    if (c != 0) {
+                        CACHE.remove(c.toString())
+                    }
+                }
+                let staleName = getQualifiedName(typeInfoPointer)
+                CACHE.remove(staleName)
+                CACHE.remove(staleName.replace("/", "::"))
             }
-
-            let uuid = unsafe { CPointer<Int32>(CPointer<Byte>(typeInfoPointer) + UUID_OFFSET).read().toString() }
-            return if (let Some(ti) <- CACHE.get(uuid)) {
-                ti
+            let isGenericTypeInfo: Bool = isGeneric(typeInfoPointer)
+            let typeInfo = if (isGenericTypeInfo) {
+                let qualifiedName = getQualifiedName(typeInfoPointer)
+                CACHE.get(qualifiedName) ?? createGenericTypeInfo(typeInfoPointer, qualifiedName)
             } else {
-                let qualifiedName = getQualifiedName(typeInfoPointer)
-                CACHE.get(qualifiedName) ?? createConcreteTypeInfo(typeInfoPointer, qualifiedName, uuid: uuid)
+                let uuid = metaUUID.toString()
+                // A zero UUID cannot key the uuid cache: every unregistered type would collide
+                // on "0". Fall back to the qualified name, as before the memo.
+                let cached: ?TypeInfo = if (metaUUID != 0) {
+                    CACHE.get(uuid)
+                } else {
+                    None
+                }
+                if (let Some(ti) <- cached) {
+                    ti
+                } else {
+                    let qualifiedName = getQualifiedName(typeInfoPointer)
+                    CACHE.get(qualifiedName) ?? createConcreteTypeInfo(typeInfoPointer, qualifiedName, uuid: uuid)
+                }
             }
+            // Only a non-zero UUID can ever satisfy the fast path, so a UUID-0 type must not
+            // populate the memo: such an entry could never be hit, and every lookup would pay
+            // two map removals plus two map insertions to discard and rebuild it.
+            if (metaUUID != 0) {
+                PTR_MEMO.add(ptrKey, typeInfo)
+                PTR_MEMO_UUID.add(ptrKey, metaUUID)
+            }
+            return typeInfo
         }
     }
 
@@ -404,7 +489,12 @@ sealed abstract class TypeInfo <: Equatable<TypeInfo> & Hashable & ToString {
         let replacedName = qualifiedName.replace("/", "::")
         typeInfo._replacedName = replacedName
         CACHE.add(replacedName, typeInfo)
-        CACHE.add(uuidStr, typeInfo)
+        // UUID 0 means "no identity assigned" (e.g. a generic CFunc, whose creation returns
+        // before AddTypeInfo). It must not key the uuid cache, otherwise every such type would
+        // collide on the same "0" entry.
+        if (uuidStr != "0") {
+            CACHE.add(uuidStr, typeInfo)
+        }
         typeInfo
     }
 

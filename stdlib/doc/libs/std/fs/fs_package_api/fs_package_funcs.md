@@ -102,7 +102,8 @@ main(): Unit {
 
     // 验证结果
     println("Original path: ${testPath}")
-    println("Canonical path: ${canonicalPath}")
+    println(
+        "Canonical paths match: ${canonicalPath.toString() == canonicalize("./test_canonicalize_string.txt").toString()}")
 
     // 删除测试路径，如果想保留目录就注释下面这行代码
     removeIfExists("./test/../test_canonicalize_string.txt", recursive: true)
@@ -112,10 +113,132 @@ main(): Unit {
 可能的运行结果：
 
 ```text
-Original path: ./test/../test_canonicalize_path.txt
-Canonical path: /home/user/test/test_canonicalize_path.txt
+Original path: ./test/../test_canonicalize_string.txt
+Canonical paths match: true
 ```
 
+<!--Del_sink-->
+## func canonicalize(String)
+
+```cangjie
+public func canonicalize(path: String @local!): Path @local!
+```
+
+功能：用 path 字符串构造 [Path](fs_package_structs.md#struct-path) 实例，并进行规范化，获取绝对路径形式的规范化路径；返回的 [Path](fs_package_structs.md#struct-path) 实例绑定在调用者的 local region 中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local! - 待规范化的路径字符串。
+
+返回值：
+
+- [Path](fs_package_structs.md#struct-path) @local! - 规范化后的 [Path](fs_package_structs.md#struct-path) 实例。
+
+异常：
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - 路径不存在或无法规范化时抛出异常。
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 路径为空或包含字符串结束符时抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_canonicalize.txt", recursive: true)
+
+    // 创建一个测试文件
+    let writeData: Array<Byte> = [67, 65, 78] // CAN
+    File.writeTo("./test_local_canonicalize.txt", writeData)
+
+    // 在 local region 中规范化路径字符串
+    let path: String @local! = "./test_local_canonicalize.txt"
+    let canonicalPath: Path @local! = canonicalize(path)
+
+    // 规范化结果为绝对路径，这里输出其中的文件名进行验证
+    println("Canonical file name: ${String(canonicalPath.fileName)}")
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_canonicalize.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Canonical file name: test_local_canonicalize.txt
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+## func canonicalize(Path)
+
+```cangjie
+public func canonicalize(path: Path @local!): Path @local!
+```
+
+功能：将 [Path](fs_package_structs.md#struct-path) 实例规范化，获取绝对路径形式的规范化路径；返回的 [Path](fs_package_structs.md#struct-path) 实例绑定在调用者的 local region 中。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- path: [Path](./fs_package_structs.md#struct-path) @local! - 待规范化的 [Path](fs_package_structs.md#struct-path) 实例。
+
+返回值：
+
+- [Path](fs_package_structs.md#struct-path) @local! - 规范化后的 [Path](fs_package_structs.md#struct-path) 实例。
+
+异常：
+
+- [FSException](fs_package_exceptions.md#class-fsexception) - 路径不存在或无法规范化时抛出异常。
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 路径为空或包含字符串结束符时抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_canonicalize_path.txt", recursive: true)
+
+    // 创建一个测试文件
+    let writeData: Array<Byte> = [80, 65, 84] // PAT
+    File.writeTo("./test_local_canonicalize_path.txt", writeData)
+
+    // 在 local region 中规范化 Path 实例
+    let rawPath: String @local! = "./test_local_canonicalize_path.txt"
+    let path: Path @local! = Path(rawPath) @local!
+    let canonicalPath: Path @local! = canonicalize(path)
+
+    // 规范化结果为绝对路径，这里输出其中的文件名进行验证
+    println("Canonical file name: ${String(canonicalPath.fileName)}")
+
+    // 删除，如果想保留就注释下面这行代码
+    removeIfExists("./test_local_canonicalize_path.txt", recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Canonical file name: test_local_canonicalize_path.txt
+```
+
+<!--DelEnd_sink-->
 ## func copy(Path, Path, Bool)
 
 ```cangjie
@@ -350,6 +473,136 @@ File exists before creation: false
 File exists after creation: true
 ```
 
+<!--Del_sink-->
+## func exists(Path)
+
+```cangjie
+public func exists(path: Path @local?): Bool
+```
+
+功能：判断目标地址是否存在。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- path: [Path](./fs_package_structs.md#struct-path) @local? - 待判断的目标地址。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 目标地址是否存在。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 路径为空或包含字符串结束符时抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_exists_path.txt", recursive: true)
+
+    // 在 local region 中构造 `@local?` Path 实例
+    let rawPath: String @local! = "./test_local_exists_path.txt"
+    let path: Path @local? = Path(rawPath) @local!
+
+    // 检查不存在的文件
+    println("File exists before creation: ${exists(path)}")
+
+    // 创建文件
+    let writeData: Array<Byte> = [69, 120, 105, 115, 116] // "Exist"
+    File.writeTo("./test_local_exists_path.txt", writeData)
+
+    // 检查存在的文件
+    println("File exists after creation: ${exists(path)}")
+
+    // 清理测试文件
+    removeIfExists("./test_local_exists_path.txt", recursive: true)
+    println("File exists after removal: ${exists(path)}")
+}
+```
+
+运行结果：
+
+```text
+File exists before creation: false
+File exists after creation: true
+File exists after removal: false
+```
+
+<!--DelEnd_sink-->
+
+<!--Del_sink-->
+## func exists(String)
+
+```cangjie
+public func exists(path: String @local?): Bool
+```
+
+功能：判断目标地址是否存在。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) @local? - 待判断的目标地址。
+
+返回值：
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - 目标地址是否存在。
+
+异常：
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - 路径为空或包含字符串结束符时抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+
+main(): Unit {
+    // 创建前先删除，以防创建失败
+    removeIfExists("./test_local_exists_string.txt", recursive: true)
+
+    // 在 local region 中绑定 `@local?` 路径字符串
+    let path: String @local? = "./test_local_exists_string.txt"
+
+    // 检查不存在的文件
+    println("File exists before creation: ${exists(path)}")
+
+    // 创建文件
+    let writeData: Array<Byte> = [69, 120, 105, 115, 116] // "Exist"
+    File.writeTo("./test_local_exists_string.txt", writeData)
+
+    // 检查存在的文件
+    println("File exists after creation: ${exists(path)}")
+
+    // 清理测试文件
+    removeIfExists("./test_local_exists_string.txt", recursive: true)
+    println("File exists after removal: ${exists(path)}")
+}
+```
+
+运行结果：
+
+```text
+File exists before creation: false
+File exists after creation: true
+File exists after removal: false
+```
+
+<!--DelEnd_sink-->
 ## func remove(Path, Bool)
 
 ```cangjie

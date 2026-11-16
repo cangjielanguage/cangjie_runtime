@@ -43,6 +43,52 @@ main() {
 The first element of the array is 1
 ```
 
+<!--Del_sink-->
+## func acquireArrayRawData\<T>(Array\<T>) where T <: CType
+
+```cangjie
+public exclave unsafe func acquireArrayRawData<T>(arr: Array<T> @local?): CPointerHandle<T> @local? where T <: CType
+```
+
+功能：获取 [Array](core_package_structs.md#struct-arrayt)\<T> 中数据的原始指针实例，指针实例指向数组首元素的地址，T 需要满足 [CType](core_package_interfaces.md#interface-ctype) 约束。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+> - 指针使用完后需要及时用 [releaseArrayRawData](core_package_funcs.md#func-releasearrayrawdatatcpointerhandlet-where-t--ctype) 函数释放该指针。
+> - 指针的获取和释放之间仅可包含简单的 foreign C 函数调用等逻辑，不构造例如 [CString](core_package_intrinsics.md#cstring) 等的仓颉对象，否则可能造成不可预期现象。
+
+参数：
+
+- arr: [Array](./core_package_structs.md#struct-arrayt)\<T> @local? - 待获取原始指针的数组，支持 `@local!` 和 `@local?` 实参。
+
+返回值：
+
+- [CPointerHandle](core_package_structs.md#struct-cpointerhandlet-where-t--ctype)\<T> @local? - 数组的原始指针实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3, 4]
+    let cptrHandle: CPointerHandle<Int64> @local? = unsafe { acquireArrayRawData(arr) }
+    let cptr: CPointer<Int64> = cptrHandle.pointer
+
+    let num: Int64 = unsafe { cptr.read() }
+    unsafe { releaseArrayRawData<Int64>(cptrHandle) }
+    println("The first element of the array is ${num}")
+}
+```
+
+运行结果：
+
+```text
+The first element of the array is 1
+```
+
+<!--DelEnd_sink-->
 ## func alignOf\<T>() where T <: CType
 
 ```cangjie
@@ -826,6 +872,44 @@ main() {
 I like Cangjie
 ```
 
+<!--Del_sink-->
+## func print(String, Bool)
+
+```cangjie
+public func print(str: String @local?, flush!: Bool = false): Unit
+```
+
+功能：向控制台输出指定字符串。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- str: [String](core_package_structs.md#struct-string) @local? - 待输出的字符串，支持 `@local!` 和 `@local?` 实参。
+- flush!: [Bool](core_package_intrinsics.md#bool) - 是否清空缓存，true 清空，false 不清空，默认 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let n: Int64 @local! = 123
+    let s: String @local! = n.toString()
+    print(s)
+    println()
+}
+```
+
+运行结果：
+
+```text
+123
+```
+
+<!--DelEnd_sink-->
 ## func print(UInt16, Bool)
 
 ```cangjie
@@ -1341,6 +1425,42 @@ I like Cangjie
 I like programming
 ```
 
+<!--Del_sink-->
+## func println(String)
+
+```cangjie
+public func println(str: String @local?): Unit
+```
+
+功能：向控制台输出指定字符串，末尾添加换行。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- str: [String](core_package_structs.md#struct-string) @local? - 待输出的字符串，支持 `@local!` 和 `@local?` 实参。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let n: Int64 @local! = 123
+    let s: String @local! = n.toString()
+    println(s)
+}
+```
+
+运行结果：
+
+```text
+123
+```
+
+<!--DelEnd_sink-->
 ## func println(UInt16)
 
 ```cangjie
@@ -1550,33 +1670,23 @@ public func refEq(a: Object, b: Object): Bool
 
 参数：
 
-- a: [Object](core_package_classes.md#class-object) - 一个 [Object](core_package_classes.md#class-object) 实例。
-- b: [Object](core_package_classes.md#class-object) - 另一个 [Object](core_package_classes.md#class-object) 实例。
+- a: [Object](core_package_classes.md#class-object) - 一个实例。
+- b: [Object](core_package_classes.md#class-object) - 另一个实例。
 
 返回值：
 
-- [Bool](core_package_intrinsics.md#bool) - 如果两个 [Object](core_package_classes.md#class-object) 实例的内存地址相同，返回 true，否则返回 false。
+- [Bool](core_package_intrinsics.md#bool) - 两个实例的内存地址相同时返回 true，否则返回 false。
 
 示例：
 
 <!-- verify -->
 ```cangjie
-class Rectangle {
-    var width: Int64
-    var height: Int64
-
-    public init(width: Int64, height: Int64) {
-        this.width = width
-        this.height = height
-    }
-}
-
 main() {
-    var r1: Rectangle = Rectangle(10, 20)
-    var r2: Rectangle = r1
-    var r3: Rectangle = Rectangle(5, 6)
-    println(refEq(r1, r2))
-    println(refEq(r1, r3))
+    let first = Object()
+    let same = first
+    let other = Object()
+    println(refEq(first, same))
+    println(refEq(first, other))
 }
 ```
 
@@ -1587,6 +1697,52 @@ true
 false
 ```
 
+<!--Del_sink-->
+## func refEq(Object, Object)
+
+```cangjie
+public func refEq(a: Object @local?, b: Object @local?): Bool
+```
+
+功能：判断两个 [Object](core_package_classes.md#class-object) 实例的内存地址是否相同。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- a: [Object](core_package_classes.md#class-object) @local? - 一个 [Object](core_package_classes.md#class-object) 实例。
+- b: [Object](core_package_classes.md#class-object) @local? - 另一个 [Object](core_package_classes.md#class-object) 实例。
+
+返回值：
+
+- [Bool](core_package_intrinsics.md#bool) - 如果两个 [Object](core_package_classes.md#class-object) 实例的内存地址相同，返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let first: Object @local! = Object() @local!
+    let other: Object @local! = Object() @local!
+    let view: Object @local? = first
+    let same: Object @local? = first
+    let otherView: Object @local? = other
+    println(refEq(view, same))
+    println(refEq(view, otherView))
+}
+```
+
+运行结果：
+
+```text
+true
+false
+```
+
+<!--DelEnd_sink-->
 ## func releaseArrayRawData\<T>(CPointerHandle\<T>) where T <: CType
 
 ```cangjie
@@ -1621,6 +1777,46 @@ main() {
 The first element of the array is 1
 ```
 
+<!--Del_sink-->
+## func releaseArrayRawData\<T>(CPointerHandle\<T>) where T <: CType
+
+```cangjie
+public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T> @local?): Unit where T <: CType
+```
+
+功能：释放原始指针实例，该实例通过 [acquireArrayRawData](core_package_funcs.md#func-acquirearrayrawdatatarrayt-where-t--ctype) 获取。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- handle: [CPointerHandle](core_package_structs.md#struct-cpointerhandlet-where-t--ctype)\<T> @local? - 待释放的指针实例，支持 `@local!` 和 `@local?` 实参。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    let arr: Array<Int64> @local! = [1, 2, 3, 4]
+    let cptrHandle: CPointerHandle<Int64> @local? = unsafe { acquireArrayRawData(arr) }
+
+    let cptr: CPointer<Int64> = cptrHandle.pointer
+    let num: Int64 = unsafe { cptr.read() }
+    unsafe { releaseArrayRawData<Int64>(cptrHandle) }
+    println("The first element of the array is ${num}")
+}
+```
+
+运行结果：
+
+```text
+The first element of the array is 1
+```
+
+<!--DelEnd_sink-->
 ## func sizeOf\<T>() where T <: CType
 
 ```cangjie
@@ -1774,3 +1970,44 @@ class Student <: ToString {
 ```text
 student
 ```
+
+<!--Del_sink-->
+## func zeroValue2\<T>()
+
+```cangjie
+public unsafe func zeroValue2<T>(): T @local!
+```
+
+功能：获取一个已全零初始化的 T 类型实例。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+> - 本函数仅用于为尚未初始化的存储提供占位值，全零的字节序列不保证满足 T 类型的不变量，不能把它当作 T 的合法默认值。占位值不得读取、解引用，也不得调用其成员，必须先覆盖为合法的初始化值再使用。
+> - 占位值不持有需要释放的资源，不要对其执行释放或清理操作。
+
+返回值：
+
+- T @local! - 一个已全零初始化的 T 类型实例，仅可作为未初始化存储的占位值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+main() {
+    var value: Int64 @local! = unsafe { zeroValue2<Int64>() }
+    // 占位值不能直接读取，必须先覆盖为合法的初始化值
+    value = 42
+    let text: String @local! = value.toString()
+    println(text)
+}
+```
+
+运行结果：
+
+```text
+42
+```
+
+<!--DelEnd_sink-->

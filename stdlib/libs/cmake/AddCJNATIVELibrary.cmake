@@ -19,6 +19,48 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${output_triple_name}
 set(output_cj_object_dir ${CMAKE_BINARY_DIR}/modules/${output_cj_object_dir})
 # file(MAKE_DIRECTORY ${output_cj_object_dir}/std)
 
+# Hide the duplicated CJ_* FFI exports in env/process/console shared libraries.
+# OHOS invokes ld.lld directly so the option must be passed without the -Wl,
+# prefix (LINKER_OPTION_PREFIX is empty for the OHOS toolchains). Darwin uses
+# -load_hidden below: its ld64.lld rejects --exclude-libs. MinGW keeps the
+# archives' symbols exported: the llvm-mingw toolchain links through lld's
+# MinGW driver, which does not implement --exclude-libs (GNU ld's PE port does,
+# but the Windows CI toolchain is llvm-mingw), so hiding is skipped there.
+set(EXCLUDE_ENV_FFI_OPTION)
+set(EXCLUDE_PROCESS_FFI_OPTION)
+if(NOT DARWIN AND NOT MINGW)
+    set(EXCLUDE_ENV_FFI_OPTION ${LINKER_OPTION_PREFIX}--exclude-libs=libcangjie-std-envFFI.a)
+    set(EXCLUDE_PROCESS_FFI_OPTION ${LINKER_OPTION_PREFIX}--exclude-libs=libcangjie-std-processFFI.a)
+endif()
+# Darwin's ld64.lld rejects --exclude-libs and exports whole-archive force-load
+# members at default visibility. -load_hidden resolves the archive members as
+# hidden instead, so duplicated CJ_* FFI symbols stay out of the exported
+# symbol table the same way --exclude-libs does on ELF.
+# -load_hidden takes a literal archive path: it does no -l-style -L search,
+# so the target output locations are resolved via generator expressions.
+# Same resolution as the FORCE_LINK_ARCHIVES path in MakeCJNATIVEStdSharedLib.cmake:
+# COMBINED_STATIC_LIB_LOC first, $<TARGET_FILE> fallback, and fail at configure
+# time if the target has neither, so a bare "-load_hidden" never reaches the linker.
+if(TARGET cangjie-std-envFFI)
+    get_target_property(_env_ffi_combined_loc cangjie-std-envFFI COMBINED_STATIC_LIB_LOC)
+    if(NOT _env_ffi_combined_loc)
+        # Combined archive not created (e.g. FFI objects only); fall back to the
+        # target's output file, evaluated at build time.
+        set(_env_ffi_combined_loc "$<TARGET_FILE:cangjie-std-envFFI>")
+    endif()
+else()
+    message(FATAL_ERROR
+        "cangjie-std-envFFI target not found; cannot build -load_hidden flags "
+        "for env/process/console")
+endif()
+if(DARWIN)
+    set(ENV_FFI_LINK_FLAG -load_hidden ${_env_ffi_combined_loc})
+    set(PROCESS_FFI_LINK_FLAG -load_hidden $<TARGET_FILE:cangjie-std-processFFI>)
+else()
+    set(ENV_FFI_LINK_FLAG -lcangjie-std-envFFI)
+    set(PROCESS_FFI_LINK_FLAG -lcangjie-std-processFFI)
+endif()
+
 make_cangjie_lib(
     std-core IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Core cangjie-std-coreFFI
@@ -116,7 +158,6 @@ make_cangjie_lib(
     DEPENDS cangjie${BACKEND_TYPE}ObjectPool cangjie-std-objectpoolFFI
     CANGJIE_STD_LIB_DEPENDS
         std-core
-        std-sync
         std-collection.concurrent
     OBJECTS ${output_cj_object_dir}/std/objectpool.o
     FLAGS -lcangjie-std-objectpoolFFI)
@@ -168,9 +209,6 @@ if(NOT DARWIN)
             std-core
             std-collection
             std-sync
-            std-overflow
-            std-time
-            std-sort
             std-fs
         CANGJIE_STD_LIB_INDIRECT_DEPENDS
             std-math
@@ -245,7 +283,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-convert
-        std-math
         std-collection
         std-io
         std-binary
@@ -283,9 +320,8 @@ make_cangjie_lib(
         std-core
         std-io
         std-sync
-        std-sort
     OBJECTS ${output_cj_object_dir}/std/console.o
-    FLAGS -lcangjie-std-envFFI)
+    FLAGS ${ENV_FFI_LINK_FLAG} ${EXCLUDE_ENV_FFI_OPTION})
 
 add_library(cangjie-std-console STATIC  $<TARGET_OBJECTS:cangjie-std-envFFI-objs> ${output_cj_object_dir}/std/console.o)
 install(TARGETS cangjie-std-console DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
@@ -313,12 +349,11 @@ make_cangjie_lib(
         std-fs
         std-io
         std-time
-        std-sort
         std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/process.o
     FLAGS
-        -lcangjie-std-processFFI)
+        ${PROCESS_FFI_LINK_FLAG} ${EXCLUDE_PROCESS_FFI_OPTION})
 
 add_library(
     cangjie-std-process STATIC
@@ -335,12 +370,9 @@ make_cangjie_lib(
         std-fs
         std-io
         std-sync
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/env.o
-    FORCE_LINK_ARCHIVES
-            cangjie-std-envFFI
-    FLAGS -lcangjie-std-processFFI)
+    FLAGS ${ENV_FFI_LINK_FLAG} ${PROCESS_FFI_LINK_FLAG} ${EXCLUDE_ENV_FFI_OPTION} ${EXCLUDE_PROCESS_FFI_OPTION})
 
     add_and_combine_static_lib(
         OUTPUT_NAME libcangjie-std-env.a
@@ -372,7 +404,7 @@ endif()
 make_cangjie_lib(
     std-regex IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Regex cangjie-std-regexFFIwithoutPCRE2
-    CANGJIE_STD_LIB_DEPENDS std-core std-collection std-sort std-sync
+    CANGJIE_STD_LIB_DEPENDS std-core std-collection std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/regex.o $<TARGET_OBJECTS:cangjie-std-regexFFIwithoutPCRE2-objs>
     FLAGS ${pcre2_lib})
@@ -430,10 +462,8 @@ make_cangjie_lib(
     std-overflow
     std-collection
     std-sort
-    std-time
     std-io
     std-sync
-    std-math
     OBJECTS ${output_cj_object_dir}/std/net.o
     FORCE_LINK_ARCHIVES
         cangjie-std-netFFI
@@ -508,7 +538,6 @@ make_cangjie_lib(
         std-sort
         std-sync
         std-random
-        std-math
         std-math.numeric
     OBJECTS ${output_cj_object_dir}/std/database.sql.o)
 add_library(cangjie-std-database.sql STATIC ${output_cj_object_dir}/std/database.sql.o)
@@ -579,7 +608,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS
         std-math
     OBJECTS ${output_cj_object_dir}/std/ast.o
@@ -627,7 +655,6 @@ make_cangjie_lib(
         std-collection
         std-collection.concurrent
         std-io
-        std-argopt
         std-runtime
         std-fs
         std-time
@@ -636,7 +663,6 @@ make_cangjie_lib(
         std-unittest.prop_test
         std-unittest.common
         std-unittest.diff
-        std-unittest.mock.internal
         std-unittest.mock
         std-process
         std-env
@@ -659,9 +685,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-convert
         std-random
-        std-sort
         std-unittest.common
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/unittest.prop_test.o)
@@ -677,7 +701,6 @@ make_cangjie_lib(
         std-core
         std-collection
         std-convert
-        std-sort
         std-sync
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math
     OBJECTS ${output_cj_object_dir}/std/unittest.common.o)
@@ -691,9 +714,6 @@ make_cangjie_lib(
     DEPENDS cangjie${BACKEND_TYPE}UnittestDiff
     CANGJIE_STD_LIB_DEPENDS
         std-core
-        std-sync
-        std-sort
-        std-fs
         std-collection
         std-convert
         std-math
@@ -711,7 +731,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
     CANGJIE_STD_LIB_INDIRECT_DEPENDS std-math std-time std-overflow std-unicode
     OBJECTS ${output_cj_object_dir}/std/unittest.mock.internal.o)
 
@@ -726,7 +745,6 @@ make_cangjie_lib(
         std-core
         std-collection
         std-sync
-        std-sort
         std-fs
         std-unittest.common
         std-unittest.mock.internal
@@ -743,8 +761,6 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
         std-sync
         std-ast
         std-unicode
@@ -760,12 +776,8 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-sync
         std-ast
         std-convert
-        std-unicode
         std-deriving.api
     OBJECTS ${output_cj_object_dir}/std/deriving.resolve.o
 )
@@ -779,12 +791,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-convert
         std-ast
-        std-sync
-        std-unicode
         std-deriving.api
         std-deriving.resolve
     OBJECTS ${output_cj_object_dir}/std/deriving.impl.o
@@ -799,12 +806,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_DEPENDS
         std-core
         std-collection
-        std-sort
-        std-math
-        std-convert
         std-ast
-        std-sync
-        std-unicode
         std-deriving.api
         std-deriving.resolve
     OBJECTS ${output_cj_object_dir}/std/deriving.builtins.o
@@ -857,16 +859,10 @@ if(NOT CMAKE_CROSSCOMPILING OR MINGW OR OHOS)
         CANGJIE_STD_LIB_DEPENDS
             std-core
             std-collection
-            std-sort
-            std-math
-            std-convert
             std-ast
-            std-sync
-            std-unicode
             std-deriving.api
             std-deriving.impl
             std-deriving.builtins
-            std-deriving.resolve
         OBJECTS ${output_cj_object_dir}/std/deriving.o
     )
     add_library(cangjie-std-deriving STATIC ${output_cj_object_dir}/std/deriving.o)

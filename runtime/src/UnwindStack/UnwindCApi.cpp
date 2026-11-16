@@ -87,15 +87,10 @@ extern "C" ThreadLocalData* MRT_C2N_Leave(bool safeState, unsigned long long sta
 #else
     (void)stackTop;
 #endif
-    // Get ThreadLocalData internally
-    ThreadLocalData* tlData = reinterpret_cast<ThreadLocalData*>(MRT_GetThreadLocalData());
-    if (UNLIKELY(tlData == nullptr)) {
-        return nullptr;
-    }
 
-    auto* mutator = tlData->mutator;
+    auto* mutator = ThreadLocal::GetMutator();
     if (UNLIKELY(mutator == nullptr)) {
-        return tlData;
+        return reinterpret_cast<ThreadLocalData*>(MRT_GetThreadLocalData());
     }
 
     if (safeState) {
@@ -113,7 +108,10 @@ extern "C" ThreadLocalData* MRT_C2N_Leave(bool safeState, unsigned long long sta
         MRT_ThrowPendingException(nullptr);
     }
 
-    return tlData;
+    // Leaving the saferegion may complete a GC phase transition. Re-read
+    // after suspension handling so the C2N stub restores the current phase
+    // in x28, rather than the snapshot taken while still in the saferegion.
+    return reinterpret_cast<ThreadLocalData*>(MRT_GetThreadLocalData());
 }
 
 #ifdef __OHOS__

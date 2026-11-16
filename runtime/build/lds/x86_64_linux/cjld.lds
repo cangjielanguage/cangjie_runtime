@@ -62,7 +62,9 @@ SECTIONS
     *(SORT(.text.*MRT*))
     *(SORT(.text.*MCC*))
     *(SORT(.text.*MapleRuntime*))
-    *(SORT(.text.*Monitor*))
+    /* Keep native Monitor entry points in the runtime address range without
+       matching managed .text._CN...Monitor... sections. */
+    *(SORT(.text.Monitor*))
     *(.text_thread)
     g_runtimeStaticEnd = .;
     *(SORT(.text.*))

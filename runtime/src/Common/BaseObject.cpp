@@ -155,7 +155,7 @@ void BaseObject::OnFinalizerCreated()
     heap.GetCollector().MarkNewObject(this);
     Mutator* mutator = Mutator::GetMutator();
     if (mutator != nullptr) {
-        mutator->AddLocalFinalizer(this);
+        mutator->AddPendingHeapFinalizer(this);
     } else {
         heap.GetFinalizerProcessor().RegisterFinalizer(this);
     }

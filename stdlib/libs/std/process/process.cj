@@ -208,7 +208,14 @@ public open class Process {
     ): Int64 {
         let subProcess: SubProcess = start(command, arguments, workingDirectory: workingDirectory,
             environment: environment, stdIn: stdIn, stdOut: stdOut, stdErr: stdErr)
-        return subProcess.wait(timeout: timeout)
+        try {
+            return subProcess.wait(timeout: timeout)
+        } catch (e: TimeoutException) {
+            // Only a local reference is held here, so after the timeout the
+            // child would otherwise never be reaped on Unix.
+            reapSubProcessAfterTimeout(subProcess)
+            throw e
+        }
     }
 
     /**
@@ -882,7 +889,12 @@ func matchRedirectFileHandle(redirect: ProcessRedirect, stdio: StdIO): IntNative
                 throw ProcessException("Failed to open null file: cannot redirect stdio to discard mode.")
             }
         case ProcessRedirect.FromFile(file: File) =>
-            if (!exists(file.info.path) || file.isClosed()) {
+            let fileUnavailable: Bool = if (exists(file.info.path)) {
+                file.isClosed()
+            } else {
+                true
+            }
+            if (fileUnavailable) {
                 throw ProcessException("Redirect file is closed or does not exist.")
             }
             file.fileDescriptor.fileHandle
@@ -1043,7 +1055,14 @@ private func executeImpl(
 ): Int64 {
     let subProcess = launch(command, arguments, workingDirectory: workingDirectory, environment: environment,
         stdIn: stdIn, stdOut: stdOut, stdErr: stdErr)
-    subProcess.wait(timeout: timeout)
+    try {
+        return subProcess.wait(timeout: timeout)
+    } catch (e: TimeoutException) {
+        // Only a local reference is held here, so after the timeout the child
+        // would otherwise never be reaped on Unix.
+        reapSubProcessAfterTimeout(subProcess)
+        throw e
+    }
 }
 
 /**

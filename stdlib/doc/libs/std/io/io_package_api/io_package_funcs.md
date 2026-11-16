@@ -200,3 +200,60 @@ main(): Unit {
 ```text
 Hello, World!
 ```
+
+<!--Del_sink-->
+## func readToEnd\<T>(T) where T <: InputStream & Seekable
+
+```cangjie
+public exclave func readToEnd<T>(from: T @local!): Array<Byte> @local! where T <: InputStream & Seekable
+```
+
+功能：获取入参中未被读取的数据；返回的字节数组位于调用者的 local region 中。本函数先通过 local 版本的 length 属性获取流的总长度，再通过 local 版本的 read 从当前光标开始读取数据；length 的实现又依赖 local 版本的 seek。
+
+> **注意：**
+>
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
+
+参数：
+
+- from: T @local! - 要读取数据的对象。
+
+返回值：
+
+- [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> @local! - 未被读取的数据的拷贝。
+
+异常：
+
+- [Exception](../../core/core_package_api/core_package_exceptions.md#class-exception) - 当 `T` 未覆写 local 版本的 read 或 seek（length 依赖 seek）而命中接口默认实现时，该默认实现抛出的异常随之传播。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.ByteBuffer
+import std.io.readToEnd
+
+main(): Unit {
+    // 在 local region 中创建 ByteBuffer 实例作为输入流
+    let inputStream: ByteBuffer @local! = ByteBuffer() @local!
+
+    // 向输入流写入数据
+    let sourceData: Array<Byte> @local! = [72, 73, 74, 75] // HIJK
+    inputStream.write(sourceData)
+
+    // 使用 readToEnd 函数读取输入流中未被读取的数据
+    let data: Array<Byte> @local! = readToEnd(inputStream)
+    println("Bytes read: ${data.size}")
+    println("Content: ${data[0]}, ${data[1]}, ${data[2]}, ${data[3]}")
+}
+```
+
+运行结果：
+
+```text
+Bytes read: 4
+Content: 72, 73, 74, 75
+```
+
+<!--DelEnd_sink-->

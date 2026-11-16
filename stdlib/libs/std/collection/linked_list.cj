@@ -75,19 +75,16 @@ public class LinkedListNode<T> {
 
     @Frozen
     func remove(): T {
-        match ((_prev, _next)) {
-            case (Some(p), Some(n)) =>
-                p._next = n
-                n._prev = p
-            case (Some(p), None) =>
-                p._next = None
-                _list.getOrThrow()._tail = p
-            case (None, Some(n)) =>
-                n._prev = None
-                _list.getOrThrow()._head = n
-            case _ =>
-                _list.getOrThrow()._tail = None
-                _list.getOrThrow()._head = None
+        let list = _list.getOrThrow()
+        if (let Some(p) <- _prev) {
+            p._next = _next
+        } else {
+            list._head = _next
+        }
+        if (let Some(n) <- _next) {
+            n._prev = _prev
+        } else {
+            list._tail = _prev
         }
 
         _list = None
@@ -180,28 +177,30 @@ public class LinkedList<T> <: Collection<T> {
 
     @Frozen
     public func addFirst(element: T): LinkedListNode<T> {
-        if (let Some(node) <- _head) {
-            _head = node.insertBefore(element)
+        let node = LinkedListNode<T>(element, None, _head, this)
+        if (let Some(head) <- _head) {
+            head._prev = node
         } else {
-            _head = LinkedListNode<T>(element, None, None, this)
-            _tail = _head
+            _tail = node
         }
+        _head = node
         _size++
         _version++
-        return _head.getOrThrow()
+        return node
     }
 
     @Frozen
     public func addLast(element: T): LinkedListNode<T> {
-        if (let Some(node) <- _tail) {
-            _tail = node.insertAfter(element)
+        let node = LinkedListNode<T>(element, _tail, None, this)
+        if (let Some(tail) <- _tail) {
+            tail._next = node
         } else {
-            _tail = LinkedListNode<T>(element, None, None, this)
-            _head = _tail
+            _head = node
         }
+        _tail = node
         _size++
         _version++
-        return _tail.getOrThrow()
+        return node
     }
 
     public func toArray(): Array<T> {
@@ -568,6 +567,13 @@ public class LinkedList<T> <: Collection<T> {
     }
 
     public func clear(): Unit {
+        var node = _head
+        while (let Some(n) <- node) {
+            node = n._next
+            n._next = None
+            n._prev = None
+            n._list = None
+        }
         _size = 0
         _head = None
         _tail = None
@@ -586,6 +592,7 @@ public class LinkedList<T> <: Collection<T> {
         _tail = tmp
     }
 
+    @Frozen
     public func isEmpty(): Bool {
         return _size == 0
     }
@@ -595,6 +602,7 @@ public class LinkedList<T> <: Collection<T> {
         return LinkedListIterator<T>(this, _head, false)
     }
 
+    @Frozen
     public func removeFirst(): ?T {
         if (let Some(v) <- _head) {
             _version++
@@ -605,6 +613,7 @@ public class LinkedList<T> <: Collection<T> {
         return None
     }
 
+    @Frozen
     public func removeLast(): ?T {
         if (let Some(v) <- _tail) {
             _version++

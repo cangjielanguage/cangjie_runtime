@@ -535,16 +535,18 @@ void TimerTriggerHeapAdjust(struct TimerHeap *heap)
     if (heap->numTimers == 0 || heap->adjustTimers == 0) {
         return;
     }
-    needMove.buf = (void **)MapleRuntime::NativeAllocator::NativeAlloc(sizeof(void *) * (heap->numTimers));
+    // Keep the allocation size because adjustment can remove stopped timers.
+    const size_t needMoveBytes = sizeof(void *) * heap->numTimers;
+    needMove.buf = (void **)MapleRuntime::NativeAllocator::NativeAlloc(needMoveBytes);
     if (needMove.buf == nullptr) {
         LOG_ERROR(ERROR_TIMER_ALLOC, "struct MoveItem.buf alloc failed");
         return;
     }
     needMove.len = 0;
-    ret = memset_s(needMove.buf, sizeof(void *) * (heap->numTimers), 0, sizeof(void *) * (heap->numTimers));
+    ret = memset_s(needMove.buf, needMoveBytes, 0, needMoveBytes);
     if (ret != 0) {
         LOG_ERROR(ERROR_TIMER_ALLOC, "needMove.buf memset failed");
-        MapleRuntime::NativeAllocator::NativeFree(needMove.buf, sizeof(void *) * (heap->numTimers));
+        MapleRuntime::NativeAllocator::NativeFree(needMove.buf, needMoveBytes);
         return;
     }
     for (i = 0; i < heap->numTimers;) {
@@ -565,7 +567,7 @@ void TimerTriggerHeapAdjust(struct TimerHeap *heap)
             atomic_store(&timer->status, TIMER_WAITING);
         }
     }
-    MapleRuntime::NativeAllocator::NativeFree(needMove.buf, sizeof(void *) * (heap->numTimers));
+    MapleRuntime::NativeAllocator::NativeFree(needMove.buf, needMoveBytes);
 }
 
 /* When a timer is executed, the caller must lock the timer. During the running of the timer,

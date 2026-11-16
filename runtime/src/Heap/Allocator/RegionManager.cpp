@@ -60,7 +60,7 @@ const size_t RegionInfo::LARGE_OBJECT_DEFAULT_THRESHOLD = MapleRuntime::MRT_PAGE
 // max size of per region is 128KB.
 const size_t RegionManager::MAX_UNIT_COUNT_PER_REGION = (128 * KB) / MapleRuntime::MRT_PAGE_SIZE;
 // size of huge page is 2048KB.
-const size_t RegionManager::HUGE_PAGE = (2048 * KB) / MapleRuntime::MRT_PAGE_SIZE;;
+const size_t RegionManager::HUGE_PAGE = (2048 * KB) / MapleRuntime::MRT_PAGE_SIZE;
 
 class ForwardTask : public HeapWork {
 public:
@@ -195,8 +195,9 @@ void RegionInfo::SweepRegion()
         freeSlotList = new (std::nothrow) RegionFreeSlotList();
         CHECK_DETAIL(freeSlotList != nullptr, "create free slot list for sweep region failed");
         SetFreeSlotList(freeSlotList);
-        freeSlotList->Init(GetRegionStart());
     }
+    // Rebuild the index on every sweep: old slots may coalesce with newly dead objects.
+    freeSlotList->Init(GetRegionStart());
     size_t regionSize = GetRegionSize();
     if (IsLargeRegion()) {
         if (!IsSurvivedObject(0)) {
@@ -233,8 +234,8 @@ void RegionInfo::SweepRegion()
                 }
                 inFreeRun = false;
             }
-        } else if (!isValidSlot) {
-            if (IsOldRegion()) {
+        } else {
+            if (!isValidSlot && IsOldRegion()) {
                 ClearRSetSlots(position, allocSize);
             }
             if (!inFreeRun) {
@@ -985,7 +986,7 @@ void RegionManager::DumpRegionStats(const char* msg, bool dumpToError) const
     size_t allHeapSize = regionHeapEnd - regionHeapStart;
     size_t allUnits = allHeapSize / RegionInfo::UNIT_SIZE;
     size_t inactiveUnits = (regionHeapEnd - inactiveZone) / RegionInfo::UNIT_SIZE;
-    
+
     size_t usedUnitCount = GetUsedUnitCount();
     size_t usedObjSize = GetAllocatedSize();
     size_t releasedUnits = freeRegionManager.GetReleasedUnitCount();
@@ -1145,7 +1146,12 @@ bool RegionManager::RequestForRegion(size_t size, bool isLoose)
     Heap& heap = Heap::GetHeap();
     GCStats& gcstats = heap.GetCollector().GetGCStats();
     gcstats.RecordAllocation(size);
-    size_t allocatedBytes = GetAllocatedSize() - gcstats.liveBytesAfterGC;
+    size_t currentHeapBytes = GetAllocatedSize();
+    // Compute the tracing-heap allocation delta without unsigned underflow.
+    size_t allocatedBytes = 0;
+    if (currentHeapBytes > gcstats.liveBytesAfterGC) {
+        allocatedBytes = currentHeapBytes - gcstats.liveBytesAfterGC;
+    }
     constexpr double pi = 3.14;
     size_t availableBytesAfterGC = heap.GetMaxCapacity() - gcstats.liveBytesAfterGC;
     double heuAllocRate = std::cos((pi / 2.0) * allocatedBytes / availableBytesAfterGC) * gcstats.collectionRate;
@@ -1395,4 +1401,5 @@ uintptr_t RegionManager::AllocPinnedFromFreeList(size_t size)
     (reinterpret_cast<CopyCollector*>(&Heap::GetHeap().GetCollector()))->MarkObject(object);
     return allocPtr;
 }
+
 } // namespace MapleRuntime

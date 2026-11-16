@@ -195,6 +195,30 @@ enum ConvertResult<T> {
     Success(T) | Failure(String)
 }
 
+@When[env != "ohos"]
+func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte> @local?): (UInt64, UInt64, UInt64) {
+    var baseInfos = match (typeBase) {
+        case I8 => baseInfosInt8
+        case I16 => baseInfosInt16
+        case I32 => baseInfosInt32
+        case I64 => baseInfosInt64
+        case UI8 => baseInfosUInt8
+        case UI16 => baseInfosUInt16
+        case UI32 => baseInfosUInt32
+        case _ => baseInfosUInt64
+    }
+    var (formatBaseNum, multmin, maxAbsVal): (UInt64, UInt64, UInt64) = match (rawData[1]) {
+        case 'b' | 'B' => baseInfos[isNegative][2]
+        case 'o' | 'O' => baseInfos[isNegative][8]
+        case 'x' | 'X' => baseInfos[isNegative][16]
+        case '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => baseInfos[isNegative][10]
+        case _ => throw IllegalArgumentException("Invalid number prefix.")
+    }
+    return (formatBaseNum, multmin, maxAbsVal)
+}
+
+// OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
+@When[env == "ohos"]
 func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte>): (UInt64, UInt64, UInt64) {
     var baseInfos = match (typeBase) {
         case I8 => baseInfosInt8
