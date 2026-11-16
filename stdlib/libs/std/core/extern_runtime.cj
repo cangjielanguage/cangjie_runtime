@@ -51,7 +51,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     static func memberAccess(e: Extern<T>, field: String): Extern<T>
 
     /**
-     * Returns the element of @p e at index @p arg. Used for e[i]; e[i1, ..., in] stands for e[i1]...[in].
+     * Returns the element of @p e at index @p arg. Used for e[i]; e[i1, ..., in] is rejected.
      *
      * @throws ExternIndexedAccessException if @p e has no element at index @p arg.
      */
