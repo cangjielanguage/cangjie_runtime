@@ -463,8 +463,13 @@ class ConcurrentLinkedQueueIterator<E> <: Iterator<E> {
             // therefore observe the unwritten slot's zeroValue (a phantom
             // element never enqueued). Wait until committed == allocated so
             // every committed slot is fully written before trusting the read.
+            // Full-block short circuit: when committed == BUF_SIZE every slot
+            // is written, even if allocated overshoots (push fails at
+            // index >= BUF_SIZE after incrementing allocated without commit),
+            // so retrying would spin forever on an over-allocated full block.
+            // pop()/front() apply the same committed == BUF_SIZE bypass.
             let (_, curAllocatedRead) = curBlock.getAllocated()
-            if (curCommitted != curAllocatedRead) {
+            if (curCommitted != BUF_SIZE && curCommitted != curAllocatedRead) {
                 continue
             }
             let curElement = curBlock.buffer[curIndex]
