@@ -152,6 +152,13 @@ function(make_cangjie_lib target_name)
             # secondary dependencies (DSOs) searching.
             list(APPEND flags_to_compile
                 "${LINKER_OPTION_PREFIX}-rpath-link=$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}")
+            # The shipped pcre2 lives in the pcre2/ subdirectory of the SDK
+            # runtime/lib (issue 2932/3519). When a post-relocation SDK is used
+            # as the bootstrap CANGJIE_HOME, ld must still resolve the secondary
+            # dependency libpcre2-8.so.0 of libcangjie-std-regex.so; the build
+            # tree copy of pcre2 (always present) covers both layouts.
+            list(APPEND flags_to_compile
+                "${LINKER_OPTION_PREFIX}-rpath-link=${CMAKE_BINARY_DIR}/third_party/pcre2/lib")
         endif()
         list(APPEND flags_to_compile "-L${CMAKE_BINARY_DIR}/lib")
         if(WIN32)

@@ -65,20 +65,38 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND AND NOT TRIPLE STREQUAL "arm-linux-ohos" AND
     target_link_libraries(${libname} cangjie-std-unittestFFI-objs)
     target_link_libraries(${libname} cangjie-std-objectpoolFFI-objs)
     target_link_libraries(${libname} cangjie-std-runtimeFFI-objs)
-    target_link_libraries(${libname} cangjie-std-regexFFI)
-    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT OHOS)
+        # Linux: use the regexFFI archive without the pcre2 objects (see the
+        # pcre2 block below) so the pcre2 symbols in libstdFFI.so stay private.
+        target_link_libraries(${libname} cangjie-std-regexFFIwithoutPCRE2)
+    else()
+        target_link_libraries(${libname} cangjie-std-regexFFI)
+    endif()
+    if(OHOS)
+        # OHOS ROM ships pcre2 as libpcre2.z.so: keep the dynamic link recorded
+        # by ${pcre2_lib} (DT_NEEDED libpcre2.z.so) so the device shares the
+        # single ROM copy. Note that the OHOS toolchains set
+        # CMAKE_SYSTEM_NAME=Linux, so an unconditional Linux branch here would
+        # wrongly capture OHOS aarch64/x86_64 builds too.
+        target_link_libraries(${libname} ${pcre2_lib})
+    elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
         # stdFFI is installed under CANGJIE_HOME/lib/, which envsetup.sh does
         # not export via LD_LIBRARY_PATH. It used to rely on the shipped
         # libpcre2-8.so.0 in runtime/lib/<triple>/ being reachable through that
         # variable; that library now lives in the pcre2/ subdirectory
         # (issue 2932/3519), so link pcre2 statically here instead.
-        # --exclude-libs keeps the pcre2 symbols private to libstdFFI.so
-        # (no export, no clash with the dynamic copy loaded by
-        # libcangjie-std-regex.so). Other platforms keep the original
-        # dynamic linking: their loaders have no LD_LIBRARY_PATH-style
-        # global search path, so the dependency resolves within their
-        # own delivery layout.
+        # Link against cangjie-std-regexFFIwithoutPCRE2 (regex bindings without
+        # the pcre2 objects baked in) and libpcre2-8.a directly: linking the
+        # plain cangjie-std-regexFFI archive would resolve the pcre2 symbols
+        # from its embedded copies, making --exclude-libs a no-op and leaving
+        # pcre2_* exported from libstdFFI.so (double copy with the dynamic
+        # library loaded by libcangjie-std-regex.so). With the without-PCRE2
+        # archive plus --exclude-libs, the pcre2 symbols stay private to
+        # libstdFFI.so. Other platforms keep the original dynamic linking:
+        # their loaders have no LD_LIBRARY_PATH-style global search path, so
+        # the dependency resolves within their own delivery layout.
         target_link_libraries(${libname}
+            cangjie-std-regexFFIwithoutPCRE2
             ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.a
             -Wl,--exclude-libs=libpcre2-8.a)
     else()
