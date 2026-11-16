@@ -203,6 +203,16 @@ public type NonBlockingQueue<E> = ConcurrentLinkedQueue<E>
 
 /**
  * NonBlockingQueue is an unbounded nonblocking concurrent queue.
+ *
+ * The iterator is weakly consistent: it never fails silently or throws, and it
+ * guarantees that every element that was committed (and not yet consumed) at
+ * the time the iterator is created is observed exactly once. If a concurrent
+ * producer is between allocated and committed updates inside a block, the
+ * iterator briefly spin-waits for the in-flight sender (mirroring pop()/front()),
+ * so a full iteration may transiently block; it does not skip committed
+ * elements. Elements consumed concurrently by remove() while the iteration is
+ * in progress may be skipped. Consequently, toArray() reflects a weakly
+ * consistent snapshot and may transiently spin as well.
  */
 public class ConcurrentLinkedQueue<E> <: Collection<E> {
     private let front: AtomicReference<Block<E>>
@@ -336,6 +346,10 @@ public class ConcurrentLinkedQueue<E> <: Collection<E> {
     }
 
     public func toArray(): Array<E> {
+        // Weakly consistent snapshot: iterates via the ConcurrentLinkedQueue
+        // iterator (see the class doc for the concurrent semantics), so it may
+        // briefly spin-wait for in-flight senders and skips elements consumed
+        // concurrently during the copy.
         let estimatedSize = size
         let arr = if (estimatedSize > 0) {
             ArrayList<E>(estimatedSize)
@@ -350,6 +364,10 @@ public class ConcurrentLinkedQueue<E> <: Collection<E> {
 
     @Frozen
     public func iterator(): Iterator<E> {
+        // Weakly consistent iterator: never silently truncates. Every element
+        // committed (and not yet consumed) before creation is observed exactly
+        // once; elements concurrently removed during iteration may be skipped;
+        // the iterator briefly spin-waits on in-flight senders (see class doc).
         ConcurrentLinkedQueueIterator<E>(this, front.load())
     }
 }
@@ -420,11 +438,14 @@ class ConcurrentLinkedQueueIterator<E> <: Iterator<E> {
                 // make the iterator terminate on a block whose slot curIndex
                 // has just become committed. While committed != allocated
                 // this block still has unfinished senders; retrying (instead
-                // of terminating) preserves the weak-consistency guarantee
-                // that elements committed before the iterator's creation are
-                // observed, and giving up here silently truncated the
-                // iteration by omitting elements already committed in later
-                // blocks.
+                // of terminating) removes the premature termination that
+                // silently omitted elements already committed in later
+                // blocks. The precise guarantee: every element that was
+                // committed (and not yet consumed) before the iterator's
+                // creation is observed exactly once; elements concurrently
+                // consumed by remove() during iteration are skipped
+                // (curIndex = reserved below), which is standard
+                // weak-consistency behavior.
                 let (_, curAllocated) = curBlock.getAllocated()
                 if (curCommitted != curAllocated) {
                     continue
