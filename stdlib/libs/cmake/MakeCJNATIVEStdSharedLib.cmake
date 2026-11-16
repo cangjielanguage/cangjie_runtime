@@ -152,6 +152,13 @@ function(make_cangjie_lib target_name)
             # secondary dependencies (DSOs) searching.
             list(APPEND flags_to_compile
                 "${LINKER_OPTION_PREFIX}-rpath-link=$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}")
+            # The shipped pcre2 lives in the pcre2/ subdirectory of the SDK
+            # runtime/lib (issue 2932/3519). When a post-relocation SDK is used
+            # as the bootstrap CANGJIE_HOME, ld must still resolve the secondary
+            # dependency libpcre2-8.so.0 of libcangjie-std-regex.so; the build
+            # tree copy of pcre2 (always present) covers both layouts.
+            list(APPEND flags_to_compile
+                "${LINKER_OPTION_PREFIX}-rpath-link=${CMAKE_BINARY_DIR}/third_party/pcre2/lib")
         endif()
         list(APPEND flags_to_compile "-L${CMAKE_BINARY_DIR}/lib")
         if(WIN32)
@@ -279,7 +286,21 @@ function(make_cangjie_lib target_name)
         # All shared libraries of standard library are placed in the same location. Adding $ORIGIN into RPATH so
         # standard libraries can find each other.
         if(NOT CMAKE_SKIP_RPATH AND ${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-            list(APPEND flags_to_compile ${LINKER_OPTION_PREFIX}--disable-new-dtags ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            if(target_name STREQUAL "std-regex" AND NOT OHOS)
+                # pcre2 is shipped under the pcre2/ subdirectory (issue 2932/3519):
+                # the shipped libpcre2-8.so.0 no longer sits in runtime/lib/<triple>/,
+                # so std-regex needs its own RPATH entry to locate the subdirectory.
+                # $ORIGIN stays as the last entry so a flattened layout (all libs
+                # copied into one directory) still works.
+                list(APPEND flags_to_compile
+                    ${LINKER_OPTION_PREFIX}--disable-new-dtags
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN/pcre2"
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            else()
+                list(APPEND flags_to_compile
+                    ${LINKER_OPTION_PREFIX}--disable-new-dtags
+                    ${LINKER_OPTION_PREFIX}-rpath="\\$$ORIGIN")
+            endif()
         endif()
         if(DARWIN)
             list(APPEND flags_to_compile -install_name "@rpath/libcangjie-${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -377,13 +398,43 @@ function(make_cangjie_lib target_name)
         install(FILES ${target_lib_full_name} DESTINATION runtime/lib/${output_cj_lib_dir})
         if(target_name STREQUAL "std-regex" AND NOT OHOS)
             # On OHOS, libpcre2.z.so is provided by the ROM; do not ship libpcre2-8.so.
-            file(GLOB PCRE2_DYNAMIC_LIB
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/bin/libpcre2-8.dll
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
-                ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.*dylib
-            )
-            message("PCRE2_DYNAMIC_LIB: ${PCRE2_DYNAMIC_LIB}")
-            install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
+            # Linux keeps the untouched pcre2 files (links + real file) in a
+            # subdirectory: runtime/lib/<triple>/ itself is exported via
+            # LD_LIBRARY_PATH by envsetup.sh, and a libpcre2-8.so.0 there
+            # shadows the distribution's system library for every system
+            # program; std-regex reaches the subdirectory via its own RPATH.
+            # Android/macOS/Windows keep the original flat layout: their
+            # loaders have no LD_LIBRARY_PATH-style global search path, so
+            # the flat copy resolves within their own delivery layout (the
+            # glob below is harmless on macOS/Windows: the .so* names only
+            # exist in the Android/Linux build tree).
+            if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+                file(GLOB PCRE2_DYNAMIC_LIB
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
+                )
+                if(NOT PCRE2_DYNAMIC_LIB)
+                    # libcangjie-std-regex.so records DT_NEEDED libpcre2-8.so.0;
+                    # shipping no pcre2 file would only surface as a runtime
+                    # load failure for the user (import std.regex), so fail
+                    # the build instead.
+                    message(FATAL_ERROR "libpcre2-8 shared library not found under "
+                        "${CMAKE_BINARY_DIR}/third_party/pcre2/lib; libcangjie-std-regex.so "
+                        "DT_NEEDED would break at runtime")
+                endif()
+                install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir}/pcre2)
+            else()
+                file(GLOB PCRE2_DYNAMIC_LIB
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/bin/libpcre2-8.dll
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.*dylib
+                )
+                if(NOT PCRE2_DYNAMIC_LIB)
+                    message(FATAL_ERROR "libpcre2-8 dynamic library not found under "
+                        "third_party/pcre2 (libpcre2-8.dll / libpcre2-8.so* / *.dylib); "
+                        "libcangjie-std-regex.so DT_NEEDED would break at runtime")
+                endif()
+                install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
+            endif()
         endif()
     endif()
 endfunction()
