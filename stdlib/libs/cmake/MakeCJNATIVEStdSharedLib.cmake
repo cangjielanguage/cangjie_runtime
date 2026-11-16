@@ -413,12 +413,12 @@ function(make_cangjie_lib target_name)
                     ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
                 )
                 if(NOT PCRE2_DYNAMIC_LIB)
-                    # stdFFI and libcangjie-std-regex.so both record
-                    # DT_NEEDED libpcre2-8.so.0; shipping no pcre2 file would
-                    # only surface as a runtime load failure for the user
-                    # (import std.regex), so fail the build instead.
+                    # libcangjie-std-regex.so records DT_NEEDED libpcre2-8.so.0;
+                    # shipping no pcre2 file would only surface as a runtime
+                    # load failure for the user (import std.regex), so fail
+                    # the build instead.
                     message(FATAL_ERROR "libpcre2-8 shared library not found under "
-                        "${CMAKE_BINARY_DIR}/third_party/pcre2/lib; std-regex/stdFFI "
+                        "${CMAKE_BINARY_DIR}/third_party/pcre2/lib; libcangjie-std-regex.so "
                         "DT_NEEDED would break at runtime")
                 endif()
                 install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir}/pcre2)
@@ -431,7 +431,7 @@ function(make_cangjie_lib target_name)
                 if(NOT PCRE2_DYNAMIC_LIB)
                     message(FATAL_ERROR "libpcre2-8 dynamic library not found under "
                         "third_party/pcre2 (libpcre2-8.dll / libpcre2-8.so* / *.dylib); "
-                        "std-regex/stdFFI DT_NEEDED would break at runtime")
+                        "libcangjie-std-regex.so DT_NEEDED would break at runtime")
                 endif()
                 install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
             endif()
