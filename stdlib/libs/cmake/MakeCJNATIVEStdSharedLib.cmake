@@ -403,9 +403,11 @@ function(make_cangjie_lib target_name)
             # LD_LIBRARY_PATH by envsetup.sh, and a libpcre2-8.so.0 there
             # shadows the distribution's system library for every system
             # program; std-regex reaches the subdirectory via its own RPATH.
-            # Other platforms keep the original flat layout: their loaders
-            # have no LD_LIBRARY_PATH-style global search path (OHOS uses the
-            # ROM-provided libpcre2.z.so and ships no pcre2 file at all).
+            # Android/macOS/Windows keep the original flat layout: their
+            # loaders have no LD_LIBRARY_PATH-style global search path, so
+            # the flat copy resolves within their own delivery layout (the
+            # glob below is harmless on macOS/Windows: the .so* names only
+            # exist in the Android/Linux build tree).
             if(CMAKE_SYSTEM_NAME MATCHES "Linux")
                 file(GLOB PCRE2_DYNAMIC_LIB
                     ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
@@ -414,6 +416,7 @@ function(make_cangjie_lib target_name)
             else()
                 file(GLOB PCRE2_DYNAMIC_LIB
                     ${CMAKE_BINARY_DIR}/third_party/pcre2/bin/libpcre2-8.dll
+                    ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.so*
                     ${CMAKE_BINARY_DIR}/third_party/pcre2/lib/libpcre2-8.*dylib
                 )
                 install(FILES ${PCRE2_DYNAMIC_LIB} DESTINATION runtime/lib/${output_cj_lib_dir})
