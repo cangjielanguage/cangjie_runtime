@@ -2829,11 +2829,10 @@ public unsafe func getRawArray(): Array<T>
 
 Function: Returns the raw underlying data of this [ArrayList](collection_package_class.md#class-arraylistt).
 
-> **Warning:**
+> **Note:**
 >
-> This is an unsafe interface and must be used within an unsafe context.
->
-> The raw data refers to the underlying array implementation of [ArrayList](collection_package_class.md#class-arraylistt), whose size may be larger than the number of elements in the [ArrayList](collection_package_class.md#class-arraylistt). Accessing elements at indices greater than or equal to the size of the [ArrayList](collection_package_class.md#class-arraylistt) may contain uninitialized elements and could result in undefined behavior.
+> - This is an unsafe interface and must be used within an unsafe context.
+> - The raw data refers to the underlying array of [ArrayList](collection_package_class.md#class-arraylistt), whose size is greater than or equal to the number of elements in the [ArrayList](collection_package_class.md#class-arraylistt). Indices greater than or equal to the size of the [ArrayList](collection_package_class.md#class-arraylistt) may hold uninitialized elements, and accessing them may result in undefined behavior.
 
 Returns:
 
@@ -3521,11 +3520,11 @@ size=2
 public func remove(range: Range<Int64>): Unit
 ```
 
-Function: Removes all elements in the specified [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) from this [ArrayList](collection_package_class.md#class-arraylistt).
+Function: Removes all elements in the specified [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) from this [ArrayList](collection_package_class.md#class-arraylistt). When the effective start is greater than or equal to the effective end, no removal is performed.
 
 > **Note:**
 >
-> If the parameter `range` is constructed using the [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor: The `start` value is exactly the value passed to the constructor, unaffected by the `hasStart` parameter. When `hasEnd` is `false`, the `end` value is ignored (regardless of the `isClosed` parameter), and the slice includes all elements up to the last element of the original array.
+> If the parameter `range` is constructed using the [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor: When `hasStart` is `false`, `start` is 0; otherwise `start` is the value passed to the constructor itself. When `hasEnd` is `false`, the `end` value is ignored (regardless of the `isClosed` parameter), and the slice includes all elements up to the last element of the original array.
 
 Parameters:
 
@@ -3534,7 +3533,7 @@ Parameters:
 Exceptions:
 
 - [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when `range.[step](collection_package_function.md#func-steptint64)` is not equal to 1.
-- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when `range.start` or `range.end` is less than 0, or when `range.end` exceeds the length of the [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt).
+- [IndexOutOfBoundsException](../../core/core_package_api/core_package_exceptions.md#class-indexoutofboundsexception) - Thrown when the effective range is non-empty and `start` or `end` is less than 0, or when `end` exceeds the length of this [ArrayList](collection_package_class.md#class-arraylistt).
 
 Example:
 
@@ -3952,7 +3951,8 @@ Function: Returns a new [ArrayList](collection_package_class.md#class-arraylistt
 >
 > If the parameter `range` is constructed using the [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor:
 >
-> 1. The `start` value is exactly the value passed to the constructor, unaffected by the `hasStart` parameter.
+> 1. When `hasStart` is `false`, `start` is 0; otherwise `start` is the value
+>    passed to the constructor itself.
 > 2. When `hasEnd` is `false`, the `end` value is ignored (regardless of the `isClosed` parameter), and the slice includes all elements up to the last element of the original array.
 
 Parameters:
@@ -4797,7 +4797,7 @@ Function: Operator overload - slice.
 > **Note:**
 >
 > - If the parameter range is a [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) instance constructed using the [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor:
->     - The value of start is the value passed to the constructor itself, unaffected by the hasStart value during construction.
+>     - When hasStart is false, start is 0; otherwise start is the value passed to the constructor itself.
 >     - When hasEnd is false, the end value is not effective, and the array slice includes elements up to the last element of the original array, regardless of the isClosed value during construction.
 >
 > - The [ArrayList](collection_package_class.md#class-arraylistt) returned by the slice operation is a completely new object with no reference to the original [ArrayList](collection_package_class.md#class-arraylistt).
@@ -16610,7 +16610,7 @@ Returns:
 public func backward(mark: K, inclusive!: Bool = true): Iterator<(K, V)>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-5). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
+Function: Obtains an iterator that traverses the nodes with a key less than or equal to `mark` in descending order. If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
 
 Parameters:
 
@@ -17078,7 +17078,7 @@ Parameters:
 public func forward(mark: K, inclusive!: Bool = true): Iterator<(K, V)>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key greater than or equal to `mark` in ascending order until [last](./collection_package_class.md#prop-last-5). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
+Function: Obtains an iterator that traverses the nodes with a key greater than or equal to `mark` in ascending order. If the node's key equals `mark`, the `inclusive!` parameter determines whether to include that node.
 
 Parameters:
 
@@ -18798,7 +18798,7 @@ Returns:
 public func backward(mark: T, inclusive!: Bool = true): Iterator<T>
 ```
 
-Function: Obtains an iterator that traverses from the first node with a key less than or equal to `mark` in descending order to [first](./collection_package_class.md#prop-first-6). If the node's key equals `mark`, the `inclusive!` parameter determines whether to include the node.
+Function: Obtains an iterator that traverses the elements less than or equal to `mark` in descending order. If the node's key equals `mark`, the `inclusive!` parameter determines whether to include the node.
 
 Parameters:
 
@@ -19129,7 +19129,7 @@ Parameters:
 public func forward(mark: T, inclusive!: Bool = true): Iterator<T>
 ```
 
-Function: Obtains an iterator that traverses from the first element greater than or equal to `mark` in ascending order to [last](./collection_package_class.md#prop-last-5). If the element equals `mark`, the `inclusive!` parameter determines whether to include the element.
+Function: Obtains an iterator that traverses the elements greater than or equal to `mark` in ascending order. If the element equals `mark`, the `inclusive!` parameter determines whether to include the element.
 
 Parameters:
 

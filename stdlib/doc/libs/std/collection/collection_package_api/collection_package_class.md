@@ -5210,7 +5210,7 @@ public operator func [](range: Range<Int64>): ArrayList<T>
 > **注意：**
 >
 > - 如果参数 range 是使用 [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) 构造函数构造的 [Range](../../core/core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) 实例，有如下行为：
->     - start 的值就是构造函数传入的值本身，不受构造时传入的 hasStart 的值的影响。
+>     - hasStart 为 false 时，start 为 0；否则，start 为构造函数传入的值。
 >     - hasEnd 为 false 时，end 值不生效，且不受构造时传入的 isClosed 的值的影响，数组切片取到原数组最后一个元素。
 >
 > - 切片操作返回的 [ArrayList](collection_package_class.md#class-arraylistt) 为全新的对象，与原 [ArrayList](collection_package_class.md#class-arraylistt) 无引用关系。
@@ -5984,7 +5984,7 @@ main() {
 稳定降序排序后: [4, 3, 2, 1]
 ```
 
-### extend\<T> ArrayList\<T> <: ToString where T \<: ToString
+### extend\<T> ArrayList\<T> <: ToString where T <: ToString
 
 ```cangjie
 extend<T> ArrayList<T> <: ToString where T <: ToString

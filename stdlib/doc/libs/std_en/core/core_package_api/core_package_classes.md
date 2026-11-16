@@ -2000,7 +2000,7 @@ Execution result:
 public func isEmpty(): Bool
 ```
 
-Function: Determines whether the current iterator is empty. This method calls [next()](#func-next-3) and determines whether the current iterator is empty based on its return value. Therefore, if the current iterator is not empty, one element will be consumed.
+Function: Determines whether the current iterator is empty. This method calls `next()` and determines whether the current iterator is empty based on its return value. Therefore, if the current iterator is not empty, one element will be consumed.
 
 Returns:
 

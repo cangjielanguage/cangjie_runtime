@@ -1689,16 +1689,19 @@ public exclave func reserve(this @local!, additional: Int64): Unit
 
 Function: Grows the buffer by the specified size.
 
-> **Note:**
+> **Explanation:**
 >
-> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
-> - Platform not supported: OpenHarmony.
 > - If the cursor has not passed the end of the data and the remaining capacity after the end of the data ≥ additional, the buffer is not grown and the function returns directly.
 > - If the cursor has passed the end of the data and the remaining space from the cursor position to the end of the current capacity ≥ additional, the buffer is not grown and the function returns directly.
 > - Otherwise the buffer is grown; the capacity after growth is the larger of the following two values:
 >     1. 1.5 times the current capacity (the capacity of the buffer before growth), rounded down.
 >     2. The minimum required capacity: the current capacity + additional if the cursor has not passed the end of the data; the cursor position + additional if the cursor has passed the end of the data.
 > - additional being 0 does not guarantee no growth: if the cursor has been seeked to a position beyond the current capacity, the buffer is still grown by the rules above even when additional is 0.
+>
+> **Note:**
+>
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1821,12 +1824,15 @@ public func seek(this @local!, sp: SeekPosition): Int64
 
 Function: Moves the cursor to the specified position.
 
+> **Explanation:**
+>
+> - The specified position cannot precede the beginning of the data in the stream.
+> - The specified position may exceed the end of the data in the stream.
+>
 > **Note:**
 >
 > - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
 > - Platform not supported: OpenHarmony.
-> - The specified position cannot precede the beginning of the data in the stream.
-> - The specified position may exceed the end of the data in the stream.
 
 Parameters:
 

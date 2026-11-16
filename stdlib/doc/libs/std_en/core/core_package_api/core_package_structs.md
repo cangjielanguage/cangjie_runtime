@@ -743,7 +743,8 @@ Function: Clones the specified range of the current array with a deep copy of th
 > - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
 > - Platform not supported: OpenHarmony.
 > - If the parameter range is a [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) instance constructed with the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor, the behavior is as follows:
->     - When hasStart is false, start is 0; otherwise start is the value passed to the constructor itself.
+>     - When hasStart is false, start is 0; otherwise start is the value
+>       passed to the constructor itself.
 >     - When hasEnd is false, end takes no effect regardless of the isClosed value passed at construction, and the array slice extends to the last element of the original array.
 > - The step of range may be positive or negative. When the step is negative, elements are cloned from the high end of the range to the low end.
 
@@ -790,9 +791,10 @@ Function: Clones the specified range of the array.
 > **Note:**
 >
 > 1. If the parameter range is constructed using the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor:
->    - The value of start is exactly the value passed to the constructor, unaffected by the hasStart parameter.
+>    - When hasStart is false, start is 0; otherwise start is the value passed to the constructor itself.
 >    - When hasEnd is false, the end value is not effective (regardless of the isClosed parameter), and the slice includes all elements up to the last element of the original array.
-> 2. The step size of range can only be 1.
+> 2. The step of range may be positive or negative. When it is negative,
+>    elements are cloned from the high end of the range to the low end.
 
 Parameters:
 
@@ -998,12 +1000,14 @@ public func copyTo(dst: Array<T>, srcStart: Int64, dstStart: Int64, copyLen: Int
 
 Function: Copies a segment of data from the current array to the target array.
 
+When copyLen is 0, no data is copied and other arguments are not checked.
+
 Parameters:
 
 - dst: [Array](core_package_structs.md#struct-arrayt)\<T> - The destination array.
 - srcStart: [Int64](core_package_intrinsics.md#int64) - The starting index in the source array (this array) for copying, with valid range [0, this.size).
 - dstStart: [Int64](core_package_intrinsics.md#int64) - The starting index in the destination array for writing, with valid range [0, dst.size).
-- copyLen: [Int64](core_package_intrinsics.md#int64) - The length of data to copy. Requirements: copyLen + srcStart < this.size, copyLen + dstStart < dst.size.
+- copyLen: [Int64](core_package_intrinsics.md#int64) - The length of data to copy. Requirements: copyLen + srcStart <= this.size, copyLen + dstStart <= dst.size.
 
 Exceptions:
 
@@ -2858,7 +2862,8 @@ Function: Obtains an array slice based on the specified range.
 > **Note:**
 >
 > 1. If the parameter `range` is constructed using the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor, the following behaviors apply:
->    - The `start` value is the value passed to the constructor itself, unaffected by the `hasStart` value during construction.
+>    - When `hasStart` is `false`, `start` is 0; otherwise `start` is the
+>      value passed to the constructor itself.
 >    - If `hasEnd` is `false`, the `end` value is not applied, and the array slice includes elements up to the last element of the original array, regardless of the `isClosed` value during construction.
 > 2. The step size of `range` must be 1.
 
@@ -2907,7 +2912,8 @@ Function: Gets a slice of the current array according to the given range. The re
 > - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
 > - Platform not supported: OpenHarmony.
 > - If the parameter range is a [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) instance constructed with the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor, the behavior is as follows:
->     - When hasStart is false, start is 0; otherwise start is the value passed to the constructor itself.
+>     - When hasStart is false, start is 0; otherwise start is the value
+>       passed to the constructor itself.
 >     - When hasEnd is false, end takes no effect regardless of the isClosed value passed at construction, and the array slice extends to the last element of the original array.
 > - The step of range can only be 1.
 
@@ -2958,7 +2964,8 @@ Function: Gets a slice of the current array according to the given range. The re
 > - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
 > - Platform not supported: OpenHarmony.
 > - If the parameter range is a [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) instance constructed with the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor, the behavior is as follows:
->     - When hasStart is false, start is 0; otherwise start is the value passed to the constructor itself.
+>     - When hasStart is false, start is 0; otherwise start is the value
+>       passed to the constructor itself.
 >     - When hasEnd is false, end takes no effect regardless of the isClosed value passed at construction, and the array slice extends to the last element of the original array.
 > - The step of range can only be 1.
 
@@ -3008,7 +3015,8 @@ The length of the range must match the size of the target array `value`.
 > **Note:**
 >
 > 1. If the parameter `range` is constructed using the [Range](core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) constructor, the following behaviors apply:
->    - The `start` value is the value passed to the constructor itself, unaffected by the `hasStart` value during construction.
+>    - When `hasStart` is `false`, `start` is 0; otherwise `start` is the
+>      value passed to the constructor itself.
 >    - If `hasEnd` is `false`, the `end` value is not applied, and the array slice includes elements up to the last element of the original array, regardless of the `isClosed` value during construction.
 > 2. The step size of `range` must be 1.
 
@@ -12295,10 +12303,19 @@ Function: Splits the string with a maximum split count and optional empty entry 
 
 Special cases:
 
-- maxSplit = 0: Returns empty array
-- maxSplit = 1: Returns original string
-- Negative maxSplit: Performs complete split
-- Empty delimiter: Splits by characters
+- When the original string is empty, the returned array is always of
+  length 0.
+- maxSplits = 0: Returns an empty string array.
+- maxSplits = 1: Returns a string array of length 1 whose only element is
+  the original string.
+- Negative maxSplits: Returns the fully split string array.
+- When maxSplits is greater than the number of substrings a complete split
+  would produce, the fully split string array is returned.
+- When the delimiter does not occur in the original (non-empty) string, a
+  string array of length 1 is returned whose only element is the original
+  string.
+- Empty delimiter: Splits by Rune; if maxSplits limits the number of
+  results, the last substring holds the remaining characters.
 
 Parameters:
 
