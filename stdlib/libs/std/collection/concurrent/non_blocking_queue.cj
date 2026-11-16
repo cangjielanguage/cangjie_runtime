@@ -211,8 +211,10 @@ public type NonBlockingQueue<E> = ConcurrentLinkedQueue<E>
  * iterator spin-waits for the in-flight sender (mirroring pop()/front());
  * the wait is bounded under the default scheduler (schmon preemption) but is
  * theoretically unbounded if a sender stalls inside its push window, so a
- * full iteration may block for that long. It does not skip committed
- * elements. Elements consumed concurrently by remove() while the iteration is
+ * full iteration may block for that long. No element that is still unconsumed
+ * is skipped: this includes elements already committed before creation and
+ * elements committed by a producer during the iteration (each observed exactly
+ * once). Elements consumed concurrently by remove() while the iteration is
  * in progress may be skipped. Consequently, toArray() reflects a weakly
  * consistent snapshot and may spin as well.
  */
@@ -468,6 +470,13 @@ class ConcurrentLinkedQueueIterator<E> <: Iterator<E> {
             // index >= BUF_SIZE after incrementing allocated without commit),
             // so retrying would spin forever on an over-allocated full block.
             // pop()/front() apply the same committed == BUF_SIZE bypass.
+            // Note: this deliberately compares the STALE loop-top curCommitted
+            // against a freshly read allocated (not a single snapshot). By
+            // monotonicity stale_committed <= committed <= allocated =
+            // curAllocatedRead, so equality forces all three equal: no
+            // in-flight sender, buffer[curIndex] fully written. Keep this
+            // two-load shape; do NOT replace the guard with 'curIndex <
+            // committed implies written' (false under out-of-order commits).
             let (_, curAllocatedRead) = curBlock.getAllocated()
             if (curCommitted != BUF_SIZE && curCommitted != curAllocatedRead) {
                 continue
