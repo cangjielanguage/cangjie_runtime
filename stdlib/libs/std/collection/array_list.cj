@@ -15,8 +15,8 @@ package std.collection
 
 import std.math.*
 
-// Index validation bodies live here so the plain and local callers share one definition. The two
-// bounds differ by design: element access rejects `index == size`, insertion accepts it.
+// These helpers are for the new `@local!` overloads. Keep the existing plain `@Frozen` checks
+// inline so published frozen callers do not gain new helper dependencies.
 @Frozen
 func checkIndexInRange(index: Int64, size: Int64): Unit {
     if (index >= size || index < 0) {
@@ -35,20 +35,30 @@ func checkIndexInInsertRange(index: Int64, size: Int64): Unit {
 // bodies share this definition and keep only their own array slicing and list construction.
 // The three steps are separate so each reads as one rule: the start bound, the end bound, and the
 // ordering between them.
+/**
+ * Validates a slice range.
+ *
+ * @throws IllegalArgumentException if the range step is not 1.
+ * @throws IndexOutOfBoundsException if a bound is outside the list or start exceeds end.
+ */
 @Frozen
 private func validatedListSliceBounds(range: Range<Int64>, size: Int64): (Int64, Int64) {
     if (range.step != 1) {
-        throw IllegalArgumentException("Illegal step ${range.step}, step should be 1.")
+        throw IllegalArgumentException("Invalid step '${range.step}': step must be 1.")
     }
     let start = validatedSliceStart(range, size)
     let end = validatedSliceEnd(range, size)
     if (start > end) {
-        throw IndexOutOfBoundsException("The start ${start} is greater than the end ${end}.")
+        throw IndexOutOfBoundsException("Range start '${start}' is greater than end '${end}'.")
     }
     return (start, end)
 }
 
-// Resolves the lower bound and rejects one that falls outside [0, size].
+/**
+ * Resolves the lower slice bound.
+ *
+ * @throws IndexOutOfBoundsException if the start is outside [0, size].
+ */
 @Frozen
 private func validatedSliceStart(range: Range<Int64>, size: Int64): Int64 {
     let start = if (range.hasStart) {
@@ -57,16 +67,19 @@ private func validatedSliceStart(range: Range<Int64>, size: Int64): Int64 {
         0
     }
     if (start > size) {
-        throw IndexOutOfBoundsException("Range start ${start} is greater than the size ${size}.")
+        throw IndexOutOfBoundsException("Range start '${start}' is greater than size '${size}'.")
     }
     if (range.start < 0) {
-        throw IndexOutOfBoundsException("Range start ${start} is less than 0.")
+        throw IndexOutOfBoundsException("Range start '${start}' is less than 0.")
     }
     return start
 }
 
-// Resolves the upper bound, which is exclusive: a closed range gains one, and an absent end means
-// the size. A closed end equal to the size and an open end past it are both out of range.
+/**
+ * Resolves the upper slice bound to an exclusive end.
+ *
+ * @throws IndexOutOfBoundsException if an end exceeds the list size.
+ */
 @Frozen
 private func validatedSliceEnd(range: Range<Int64>, size: Int64): Int64 {
     if (!range.hasEnd) {
@@ -75,13 +88,13 @@ private func validatedSliceEnd(range: Range<Int64>, size: Int64): Int64 {
     if (range.isClosed) {
         if (range.end >= size) {
             throw IndexOutOfBoundsException(
-                "The closed end of the range ${range.end} is greater than or equal to the size ${size}.")
+                "Closed range end '${range.end}' is greater than or equal to size '${size}'.")
         }
         return range.end + 1
     }
     if (range.end > size) {
         throw IndexOutOfBoundsException(
-            "The opened end of the range ${range.end} is greater than the size ${size}.")
+            "Open range end '${range.end}' is greater than size '${size}'.")
     }
     return range.end
 }
@@ -255,7 +268,7 @@ public class ArrayList<T> <: List<T> {
         let cap: Int64 = if (capacity >= 0) {
             capacity
         } else {
-            throw IllegalArgumentException("Invalid capacity of ArrayList: ${capacity}.")
+            throw IllegalArgumentException("Invalid capacity '${capacity}': expected a non-negative value.")
         }
         myData = Array<T>(cap, repeat: unsafe { zeroValue2<T>() })
     }
@@ -283,7 +296,7 @@ public class ArrayList<T> <: List<T> {
     @When[env != "ohos"]
     public exclave init(this @local!, size: Int64, initElement: ((Int64) -> T @local!) @local?) {
         if (size < 0) {
-            throw IllegalArgumentException("Invalid size of ArrayList: ${size}.")
+            throw IllegalArgumentException("Invalid size '${size}': expected a non-negative value.")
         }
         myData = Array<T>(size, initElement)
         mySize = size
@@ -295,7 +308,7 @@ public class ArrayList<T> <: List<T> {
     @When[env != "ohos"]
     public exclave init(this @local?, size: Int64, initElement: ((Int64) -> T @local?) @local?) {
         if (size < 0) {
-            throw IllegalArgumentException("Invalid size of ArrayList: ${size}.")
+            throw IllegalArgumentException("Invalid size '${size}': expected a non-negative value.")
         }
         let arr: Array<T> @local? = Array<T>(size, initElement) @local?
         myData = arr
@@ -306,6 +319,13 @@ public class ArrayList<T> <: List<T> {
     private init(elements: Array<T>) {
         myData = elements.clone()
         mySize = elements.size
+    }
+
+    // Adopt freshly allocated result storage so logical size can differ from capacity.
+    @Frozen
+    private init(data: Array<T>, size: Int64) {
+        myData = data
+        mySize = size
     }
 
     /**
@@ -353,8 +373,8 @@ public class ArrayList<T> <: List<T> {
         myData = elements.clone()
         mySize = elements.size
     }
-    // The compiler does not support dispatching `size`/`toArray` on a `Collection<T> @local!`
-    // receiver: only Array/ArrayList constructions are recognized; all others are explicitly rejected.
+    // Array/ArrayList inputs are copied from their backing arrays; other collections
+    // use toArray() before their elements are copied into list storage.
     @Frozen
     @When[env != "ohos"]
     public exclave init(this @local!, elements: Collection<T> @local!) {
@@ -671,14 +691,6 @@ public class ArrayList<T> <: List<T> {
             return
         }
 
-        // Keep the original source storage when insertion grows this list.
-        let source: Array<T>
-        match (all) {
-            case arr: Array<T> => source = arr
-            case arr: ArrayList<T> => source = arr.myData
-            case _ => source = all.toArray()
-        }
-
         if (mySize + cSize > myData.size) {
             var newCapacity: Int64 = max(mySize + (mySize >> 1), mySize + cSize)
             let newArray: Array<T> = Array<T>(newCapacity, repeat: unsafe { zeroValue<T>() })
@@ -689,7 +701,13 @@ public class ArrayList<T> <: List<T> {
             myData.copyTo(myData, at, at + cSize, mySize - at)
         }
 
-        source.copyTo(myData, 0, at, cSize)
+        match (all) {
+            case arr: Array<T> => arr.copyTo(myData, 0, at, cSize)
+            case arr: ArrayList<T> => arr.myData.copyTo(myData, 0, at, cSize)
+            case _ =>
+                let arr = all.toArray()
+                arr.copyTo(myData, 0, at, cSize)
+        }
         mySize = mySize + cSize
         myVersion++
     }
@@ -856,16 +874,16 @@ public class ArrayList<T> <: List<T> {
     public func removeIf(predicate: (T) -> Bool): Unit {
         var i: Int64 = 0
         for (j in 0..mySize) {
-            let itemLocal = myData[j]
+            var item = myData[j]
             let lockVersion = myVersion
-            let needDelete = predicate(itemLocal)
+            let needDelete = predicate(item)
             if (myVersion != lockVersion) {
                 throw ConcurrentModificationException("The predicate cannot contain a modify operation.")
             }
 
             if (!needDelete) {
                 if (i != j) {
-                    myData[i] = itemLocal
+                    myData[i] = item
                 }
                 i++
             }
@@ -986,7 +1004,7 @@ public class ArrayList<T> <: List<T> {
             return ArrayList<T>()
         }
 
-        let newSize: Int64 = (mySize - 1) / count + 1
+        let newSize: Int64 = (mySize + count - 1) / count
         var newData: Array<T> = Array<T>(newSize, repeat: unsafe { zeroValue<T>() })
         let oldLastIndex: Int64 = (newSize - 1) * count
         var j: Int64 = newSize - 1
@@ -1048,7 +1066,7 @@ public class ArrayList<T> <: List<T> {
             throw IllegalArgumentException("Invalid skip count '${count}': expected a non-negative value.")
         }
         if (count == 0) {
-            var newData: Array<T> = myData.clone(0..mySize)
+            var newData: Array<T> = myData.clone()
             return ArrayList<T>(newData)
         }
         if (mySize - count <= 0) {
@@ -1260,7 +1278,7 @@ public class ArrayList<T> <: List<T> {
     @When[env != "ohos"]
     public func intersperse(separator: T): ArrayList<T> {
         if (mySize < 2) {
-            var newData: Array<T> = myData.clone(0..mySize)
+            var newData: Array<T> = myData.clone()
             return ArrayList<T>(newData)
         }
         let newSize: Int64 = 2 * mySize - 1
@@ -1586,8 +1604,8 @@ public class ArrayList<T> <: List<T> {
 
         if (range.hasEnd) {
             if (range.isClosed) {
-                if (range.end >= size) {
-                    throw IndexOutOfBoundsException("Closed range end '${range.end}' is greater than or equal to size '${size}'.")
+                if (range.end > size) {
+                    throw IndexOutOfBoundsException("Closed range end '${range.end}' is greater than size '${size}'.")
                 }
                 end = range.end + 1
             } else {
@@ -1683,7 +1701,8 @@ public class ArrayList<T> <: List<T> {
     @Frozen
     public operator func [](index: Int64, value!: T): Unit {
         if (index >= mySize || index < 0) {
-            throw IndexOutOfBoundsException("Invalid index '${index}': expected 0 to '${mySize}'.")
+            throw IndexOutOfBoundsException(
+                "Invalid index '${index}': expected 0 to '${mySize}'.")
         }
         unsafe { myData.setUnchecked(index, value) }
     }
@@ -1693,7 +1712,7 @@ public class ArrayList<T> <: List<T> {
     public exclave operator func [](this @local!, index: Int64, value!: T @local!): Unit {
         if (index >= mySize || index < 0) {
             throw IndexOutOfBoundsException(
-                "index: ${index} cannot be less than 0 or greater than the arraylist size: ${mySize}.")
+                "Invalid index '${index}': expected 0 to '${mySize}'.")
         }
         unsafe { myData.setUnchecked(index, value) }
     }
@@ -1769,7 +1788,9 @@ public class ArrayList<T> <: List<T> {
      */
     @Frozen
     private func checkRange(index: Int64): Unit {
-        checkIndexInRange(index, mySize)
+        if (index >= mySize || index < 0) {
+            throw IndexOutOfBoundsException("Invalid index '${index}': size is '${mySize}'.")
+        }
     }
 
     @Frozen
@@ -1795,7 +1816,9 @@ public class ArrayList<T> <: List<T> {
      */
     @Frozen
     private func checkRangeInsert(index: Int64): Unit {
-        checkIndexInInsertRange(index, mySize)
+        if (index > mySize || index < 0) {
+            throw IndexOutOfBoundsException("Invalid index '${index}': expected 0 to '${mySize}'.")
+        }
     }
 
     @Frozen
@@ -2116,8 +2139,11 @@ extend<T> Array<T> {
 
             let selected = runStarts[runLength - 1]
             let leftBound = runLengths[runLength - 1]
-            if (leftBound <= currentLength + nextLength || (runLength > 1 && runLengths[runLength - 2] <=
-                runLengths[runLength - 1] + currentLength)) {
+            var shouldMerge = leftBound <= currentLength + nextLength
+            if (!shouldMerge && runLength > 1) {
+                shouldMerge = runLengths[runLength - 2] <= runLengths[runLength - 1] + currentLength
+            }
+            if (shouldMerge) {
                 if (leftBound < nextLength) {
                     this.merge(selected, leftBound, currentStart, currentLength, scratch, compare)
                     runLengths[runLength - 1] = leftBound + currentLength

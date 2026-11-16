@@ -221,6 +221,25 @@ public struct FileInfo <: Equatable<FileInfo> {
      * @throws FSException if cPath is invalid
      */
     @When[env != "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath = LibC.mallocCString(pathStr)
+            var ret: Int8 = nativeFunction(cPath)
+            LibC.free(cPath)
+            if (ret < 0) {
+                throw FSException("Failed to get file information for '${pathStr}': native function returned '${ret}'.")
+            }
+            return ret > 0
+        }
+    }
+
+    @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
@@ -262,6 +281,30 @@ public struct FileInfo <: Equatable<FileInfo> {
      * @throws FSException if cPath is invalid
      * @throws FSException if operation not permitted on Windows
      */
+    @When[env != "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
+        shouldFixLongPath!: Bool = true): Bool {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath = LibC.mallocCString(pathStr)
+            let ret: Int8 = nativeFunction(cPath, flag)
+            LibC.free(cPath)
+            if (ret == -1) {
+                throw FSException("Failed to set permission for '${pathStr}': native function returned '${ret}'.")
+            } else if (ret == -4) {
+                throw FSException("Cannot set permission on '${pathStr}': operation not permitted.")
+            } else if (ret == -2) {
+                throw FSException("Failed to set permission for '${pathStr}': invalid argument.")
+            }
+            return ret > 0
+        }
+    }
+
     @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
         shouldFixLongPath!: Bool = true): Bool {
@@ -313,6 +356,25 @@ public struct FileInfo <: Equatable<FileInfo> {
     /**
      * @throws FSException if `nativeFunction` returns negative error code
      */
+    @When[env != "ohos"]
+    private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
+        unsafe {
+            let raw = _path.toString()
+            let pathStr = if (shouldFixLongPath) {
+                fixLongPath(raw)
+            } else {
+                raw
+            }
+            let cPath: CString = LibC.mallocCString(pathStr)
+            let ret: Int64 = nativeFunction(cPath)
+            LibC.free(cPath)
+            if (ret < 0) {
+                throw FSException("${msg} for '${pathStr}': error code '${ret}'.")
+            }
+            return ret
+        }
+    }
+
     @When[env != "ohos"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
         unsafe {

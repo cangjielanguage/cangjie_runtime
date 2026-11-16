@@ -38,7 +38,6 @@ public interface Equatable<T> <: Equal<T> & NotEqual<T> {
     }
     @When[env != "ohos"]
     operator func !=(this @local!, other: T @local!): Bool {
-        // exclave { !(this == other) }
         throw UnimplementedException("Current Type does not implement '!=' method for its @local! instance")
     }
     @When[env != "ohos"]
