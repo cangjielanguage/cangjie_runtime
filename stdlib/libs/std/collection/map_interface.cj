@@ -174,13 +174,14 @@ public interface Map<K, V> <: ReadOnlyMap<K, V> {
      */
     @Frozen
     func addIfAbsent(key: K, value: V): ?V {
-        var view = entryView(key)
-        return match (view.value) {
-            case None =>
-                view.value = value
-                None
-            case _ => view.value
+        // Use get/add instead of entryView: the view based path allocates a view object
+        // per call for implementations whose view is a class (e.g. HashMap), and
+        // performs an extra lookup on the insertion path.
+        if (let Some(oldValue) <- get(key)) {
+            return oldValue
         }
+        add(key, value)
+        return None
     }
 
     /**

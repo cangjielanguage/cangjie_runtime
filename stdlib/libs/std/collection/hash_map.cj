@@ -994,6 +994,42 @@ public class HashMap<K, V> <: Map<K, V> where K <: Hashable & Equatable<K> {
         return Option<V>.None
     }
 
+    /**
+     * Replaces the value associated with @p key to @p value,
+     * if there exists a pair of @p key and some value v in this map.
+     * Otherwise, just returns 'None' and does nothing.
+     *
+     * @param key the key of the key-value pair, whose value needs to be replaced.
+     * @param value the value to be set.
+     *
+     * @return:
+     * - Some(v): if the pair of @p key and v exists in map before invoking this method.
+     * - None: if @p key is not in the map.
+     *
+     * @since 0.59.3
+     */
+    @Frozen
+    public func replace(key: K, value: V): ?V {
+        // Overrides the default implementation in Map: locate and replace in a single
+        // traversal, avoiding the HashMapEntryView allocation and the extra lookup
+        // that the entryView-based default performs.
+        let hash: Int64 = getHash(key.hashCode())
+        var entryIndex: Int64 = buckets[getIndex(hash, buckets.size)]
+        while (entryIndex >= 0) {
+            let entryHash: Int64 = entries[entryIndex].hash
+            if (hash == entryHash) {
+                if (key == entries[entryIndex].key) {
+                    let oldValue: Option<V> = Some(entries[entryIndex].value)
+                    entries[entryIndex] = HashMapEntry<K, V>(hash, entries[entryIndex].next,
+                        entries[entryIndex].key, value)
+                    return oldValue
+                }
+            }
+            entryIndex = entries[entryIndex].next
+        }
+        return Option<V>.None
+    }
+
     @Frozen
     @OverflowWrapping
     protected func putWithoutResize(key: K, value: V): Unit {
