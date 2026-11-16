@@ -10,7 +10,7 @@ Function: Generates heap memory snapshot information and writes it to a file at 
 
 Parameters:
 
-- path: [Path](../../fs/fs_package_api/fs_package_structs.md/#struct-path) - The file path where the heap memory snapshot will be written.
+- path: [Path](../../fs/fs_package_api/fs_package_structs.md#struct-path) - The file path where the heap memory snapshot will be written.
 
 Exceptions:
 
@@ -222,11 +222,11 @@ Function: Starts CPU profiler tracing.
 
 > **Note:**
 >
-> [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
+> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
 
 Exceptions:
 
-- ProfilingInfoException - Thrown if [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) is called again without first calling [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath).
+- ProfilingInfoException - Thrown if [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) is called again without first calling [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath).
 
 ## func stopCPUProfiling(Path)
 
@@ -238,12 +238,12 @@ Function: Stops CPU profiler tracing and writes the records to a file at the spe
 
 > **Note:**
 >
-> [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
+> [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling) and [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) must be called in pairs.
 
 Parameters:
 
-- path: [Path](../../fs/fs_package_api/fs_package_structs.md/#struct-path) - The file path where the profiling records will be written.
+- path: [Path](../../fs/fs_package_api/fs_package_structs.md#struct-path) - The file path where the profiling records will be written.
 
 Exceptions:
 
-- ProfilingInfoException - Thrown if [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) is called without first calling [startCPUProfiling](./runtime_package_funcs.md/#func-startcpuprofiling).
+- ProfilingInfoException - Thrown if [stopCPUProfiling(Path)](./runtime_package_funcs.md#func-stopcpuprofilingpath) is called without first calling [startCPUProfiling](./runtime_package_funcs.md#func-startcpuprofiling).

@@ -24,9 +24,9 @@ Cangjie 语言使用自动垃圾回收机制来管理内存，runtime 包提供�
 | [gc(Bool)](./runtime_package_api/runtime_package_funcs.md#func-gcbool) | 执行 GC。 |
 | [getAllocatedHeapSize](./runtime_package_api/runtime_package_funcs.md#func-getallocatedheapsize) | 获取仓颉堆已被使用的大小，单位为 byte。 |
 | [getBlockingThreadCount](./runtime_package_api/runtime_package_funcs.md#func-getblockingthreadcount) | 获取阻塞的仓颉线程数。 |
-| [getGCCount](./runtime_package_api/runtime_package_funcs.md/#func-getgccount) | 获取触发 GC 的次数。 |
-| [getGCFreedSize](./runtime_package_api/runtime_package_funcs.md/#func-getgcfreedsize) | 获取触发 GC 后，成功回收的内存，单位为 byte。 |
-| [getGCTime](./runtime_package_api/runtime_package_funcs.md/#func-getgctime) | 获取触发的 GC 总耗时，单位为 us。 |
+| [getGCCount](./runtime_package_api/runtime_package_funcs.md#func-getgccount) | 获取触发 GC 的次数。 |
+| [getGCFreedSize](./runtime_package_api/runtime_package_funcs.md#func-getgcfreedsize) | 获取触发 GC 后，成功回收的内存，单位为 byte。 |
+| [getGCTime](./runtime_package_api/runtime_package_funcs.md#func-getgctime) | 获取触发的 GC 总耗时，单位为 us。 |
 | [getMaxHeapSize](./runtime_package_api/runtime_package_funcs.md#func-getmaxheapsize) | 获取仓颉堆可以使用的最大值，单位为 byte。 |
 | [getNativeThreadCount](./runtime_package_api/runtime_package_funcs.md#func-getnativethreadcount) | 获取物理线程数。 |
 | [getProcessorCount](./runtime_package_api/runtime_package_funcs.md#func-getprocessorcount) | 获取处理器数量。 |

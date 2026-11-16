@@ -17,9 +17,9 @@ The Cangjie language employs an automatic garbage collection mechanism for memor
 | [gc(Bool)](./runtime_package_api/runtime_package_funcs.md#func-gcbool) | Executes garbage collection. |
 | [getAllocatedHeapSize](./runtime_package_api/runtime_package_funcs.md#func-getallocatedheapsize) | Retrieves the allocated heap size in bytes for the Cangjie heap. |
 | [getBlockingThreadCount](./runtime_package_api/runtime_package_funcs.md#func-getblockingthreadcount) | Gets the count of blocked Cangjie threads. |
-| [getGCCount](./runtime_package_api/runtime_package_funcs.md/#func-getgccount) | Retrieves the number of garbage collection triggers. |
-| [getGCFreedSize](./runtime_package_api/runtime_package_funcs.md/#func-getgcfreedsize) | Gets the amount of memory successfully reclaimed after garbage collection, in bytes. |
-| [getGCTime](./runtime_package_api/runtime_package_funcs.md/#func-getgctime) | Retrieves the total garbage collection duration in microseconds. |
+| [getGCCount](./runtime_package_api/runtime_package_funcs.md#func-getgccount) | Retrieves the number of garbage collection triggers. |
+| [getGCFreedSize](./runtime_package_api/runtime_package_funcs.md#func-getgcfreedsize) | Gets the amount of memory successfully reclaimed after garbage collection, in bytes. |
+| [getGCTime](./runtime_package_api/runtime_package_funcs.md#func-getgctime) | Retrieves the total garbage collection duration in microseconds. |
 | [getMaxHeapSize](./runtime_package_api/runtime_package_funcs.md#func-getmaxheapsize) | Gets the maximum available size of the Cangjie heap in bytes. |
 | [getNativeThreadCount](./runtime_package_api/runtime_package_funcs.md#func-getnativethreadcount) | Retrieves the count of physical threads. |
 | [getProcessorCount](./runtime_package_api/runtime_package_funcs.md#func-getprocessorcount) | Gets the number of processors. |
