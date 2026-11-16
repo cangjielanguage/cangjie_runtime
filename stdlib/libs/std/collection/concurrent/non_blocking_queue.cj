@@ -204,15 +204,17 @@ public type NonBlockingQueue<E> = ConcurrentLinkedQueue<E>
 /**
  * NonBlockingQueue is an unbounded nonblocking concurrent queue.
  *
- * The iterator is weakly consistent: it never fails silently or throws, and it
+ * The iterator is weakly consistent: it never returns a never-enqueued element, and it
  * guarantees that every element that was committed (and not yet consumed) at
  * the time the iterator is created is observed exactly once. If a concurrent
  * producer is between allocated and committed updates inside a block, the
- * iterator briefly spin-waits for the in-flight sender (mirroring pop()/front()),
- * so a full iteration may transiently block; it does not skip committed
+ * iterator spin-waits for the in-flight sender (mirroring pop()/front());
+ * the wait is bounded under the default scheduler (schmon preemption) but is
+ * theoretically unbounded if a sender stalls inside its push window, so a
+ * full iteration may block for that long. It does not skip committed
  * elements. Elements consumed concurrently by remove() while the iteration is
  * in progress may be skipped. Consequently, toArray() reflects a weakly
- * consistent snapshot and may transiently spin as well.
+ * consistent snapshot and may spin as well.
  */
 public class ConcurrentLinkedQueue<E> <: Collection<E> {
     private let front: AtomicReference<Block<E>>
@@ -452,6 +454,18 @@ class ConcurrentLinkedQueueIterator<E> <: Iterator<E> {
                 }
                 hasNext = false
                 break
+            }
+            // Mirror pop()/front()'s read invariant: committed is a counter,
+            // not a prefix watermark, so concurrent senders may commit out of
+            // order (a higher-index sender increments committed before a
+            // lower-index sender has executed buffer[index] = element).
+            // Reading buffer[curIndex] while any in-flight sender exists could
+            // therefore observe the unwritten slot's zeroValue (a phantom
+            // element never enqueued). Wait until committed == allocated so
+            // every committed slot is fully written before trusting the read.
+            let (_, curAllocatedRead) = curBlock.getAllocated()
+            if (curCommitted != curAllocatedRead) {
+                continue
             }
             let curElement = curBlock.buffer[curIndex]
             let reserved = curBlock.reserved.load()
