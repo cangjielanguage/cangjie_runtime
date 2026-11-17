@@ -158,7 +158,7 @@ public:
         std::mutex& regionListMutex = recentPinnedRegionList.GetListMutex();
 
         // enter saferegion when wait lock to avoid gc timeout.
-        // note that release the mutex when function end.
+        // Leave saferegion before allocating from a published region.
         {
             ScopedEnterSaferegion enterSaferegion(true);
             regionListMutex.lock();
@@ -184,15 +184,23 @@ public:
             DLOG(REGION, "alloc pinned region @[0x%zx+%zu, 0x%zx) unit idx %zu type %u", region->GetRegionStart(),
                  region->GetRegionAllocatedSize(), region->GetRegionEnd(), region->GetUnitIdx(),
                  region->GetRegionType());
+            // Keep the new region private while waiting for the list lock and
+            // completing GC synchronization. Once published, allocation must
+            // reach the caller's TypeInfo initialization without a saferegion.
+            std::unique_lock<std::mutex> lock(regionListMutex, std::defer_lock);
+            {
+                ScopedEnterSaferegion enterSaferegion(true);
+                lock.lock();
+            }
             // If allocate pinned obj during tracing, set region to traced new region.
+            // Read the phase after leaving saferegion, since it may have changed.
             GCPhase phase = Heap::GetHeap().GetCollector().GetGCPhase();
             if (phase == GC_PHASE_GENERATION_TRACE || phase == GC_PHASE_TRACE || phase == GC_PHASE_CLEAR_SATB_BUFFER) {
                 region->SetTraceRegionFlag(1);
             }
             // To make sure the allocedSize are consistent, it must prepend region first then alloc object.
+            recentPinnedRegionList.PrependRegionLocked(region, RegionInfo::RegionType::RECENT_PINNED_REGION);
             addr = region->Alloc(size);
-            ScopedEnterSaferegion enterSaferegion(true);
-            recentPinnedRegionList.PrependRegion(region, RegionInfo::RegionType::RECENT_PINNED_REGION);
         }
 
         DLOG(ALLOC, "alloc pinned obj 0x%zx(%zu)", addr, size);
