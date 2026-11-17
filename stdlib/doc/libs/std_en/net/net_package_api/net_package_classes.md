@@ -502,7 +502,19 @@ import std.unittest.testmacro.*
 
 main() {
     let buffer = Array<Byte>(128, repeat: 0)
-    let expectV4: Array<Byte> = [0xC0, 0xA8, 0x1, 0x2## class IPPrefix
+    let expectV4: Array<Byte> = [0xC0, 0xA8, 0x1, 0x2]
+    let expectV6: Array<Byte> = [0x20, 0x01, 0x02, 0x50, 0x10, 0x06, 0xdf, 0xf0, 0x49, 0x13, 0x2a, 0xa5, 0x80, 0x75,
+        0x7c, 0x10]
+    let v4: IPAddress = IPAddress.parse("192.168.1.2")
+    let v6: IPAddress = IPAddress.parse("2001:0250:1006:dff0:4913:2aa5:8075:7c10")
+    var len = v4.writeBigEndian(buffer)
+    @Assert(buffer[..len] == expectV4, true)
+    len = v6.writeBigEndian(buffer)
+    @Assert(buffer[..len] == expectV6, true)
+}
+```
+
+## class IPPrefix
 
 ```cangjie
 sealed abstract class IPPrefix <: Equatable<IPPrefix> & Hashable & ToString
@@ -946,7 +958,13 @@ import std.unittest.testmacro.*
 
 main() {
     let v4: ?IPSocketAddress = IPSocketAddress.tryParse("192.168.1.2:8080")
-    let v6: ?## class IPv4Address
+    let v6: ?IPSocketAddress = IPSocketAddress.tryParse("[2001:0250:1006:dff0:4913:2aa5:8075:7c10]:8080")
+    @Assert(v4.getOrThrow().toString(), "192.168.1.2:8080")
+    @Assert(v6.getOrThrow().toString(), "[2001:250:1006:dff0:4913:2aa5:8075:7c10]:8080")
+}
+```
+
+## class IPv4Address
 
 ```cangjie
 public class IPv4Address <: IPAddress & ToString & Equatable<IPv4Address> & LessOrEqual<IPv4Address> {
@@ -1124,36 +1142,300 @@ Returns:
 
 - [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a multicast address; otherwise, returns `false`.
 
-## class IPv4Address
+## class IPv6Address
 
 ```cangjie
-public class IPv4Address <: IPAddress & ToString & Equatable<IPv4Address> & LessOrEqual<IPv4Address> {
-    public static let broadcast = IPv4Address(0xFF, 0xFF, 0xFF, 0xFF)
-    public static let localhost = IPv4Address(0x7F, 0, 0, 0x01)
-    public static let unspecified = IPv4Address(0, 0, 0, 0)
-    public init(bits: UInt32)
-    public init(a: Byte, b: Byte, c: Byte, d: Byte)
+public class IPv6Address <: IPAddress & ToString & Equatable<IPv6Address> & LessOrEqual<IPv6Address> {
+    public static let localhost = IPv6Address(0u16, 0, 0, 0, 0, 0, 0, 1)
+    public static let unspecified = IPv6Address(0u16, 0, 0, 0, 0, 0, 0, 0)
+    public init(octets: Array<Byte>, scopeId!: ?UInt32 = None)
+    public init(a: UInt16, b: UInt16, c: UInt16, d: UInt16, e: UInt16, f: UInt16, g: UInt16, h: UInt16, scopeId!: ?UInt32 = None)
 }
 ```
 
-Function: This class represents an Internet Protocol version 4 (IPv4) address, as defined by [RFC 790](https://datatracker.ietf.org/doc/html/rfc790), [RFC 1918](https://datatracker.ietf.org/doc/html/rfc1918), and [RFC 2365](https://datatracker.ietf.org/doc/html/rfc2365).
+Function: This class represents an Internet Protocol version 6 (IPv6) address. Defined by [RFC 4291](https://datatracker.ietf.org/doc/html/rfc4291), [RFC 5952](https://datatracker.ietf.org/doc/html/rfc5952), and [RFC 4007](https://datatracker.ietf.org/doc/html/rfc4007).
 
 Parent Types:
 
 - [IPAddress](#class-ipaddress)
 - [ToString](../../core/core_package_api/core_package_interfaces.md#interface-tostring)
-- [Equatable](../../core/core_package_api/core_package_interfaces.md#interface-equatablet)\<[IPv4Address](#class-ipv4address)>
-- [LessOrEqual](../../core/core_package_api/core_package_interfaces.md#interface-lessorequalt)\<[IPv4Address](#class-ipv4address)>
+- [Equatable](../../core/core_package_api/core_package_interfaces.md#interface-equatablet)\<[IPv6Address](#class-ipv6address)>
+- [LessOrEqual](../../core/core_package_api/core_package_interfaces.md#interface-lessorequalt)\<[IPv6Address](#class-ipv6address)>
 
-### static let broadcast
+### static let localhost
 
 ```cangjie
-public static let broadcast = IPv4Address(0xFF, 0xFF, 0xFF, 0xFF)
+public static let localhost = IPv6Address(0u16, 0, 0, 0, 0, 0, 0, 1)
 ```
 
-Function: Returns the broadcast address of [IPv4Address](net_package_classes.md#class-ipv4address): `255.255.255.255`.
+Function: Returns the `localhost` address of [IPv6Address](net_package_classes.md#class-ipv6address): `::1`.
 
-Type: [IPv4Address](net_package_classes.md#class-ipv4address)
+Type: [IPv6Address](net_package_classes.md#class-ipv6address)
+
+### static let unspecified
+
+```cangjie
+public static let unspecified = IPv6Address(0u16, 0, 0, 0, 0, 0, 0, 0)
+```
+
+Function: Returns an unspecified [IPv6Address](net_package_classes.md#class-ipv6address) address: `::`, which corresponds to the constant `INADDR_ANY` in other languages.
+
+Type: [IPv6Address](net_package_classes.md#class-ipv6address)
+
+### prop scopeId
+
+```cangjie
+public prop scopeId: ?UInt32
+```
+
+Function: Gets the default scope ID.
+
+Type: [Option](../../core/core_package_api/core_package_enums.md#enum-optiont)\<[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32)>
+
+### init(Array\<Byte>, ?UInt32)
+
+```cangjie
+public init(octets: Array<Byte>, scopeId!: ?UInt32 = None)
+```
+
+Function: Constructs an [IPv6Address](net_package_classes.md#class-ipv6address) address from a big-endian [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)>.
+
+Parameters:
+
+- octets: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> - Big-endian byte array.
+- scopeId!: ?[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) - Scope ID.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the length of octets is less than 16.
+
+### init(UInt16, UInt16, UInt16, UInt16, UInt16, UInt16, UInt16, UInt16, ?UInt32)
+
+```cangjie
+public init(a: UInt16, b: UInt16, c: UInt16, d: UInt16, e: UInt16, f: UInt16, g: UInt16, h: UInt16, scopeId!: ?UInt32 = None)
+```
+
+Function: Constructs an [IPv6Address](net_package_classes.md#class-ipv6address) address object from eight 16-bit segments, represented textually as `a:b:c:d:e:f:g:h%scopeId`.
+
+Parameters:
+
+- a: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- b: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- c: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- d: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- e: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- f: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- g: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- h: [UInt16](../../core/core_package_api/core_package_intrinsics.md#uint16) - 16-bit segment.
+- scopeId!: ?[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) - Scope ID.
+
+### static func readBigEndian(Array\<Byte>)
+
+```cangjie
+public static func readBigEndian(buffer: Array<Byte>): IPv6Address
+```
+
+Function: Reads an [IPv6Address](net_package_classes.md#class-ipv6address) object from a byte array in big-endian order.
+
+Parameters:
+
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> - Buffer containing the data to be read.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown when the buffer is too small to read an [IPv6Address](net_package_classes.md#class-ipv6address) value.
+
+Returns:
+
+- [IPv6Address](net_package_classes.md#class-ipv6address) - [IPv6Address](net_package_classes.md#class-ipv6address) object.
+
+### func getPrefix(UInt8)
+
+```cangjie
+public func getPrefix(prefixLen: UInt8): IPPrefix
+```
+
+Function: Creates a network prefix object from this [IPv6Address](net_package_classes.md#class-ipv6address) address based on the specified network prefix length.
+
+Parameters:
+
+- prefixLen: [UInt8](../../core/core_package_api/core_package_intrinsics.md#uint8) - Network prefix length, must be >= 0 and <= 128.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if prefixLen is out of range.
+
+Returns:
+
+- [IPPrefix](net_package_classes.md#class-ipprefix) - Network prefix object.
+
+### func isGlobalUnicast()
+
+```cangjie
+public func isGlobalUnicast(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a global unicast address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a global unicast address; otherwise, returns `false`.
+
+### func isIPv4Mapped()
+
+```cangjie
+public func isIPv4Mapped(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is an IPv4-mapped address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is an IPv4-mapped address; otherwise, returns `false`.
+
+### func isLinkLocal()
+
+```cangjie
+public func isLinkLocal(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a link-local address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a link-local address; otherwise, returns `false`.
+
+### func isLoopback()
+
+```cangjie
+public func isLoopback(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a loopback address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a loopback address; otherwise, returns `false`.
+
+### func isMulticast()
+
+```cangjie
+public func isMulticast(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a multicast address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a multicast address; otherwise, returns `false`.
+
+### func isPrivate()
+
+```cangjie
+public func isPrivate(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a private address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a private address; otherwise, returns `false`.
+
+### func isTeredo()
+
+```cangjie
+public func isTeredo(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is a `Teredo` address. The `Teredo` prefix is `2001::/32`.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is a `Teredo` address; otherwise, returns `false`.
+
+### func isUnspecified()
+
+```cangjie
+public func isUnspecified(): Bool
+```
+
+Function: Determines whether this [IPv6Address](net_package_classes.md#class-ipv6address) object is an "unspecified" IP address.
+
+Returns:
+
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns `true` if it is an "unspecified" IP address; otherwise, returns `false`.
+
+### func scope(?UInt32)
+
+```cangjie
+public func scope(scopeId: ?UInt32): IPv6Address
+```
+
+Function: Converts this [IPv6Address](net_package_classes.md#class-ipv6address) object to a new [IPv6Address](net_package_classes.md#class-ipv6address) object with the address value of this object and the specified scope ID. If the specified scope ID is `None`, the existing scope ID is removed.
+
+Parameters:
+
+- scopeId: ?[UInt32](../../core/core_package_api/core_package_intrinsics.md#uint32) - Scope ID.
+
+Returns:
+
+- [IPv6Address](net_package_classes.md#class-ipv6address) - The converted [IPv6Address](net_package_classes.md#class-ipv6address) object.
+
+### func toIPv4()
+
+```cangjie
+public func toIPv4(): ?IPv4Address
+```
+
+Function: Converts this [IPv6Address](net_package_classes.md#class-ipv6address) address to an IPv4-compatible [IPv4Address](net_package_classes.md#class-ipv4address) address. For example, `::a.b.c.d` and `::ffff:a.b.c.d` are converted to `a.b.c.d`; `::1` is converted to `0.0.0.1`. All addresses that do not start with all zeros or `::ffff` return `None`.
+
+Returns:
+
+- ?[IPv4Address](net_package_classes.md#class-ipv4address) - ?[IPv4Address](net_package_classes.md#class-ipv4address) value.
+
+### func toIPv4Mapped()
+
+```cangjie
+public func toIPv4Mapped(): ?IPv4Address
+```
+
+Function: Converts this [IPv6Address](net_package_classes.md#class-ipv6address) address to an IPv4-mapped [IPv4Address](net_package_classes.md#class-ipv4address) address. For example, `::ffff:a.b.c.d` is converted to `a.b.c.d`. All addresses that do not start with `::ffff` return `None`.
+
+Returns:
+
+- ?[IPv4Address](net_package_classes.md#class-ipv4address) - ?[IPv4Address](net_package_classes.md#class-ipv4address) value.
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: Returns the string representation of the current [IPv6Address](net_package_classes.md#class-ipv6address).
+
+Returns:
+
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) - The string representation of the current [IPv6Address](net_package_classes.md#class-ipv6address), for example, `2001:db8:1:2:ffff:ffff:ffff:ffff`.
+
+### func writeBigEndian(Array\<Byte>)
+
+```cangjie
+public func writeBigEndian(buffer: Array<Byte>): Int64
+```
+
+Function: Writes this [IPv6Address](net_package_classes.md#class-ipv6address) object to a byte array in big-endian order.
+
+Parameters:
+
+- buffer: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<[Byte](../../core/core_package_api/core_package_types.md#type-byte)> - Buffer for storing the data to be written.
+
+Exceptions:
+
+- [IllegalArgumentException](../../core/core_package_api/core_package_exceptions.md#class-illegalargumentexception) - Thrown if the buffer is too small to write an [IPv6Address](net_package_classes.md#class-ipv6address) value.
+
+Returns:
+
+- [Int64](../../core/core_package_api/core_package_intrinsics.md#int64) - Number of bytes written.
 
 ## class RawSocket
 
@@ -1952,7 +2234,8 @@ Function: Sets and reads the keep-alive attribute. `None` means keep-alive is di
 If not set by the user, the system default configuration will be used. Setting this configuration may be delayed or ignored by the system, depending on system capabilities.
 
 Type: ?[SocketKeepAliveConfig](net_package_structs.md#struct-socketkeepaliveconfig)
-```### prop linger
+
+### prop linger
 
 ```cangjie
 public mut prop linger: ?Duration
@@ -2379,7 +2662,9 @@ Parameters:
 
 Exceptions:
 
-- [SocketException](net_package_exceptions.md#class-socketexception) - Thrown when the `buffer` size## class UdpSocket
+- [SocketException](net_package_exceptions.md#class-socketexception) - Thrown when the socket is not connected, is already closed, or the write fails due to system reasons.
+
+## class UdpSocket
 
 ```cangjie
 public class UdpSocket <: DatagramSocket {
@@ -2819,7 +3104,9 @@ Function: Returns the status information of the current [UdpSocket](net_package_
 
 Returns:
 
-- [String](../../core/core_package_api/core_package_structs.md#struct-string) - A string containing the status information of the current [UdpSocket](net_package_classes.md#class-udpsocket).## class UnixDatagramSocket
+- [String](../../core/core_package_api/core_package_structs.md#struct-string) - A string containing the status information of the current [UdpSocket](net_package_classes.md#class-udpsocket).
+
+## class UnixDatagramSocket
 
 ```cangjie
 public class UnixDatagramSocket <: DatagramSocket {
@@ -3255,7 +3542,9 @@ Parameters:
 
 Returns:
 
--## class UnixServerSocket
+- [Bool](../../core/core_package_api/core_package_intrinsics.md#bool) - Returns the specified socket option value. Converted from [IntNative](../../core/core_package_api/core_package_intrinsics.md#intnative). `0 => false`, non-zero => `true`.
+
+## class UnixServerSocket
 
 ```cangjie
 public class UnixServerSocket <: ServerSocket {
@@ -3719,7 +4008,10 @@ This file type can be checked for existence via [isSock](../../posix/posix_packa
 
 Parameters:
 
-- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) - The file address## class UnixSocketAddress
+- path: [String](../../core/core_package_api/core_package_structs.md#struct-string) - The file address to connect.
+- localPath!: ?[String](../../core/core_package_api/core_package_structs.md#struct-string) - The local socket address path to bind; default is `None`.
+
+## class UnixSocketAddress
 
 ```cangjie
 public class UnixSocketAddress <: SocketAddress & Equatable<UnixSocketAddress> {

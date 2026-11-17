@@ -84,4 +84,4 @@ Hierarchy
 |              Exception Class Name          |           Functionality           |
 | ----------------------------------- | --------------------------------- |
 | [SocketException](./net_package_api/net_package_exceptions.md#class-socketexception) | Provides exception handling related to sockets. |
-| [SocketTimeoutException](./net_package_api/net_package_exceptions.md#class-sockettimeoutexception) | Provides exception handling related to character formatting. |
+| [SocketTimeoutException](./net_package_api/net_package_exceptions.md#class-sockettimeoutexception) | Provides exception handling related to socket operation timeouts. |
