@@ -4252,7 +4252,7 @@ public func indexOf(elements: Array<T>, fromIndex: Int64): Option<Int64>
 
 功能：返回数组中在 `fromIndex` 之后，子数组 `elements` 出现的第一个位置，未找到返回 None。
 
-函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，将会从第 0 位开始搜索，当 `fromIndex` 大于等于本数组的大小时，结果为 None。
+函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，效果同 0，即搜索范围为整个数组；当 `fromIndex` 大于等于本数组的大小时，结果为 None。
 
 参数：
 
@@ -4586,7 +4586,7 @@ public func lastIndexOf(elements: Array<T>, fromIndex: Int64): Option<Int64>
 
 功能：从 `fromIndex` 开始向后搜索，返回数组中子数组 `elements` 出现的最后一个位置，如果数组中不存在此子数组，返回 None。
 
-函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，将会从第 0 位开始搜索，当 `fromIndex` 大于等于本数组的大小时，结果为 None。
+函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，效果同 0，即搜索范围为整个数组；当 `fromIndex` 大于等于本数组的大小时，结果为 None。
 
 参数：
 
@@ -4781,7 +4781,7 @@ public func lastIndexOf(element: T, fromIndex: Int64): Option<Int64>
 
 功能：从 `fromIndex` 开始向后搜索，返回数组中 `element` 出现的最后一个位置，如果数组中不存在此元素，返回 None。
 
-函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，将会从第 0 位开始搜索，当 `fromIndex` 大于等于本数组的大小时，结果为 None。
+函数会对 `fromIndex` 范围进行检查，`fromIndex` 小于 0 时，效果同 0，即搜索范围为整个数组；当 `fromIndex` 大于等于本数组的大小时，结果为 None。
 
 参数：
 

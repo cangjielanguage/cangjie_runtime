@@ -200,8 +200,7 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
      *
      * @params element - The target element.
      *
-     * @return Index of the first occurrence of the element in the Array, or None if the the element does not occur.
-     * @throws IllegalArgumentException - If the start less than 0.
+     * @return Index of the first occurrence of the element in the Array, or None if the element does not occur.
      */
     @Frozen
     public func indexOf(element: T): Option<Int64> {
@@ -222,8 +221,8 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
      * @params element - The target element.
      * @params fromIndex - The start index, default 0.
      *
-     * @return Index of the first occurrence of the element in the Array, or None if the the element does not occur.
-     * @throws IllegalArgumentException - If the start less than 0.
+     * @return Index of the first occurrence of the element in the Array, or None if the element does not occur.
+     *         If fromIndex is less than 0, the search starts from position 0.
      */
     @Frozen
     public func indexOf(element: T, fromIndex: Int64): Option<Int64> {
@@ -269,6 +268,7 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
      * @params elements - The target subarray.
      *
      * @return Index of the first occurrence of @p elements from the starting position, or None if it does not occur.
+     *         If fromIndex is less than 0, the search starts from position 0.
      */
     @Frozen
     public func indexOf(elements: Array<T>, fromIndex: Int64): Option<Int64> {
@@ -301,6 +301,15 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
         return None
     }
 
+    /**
+     * Returns the index of the last occurrence of the element at or before fromIndex in the src Array.
+     *
+     * @params element - The target element.
+     * @params fromIndex - The start index for the backward search.
+     *
+     * @return Index of the last occurrence of the element in the Array, or None if the element does not occur.
+     *         If fromIndex is less than 0, it is treated as 0, and the entire Array is searched.
+     */
     @Frozen
     public func lastIndexOf(element: T, fromIndex: Int64): Option<Int64> {
         if (size == 0 || fromIndex >= size) {
@@ -332,6 +341,15 @@ extend<T> Array<T> <: Equatable<Array<T>> where T <: Equatable<T> {
         return None
     }
 
+    /**
+     * Returns the index of the last occurrence of a subarray at or before @p fromIndex.
+     *
+     * @params elements - The target subarray.
+     * @params fromIndex - The start index for the backward search.
+     *
+     * @return Index of the last occurrence of @p elements at or before the starting position, or None if it does not occur.
+     *         If fromIndex is less than 0, it is treated as 0, and the entire Array is searched.
+     */
     @Frozen
     public func lastIndexOf(elements: Array<T>, fromIndex: Int64): Option<Int64> {
         if (this.size < elements.size || fromIndex >= this.size) {
