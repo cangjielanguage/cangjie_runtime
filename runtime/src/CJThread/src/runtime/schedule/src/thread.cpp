@@ -17,6 +17,23 @@
 extern "C" {
 #endif
 
+void ThreadWakeIfSleeping(struct Thread *thread)
+{
+    if (thread == nullptr) {
+        return;
+    }
+    ThreadState expected = THREAD_SLEEP;
+    while (atomic_load(&thread->state) == THREAD_PRE_SLEEP) {}
+    if (atomic_load(&thread->state) == THREAD_SLEEP) {
+        if (atomic_compare_exchange_strong(&thread->state, &expected, THREAD_RUNNING)) {
+            int error = SemaphorePost(&(thread->sem));
+            if (error != 0) {
+                LOG_ERROR(error, "sem post failed");
+            }
+        }
+    }
+}
+
 /*
  * sleep the thread
  */

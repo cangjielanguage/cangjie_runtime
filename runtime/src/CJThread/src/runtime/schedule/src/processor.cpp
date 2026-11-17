@@ -788,6 +788,18 @@ void ProcessorSchedule(void)
         }
         // Finds a dispatchable cjthread and switches its state to RUNNING.
         nextCJThread = ProcessorCJThreadGet();
+        if (UNLIKELY(nextCJThread->exclusiveScopeCnt.load() != 0 &&
+                     nextCJThread->schedule->scheduleType == SCHEDULE_DEFAULT)) {
+            // An exclusiveScope-pinned cjthread can only run on its own OS thread, but a netpoll
+            // wake queues it like any other (via CJThreadAddBatch). Wake its owner instead.
+            struct Thread *owner = nextCJThread->thread;
+            if (UNLIKELY(owner == nullptr)) {
+                LOG(RTLOG_FATAL, "pinned cjthread %llu dequeued without owner thread", nextCJThread->id);
+            }
+            atomic_store(&nextCJThread->state, CJTHREAD_RUNNING);
+            ThreadWakeIfSleeping(owner);
+            continue;
+        }
         atomic_store_explicit(&nextCJThread->state, CJTHREAD_RUNNING, std::memory_order_relaxed);
         ProtectAddrSet((uintptr_t)nextCJThread->stack.stackGuard);
         if (nextCJThread->boundThread != nullptr) {
@@ -863,17 +875,7 @@ void ProcessorFree(struct Schedule *schedule, struct Processor *processor)
 
 void ProcessorNonDefaultScheduleWake(struct Schedule *schedule)
 {
-    ThreadState expectedThreadState = THREAD_SLEEP;
-
-    while (atomic_load(&schedule->thread0->state) == THREAD_PRE_SLEEP) {}
-    if (atomic_load(&schedule->thread0->state) == THREAD_SLEEP) {
-        if (atomic_compare_exchange_strong(&schedule->thread0->state, &expectedThreadState, THREAD_RUNNING)) {
-            int error = SemaphorePost(&(schedule->thread0->sem));
-            if (error != 0) {
-                LOG_ERROR(error, "sem post failed");
-            }
-        }
-    }
+    ThreadWakeIfSleeping(schedule->thread0);
 }
 
 /* Wakes up a processor or randomly selects a free processor for startup. */

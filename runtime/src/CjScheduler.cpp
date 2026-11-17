@@ -454,41 +454,6 @@ bool MRT_EndForeignCJThread()
     return true;
 }
 
-static void* WrapperExclusiveClosure(void* arg, unsigned int len)
-{
-    ASSERT(arg != nullptr);
-    auto lwtData = static_cast<LWTData*>(arg);
-    uintptr_t threadData = MRT_GetThreadLocalData();
-    Mutator* mutator = reinterpret_cast<ThreadLocalData*>(threadData)->mutator;
-    MRT_PreRunManagedCode(mutator, 0, reinterpret_cast<ThreadLocalData*>(threadData));
-    lwtData->threadObject = nullptr;
-    BaseObject* executeClosure = Heap::GetBarrier().ReadStaticRef(reinterpret_cast<RefField<false>&>(lwtData->execute));
-    BaseObject* closureObj = Heap::GetBarrier().ReadStaticRef(reinterpret_cast<RefField<false>&>(lwtData->obj));
-#if defined(__aarch64__)
-    ExecuteExclusiveCangjieStub(closureObj, nullptr, executeClosure, reinterpret_cast<void*>(threadData), &g_ut);
-#elif defined(__x86_64__)
-    ExecuteExclusiveCangjieStub(&g_ut, nullptr, closureObj, executeClosure, reinterpret_cast<void*>(threadData));
-#elif defined(__arm__)
-    TypeInfo* ti = closureObj->GetTypeInfo();
-    ExecuteExclusiveCangjieStub(&g_ut, ti, closureObj, executeClosure, reinterpret_cast<void*>(threadData));
-#endif
-    MutatorManager::Instance().TransitMutatorToExit();
-    return nullptr;
-}
-
-void* MCC_NewExclusiveCJThread(void* executeClosure, void* closurePtr, void* futureTi)
-{
-    LWTData data;
-    data.execute = nullptr;
-    data.obj = nullptr;
-    data.threadObject = futureTi;
-    RefField<>* executeRootField = reinterpret_cast<RefField<>*>(&data.obj);
-    Heap::GetBarrier().WriteStaticRef(*executeRootField, reinterpret_cast<BaseObject*>(closurePtr));
-    RefField<>* objRootField = reinterpret_cast<RefField<>*>(&data.execute);
-    Heap::GetBarrier().WriteStaticRef(*objRootField, reinterpret_cast<BaseObject*>(executeClosure));
-    return ExclusiveCJThreadNew(WrapperExclusiveClosure, &data, sizeof(LWTData));
-}
-
 static void ResetFinalizerThreadLocal()
 {
     ThreadLocal::SetCJThread(nullptr);

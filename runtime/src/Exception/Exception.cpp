@@ -166,6 +166,12 @@ bool ExceptionHandling::ProcessEHFrame(const FrameInfo& frame, std::vector<std::
         return false;
     }
 #endif
+    // exclusiveScope catches inside the closure, then returns across the stack
+    // switch. The bridge is reached only when that catch did not run.
+    if (frame.GetFrameType() == FrameType::EXCLUSIVE) {
+        LOG(RTLOG_FATAL, "exception must not cross exclusiveScope");
+        return false;
+    }
     lastRuntimeFrame = frame;
     return false;
 }

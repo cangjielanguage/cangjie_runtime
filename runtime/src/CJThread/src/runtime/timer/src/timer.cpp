@@ -1060,6 +1060,17 @@ int TimerSchmonCheck(void *pro, unsigned long long now)
     struct Schedule* wakeSchedule = schedule == nullptr ? ScheduleGet() : schedule;
     /* If timer0_deadline is 0, there is no timer in heap. */
     if (timer->timer0Deadline != 0 && now >= timer->timer0Deadline) {
+        // exclusiveScope parks via CJThreadParkInForeignThread on this OS thread.
+        // ProcessorWake on DEFAULT does not post that park sem; wake the owner so it
+        // can run TimerTrigger after SemaphoreWait (schmon stays wake-only).
+        struct Thread *thread = processor->thread;
+        struct CJThread *cjthread = (thread != nullptr)
+            ? static_cast<struct CJThread *>(thread->cjthread) : nullptr;
+        if (cjthread != nullptr && cjthread->exclusiveScopeCnt.load() != 0) {
+            ThreadWakeIfSleeping(thread);
+            return 0;
+        }
+
         if (processor->state == PROCESSOR_RUNNING) {
             ProcessorWake(wakeSchedule, nullptr);
         } else if (processor->state == PROCESSOR_IDLE) {

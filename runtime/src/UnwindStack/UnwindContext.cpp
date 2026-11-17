@@ -39,6 +39,8 @@ bool UnwindContext::UnwindToCallerContext(UnwindContext& caller) const
     DLOG(UNWIND, "FrameInfo->startProc\t%p", reinterpret_cast<uintptr_t>(frameInfo.GetStartProc()));
     if (frameInfo.GetFrameType() == FrameType::N2C_STUB) {
         UnwindToCallerContextFromN2CStub(caller);
+    } else if (frameInfo.GetFrameType() == FrameType::EXCLUSIVE) {
+        UnwindExclusiveBridgeToCaller(caller);
     } else {
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
         auto res = frameInfo.mFrame.UnwindToCallerMachineFrame(caller.frameInfo.mFrame);
@@ -79,12 +81,22 @@ bool UnwindContext::UnwindToCallerContext(UnwindContext& caller, UnwindContextSt
         }
         caller.SetUnwindContextStatus(UnwindContextStatus::RELIABLE);
         return true;
+    } else if (frameInfo.GetFrameType() == FrameType::EXCLUSIVE) {
+        UnwindExclusiveBridgeToCaller(caller);
     } else {
     return frameInfo.mFrame.UnwindToCallerMachineFrame(caller.frameInfo, uwCtxStatus);
     }
     return true;
 }
 #endif
+
+void UnwindContext::UnwindExclusiveBridgeToCaller(UnwindContext& caller) const
+{
+    FrameAddress* stubFa = frameInfo.mFrame.GetFA()->callerFrameAddress;
+    caller.frameInfo.mFrame.SetFA(stubFa->callerFrameAddress);
+    caller.frameInfo.mFrame.SetIP(stubFa->returnAddress);
+    caller.SetUnwindContextStatus(UnwindContextStatus::RELIABLE);
+}
 
 void UnwindContext::GoIntoManagedCode()
 {

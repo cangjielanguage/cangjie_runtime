@@ -35,7 +35,7 @@ enum class FrameType {
     C2R_STUB = 6,
     NATIVE = 7,
     STACKGROW = 8,
-    EXSLUSIVE = 9,
+    EXCLUSIVE = 9,
 #ifdef INTERPRETER_ENABLED
     INTERPRETER = 10,
     INTERPRETER_C2I = 11,
@@ -181,7 +181,7 @@ public:
 
     bool IsC2RStubFrame() const;
 
-    bool IsExclusiveStubFrame() const;
+    bool IsExclusiveBridgeFrame() const;
 
 #if defined(ENABLE_BACKWARD_PTRAUTH_CFI)
     bool IsC2NExceptionStubFrame() const;
@@ -456,6 +456,8 @@ public:
     bool UnwindToCallerContext(UnwindContext& caller) const;
     bool UnwindToCallerContextFromN2CStub(UnwindContext& caller) const;
 #endif
+    // Unwind the ExclusiveScope bridge frame to the managed caller.
+    void UnwindExclusiveBridgeToCaller(UnwindContext& caller) const;
 
     void GoIntoManagedCode();
     void GoIntoNativeCode(const uint32_t* pc, void* fa);
