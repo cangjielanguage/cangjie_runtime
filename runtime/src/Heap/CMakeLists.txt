@@ -6,6 +6,7 @@
 
 set(SRC_LIST
     "Heap.cpp"
+    "HeapVerifier.cpp"
     "GcThreadPool.cpp"
 )
 

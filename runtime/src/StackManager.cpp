@@ -166,6 +166,14 @@ void StackManager::VisitStackRoots(const UnwindContext& topFrame, const RootVisi
     gcStackInfo.VisitStackRoots(func, mutator);
 }
 
+bool StackManager::VisitStackRootsForVerify(const UnwindContext& topFrame, const RootVisitor& func,
+                                            Mutator& mutator, VerifyStackRootContext& context)
+{
+    GCStackInfo gcStackInfo(&topFrame);
+    gcStackInfo.FillInStackTrace();
+    return gcStackInfo.VisitStackRootsForVerify(func, mutator, context);
+}
+
 void StackManager::VisitHeapReferencesOnStack(const UnwindContext& topFrame, const RootVisitor& rootVisitor,
     const DerivedPtrVisitor& derivedPtrVisitor, Mutator& mutator)
 {

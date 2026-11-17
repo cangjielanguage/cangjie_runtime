@@ -5,6 +5,7 @@
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 #include "Heap.h"
+#include "HeapVerifier.h"
 
 #include "Collector/CollectorProxy.h"
 #include "Collector/CollectorResources.h"
@@ -200,6 +201,7 @@ bool HeapImpl::ForEachObj(const std::function<void(BaseObject*)>& visitor, bool 
 void HeapImpl::Init(const HeapParam& param)
 {
     theSpace->Init(param);
+    HeapVerifier::Init();
     Heap::GetHeap().EnableGC(InitEnabledGCParam());
     collectorProxy.Init();
     collectorResources.Init();

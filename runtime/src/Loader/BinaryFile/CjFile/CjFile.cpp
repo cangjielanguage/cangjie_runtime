@@ -179,8 +179,11 @@ void CJFile::LoadCJFileMeta()
                 CangjieRuntime::stackGrowConfig != StackGrowConfig::STACK_GROW_OFF) ||
             (cJFileMeta.gcFlagsTbl.hasStackPointerMap == 1 &&
                 CangjieRuntime::stackGrowConfig != StackGrowConfig::STACK_GROW_ON)) {
-                LOG(RTLOG_FATAL, "The stackmap config are inconsistent. Check whether stack Grow is enabled.\n");
-            }
+            LOG(RTLOG_FATAL,
+                "The stackmap config is inconsistent for file %s: hasStackPointerMap: %u, runtime stackGrowConfig: %u",
+                GetBaseName().Str(), static_cast<unsigned>(cJFileMeta.gcFlagsTbl.hasStackPointerMap),
+                static_cast<unsigned>(CangjieRuntime::stackGrowConfig));
+        }
     }
 }
 

@@ -255,7 +255,9 @@ void* OpenCJEnvFile(const char* cjEnvFile)
 {
     void* handle = dlopen(cjEnvFile, RTLD_NOW);
     if (handle == nullptr) {
-        LOG(RTLOG_ERROR, "LoaderManager::RegisterLoadFunc: dlopen %s fail\n", cjEnvFile);
+        const char* error = dlerror();
+        LOG(RTLOG_ERROR, "LoaderManager::RegisterLoadFunc: dlopen %s failed: %s",
+            cjEnvFile, error != nullptr ? error : "no dynamic loader error");
     }
     return handle;
 }
@@ -264,9 +266,13 @@ CJEnvMethods* CreateCJEnvMethods(void* handle)
 {
     using GenEnvFunc = CJEnvMethods* (*)();
     const char* createEnvFuncMangledName = "_ZN4OHOS13CJEnvironment16CreateEnvMethodsEv";
+    // This lookup owns its error report; discard errors from earlier lookups.
+    (void)dlerror();
     void* getEnvFunc = dlsym(handle, createEnvFuncMangledName);
     if (getEnvFunc == nullptr) {
-        LOG(RTLOG_ERROR, "LoaderManager::RegisterLoadFunc: dlsym func `CJEnvironment::CreateEnvMethods()` fail\n");
+        const char* error = dlerror();
+        LOG(RTLOG_ERROR, "LoaderManager::RegisterLoadFunc: dlsym %s failed: %s",
+            createEnvFuncMangledName, error != nullptr ? error : "no dynamic loader error");
         return nullptr;
     }
 

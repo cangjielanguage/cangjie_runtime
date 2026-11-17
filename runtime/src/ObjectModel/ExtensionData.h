@@ -57,7 +57,9 @@ public:
     bool HasOuterTiFastPath() const { return (flag & 0b1) != 0; }
     TypeInfo* GetOuterTi(TypeInfo* childTi, U64 index) const
     {
-        CHECK(index < funcTableSize);
+        CHECK_DETAIL(index < funcTableSize,
+                     "GetOuterTi index out of range, childTi: %p, extension: %p, index: %llu, table size: %u",
+                     childTi, this, static_cast<unsigned long long>(index), static_cast<unsigned>(funcTableSize));
         if (!HasOuterTiFastPath()) {
             return nullptr;
         }

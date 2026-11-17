@@ -10,6 +10,7 @@
 
 #include "Base/CString.h"
 #include "Base/MemUtils.h"
+#include "LoaderManager.h"
 #include "ObjectModel/MClass.h"
 #include "ObjectManager.inline.h"
 #include "Sync/Sync.h"

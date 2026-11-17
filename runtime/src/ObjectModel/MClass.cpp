@@ -990,7 +990,8 @@ bool TypeInfo::IsEnumKind0()
     } else {
         enumInfo = GetEnumInfo();
     }
-    CHECK_DETAIL(enumInfo != nullptr, "EnumInfo is nullptr.");
+    CHECK_DETAIL(enumInfo != nullptr, "EnumInfo is nullptr, typeInfo: %s",
+                 GetName() == nullptr ? "<unknown>" : GetName());
     return enumInfo->IsEnumKind0();
 }
 
@@ -1005,7 +1006,8 @@ bool TypeInfo::IsEnumKind1()
     } else {
         enumInfo = GetEnumInfo();
     }
-    CHECK_DETAIL(enumInfo != nullptr, "EnumInfo is nullptr.");
+    CHECK_DETAIL(enumInfo != nullptr, "EnumInfo is nullptr, typeInfo: %s",
+                 GetName() == nullptr ? "<unknown>" : GetName());
     return enumInfo->IsEnumKind1();
 }
 

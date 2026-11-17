@@ -1349,7 +1349,10 @@ void RegionManager::ForwardRegion(RegionInfo* region)
 {
     CHECK_DETAIL(region->IsFromRegion() || region->IsLoneFromRegion() || ((region->IsThreadLocalRegion() ||
         region->GetRegionType() == RegionInfo::RegionType::RECENT_FULL_REGION) &&
-        (region->IsRoutingState() || region->IsCompacted())), "region type %u", region->GetRegionType());
+        (region->IsRoutingState() || region->IsCompacted())),
+        "invalid region state, region: %p, type: %u, alloc: %#zx, live bytes: %u",
+        region, static_cast<unsigned>(region->GetRegionType()),
+        static_cast<size_t>(region->GetRegionAllocPtr()), region->GetLiveByteCount());
 
     DLOG(FORWARD, "try forward region %p @[0x%zx+%zu, 0x%zx) type %u, live bytes %u",
         region, region->GetRegionStart(), region->GetRegionAllocatedSize(), region->GetRegionEnd(),

@@ -22,6 +22,7 @@
 #define MRT_TEST_CONCURRENT_MARK (false)
 
 namespace MapleRuntime {
+struct VerifyStackRootContext;
 // number of nanoseconds in a microsecond.
 constexpr uint64_t NS_PER_US = 1000;
 constexpr uint64_t NS_PER_S = 1000000000;
@@ -176,6 +177,9 @@ public:
     virtual void PreGarbageCollection(bool isConcurrent);
     virtual void PostGarbageCollection(uint64_t gcIndex);
 
+    // False means enumeration stopped; context retains the failing frame.
+    __attribute__((visibility("hidden"))) static bool VisitStackRootsForVerify(
+        const RootVisitor& visitor, RegSlotsMap& regSlotsMap, const FrameInfo& frame, VerifyStackRootContext& context);
     static void VisitStackRoots(const RootVisitor& visitor, RegSlotsMap& regSlotsMap, const FrameInfo& frame,
                                 Mutator& mutator);
 

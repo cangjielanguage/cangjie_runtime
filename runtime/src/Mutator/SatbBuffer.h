@@ -35,7 +35,8 @@ public:
         void Clear()
         {
             size_t size = reinterpret_cast<Uptr>(top) - reinterpret_cast<Uptr>(objectContainer);
-            CHECK_DETAIL((memset_s(objectContainer, sizeof(objectContainer), 0, size) == EOK), "memset fail\n");
+            CHECK_DETAIL((memset_s(objectContainer, sizeof(objectContainer), 0, size) == EOK),
+                         "SATB node clear failed, bytes: %zu, capacity: %zu", size, sizeof(objectContainer));
             top = objectContainer;
         }
         void Push(const BaseObject* obj)

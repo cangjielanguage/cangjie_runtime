@@ -36,6 +36,7 @@ const char* LOG_TYPE_NAMES[LOG_TYPE_NUMBER] = {
     "promote",
     "sweep",
     "local_region",
+    "heap_verify",
 };
 
 RTLogLevel LogFile::logLevel = InitLogLevel();
@@ -46,6 +47,9 @@ void LogFile::Init()
 #if defined(MRT_DEBUG) && (MRT_DEBUG == 1)
     OpenLogFiles();
 #endif
+    // The dedicated log is configured independently of heap verification,
+    // in both release and debug builds.
+    SetFlagWithEnv("MRT_LOG_HEAP_VERIFY", HEAP_VERIFY);
 }
 
 void LogFile::Fini() { CloseLogFiles(); }

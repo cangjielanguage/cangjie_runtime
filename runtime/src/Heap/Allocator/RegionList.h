@@ -270,11 +270,11 @@ private:
         RegionInfo* prev = region->GetPrevRegion();
         RegionInfo* next = region->GetNextRegion();
         if (prev != nullptr && prev->GetNextRegion() != region) {
-            LOG(RTLOG_FATAL, "illegal region node");
+            LOG(RTLOG_FATAL, "illegal region node %p: previous %p does not link to node", region, prev);
         }
 
         if (next != nullptr && next->GetPrevRegion() != region) {
-            LOG(RTLOG_FATAL, "illegal region node");
+            LOG(RTLOG_FATAL, "illegal region node %p: next %p does not link to node", region, next);
         }
     }
 #endif

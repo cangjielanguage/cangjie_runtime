@@ -48,7 +48,8 @@ void* Loader::LoadBinaryFile(const char* path)
     }
     void* handler = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
     if (handler == nullptr) {
-        LOG(RTLOG_ERROR, dlerror());
+        const char* error = dlerror();
+        LOG(RTLOG_ERROR, "dlopen %s failed: %s", path, error != nullptr ? error : "no dynamic loader error");
     }
     return handler;
 }

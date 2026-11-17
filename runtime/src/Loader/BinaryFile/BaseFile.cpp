@@ -18,7 +18,8 @@ BaseFile* BaseFile::CreateCJFile(FileType type, CString filePath, Uptr cfileMeta
         default:
             break;
     }
-    CHECK_DETAIL(baseFile != nullptr, "CreateFile fail");
+    CHECK_DETAIL(baseFile != nullptr, "CreateFile failed, file type: %d, path: %s",
+                 static_cast<int>(type), filePath.Str());
     return baseFile;
 }
 

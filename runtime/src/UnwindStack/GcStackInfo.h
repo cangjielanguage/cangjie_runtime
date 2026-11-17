@@ -15,6 +15,8 @@
 namespace MapleRuntime {
 #define TRACE_STACK_MAX_DEPTH 15
 
+struct VerifyStackRootContext;
+
 class GCStackInfo : public StackInfo {
 public:
     explicit GCStackInfo(const UnwindContext* context = nullptr) : StackInfo(context)
@@ -32,8 +34,13 @@ public:
     ~GCStackInfo() override = default;
     void FillInStackTrace() override;
     void VisitStackRoots(const RootVisitor& func, Mutator& mutator) const;
+    __attribute__((visibility("hidden"))) bool VisitStackRootsForVerify(
+        const RootVisitor& func, Mutator& mutator, VerifyStackRootContext& context) const;
     void VisitHeapReferencesOnStack(const RootVisitor& rootVisitor, const DerivedPtrVisitor& derivedPtrVisitor,
                                     Mutator& mutator) const;
+private:
+    template<bool forVerify>
+    bool VisitStackRootsImpl(const RootVisitor& func, Mutator& mutator, VerifyStackRootContext* context) const;
 };
 
 class RecordStackInfo : public GCStackInfo {

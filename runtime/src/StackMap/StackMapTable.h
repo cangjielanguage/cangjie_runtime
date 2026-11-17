@@ -333,7 +333,7 @@ public:
             case SIGNED32:
                 return static_cast<SlotBias>(static_cast<I32>(unsignedValue));
             default:
-                LOG(RTLOG_FATAL, "wrong length of base offset bits length");
+                LOG(RTLOG_FATAL, "wrong base offset bits length: %u at row: %u", headerInfo[BASE_OFF_BITS_LEN], row);
                 return static_cast<SlotBias>(unsignedValue);
         }
     }
