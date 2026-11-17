@@ -203,6 +203,20 @@ public type NonBlockingQueue<E> = ConcurrentLinkedQueue<E>
 
 /**
  * NonBlockingQueue is an unbounded nonblocking concurrent queue.
+ *
+ * The iterator is weakly consistent: it never returns a never-enqueued element, and it
+ * guarantees that every element that was committed (and not yet consumed) at
+ * the time the iterator is created is observed exactly once. If a concurrent
+ * producer is between allocated and committed updates inside a block, the
+ * iterator spin-waits for the in-flight sender (mirroring pop()/front());
+ * the wait is bounded under the default scheduler (schmon preemption) but is
+ * theoretically unbounded if a sender stalls inside its push window, so a
+ * full iteration may block for that long. No element that is still unconsumed
+ * is skipped: this includes elements already committed before creation and
+ * elements committed by a producer during the iteration (each observed exactly
+ * once). Elements consumed concurrently by remove() while the iteration is
+ * in progress may be skipped. Consequently, toArray() reflects a weakly
+ * consistent snapshot and may spin as well.
  */
 public class ConcurrentLinkedQueue<E> <: Collection<E> {
     private let front: AtomicReference<Block<E>>
@@ -336,6 +350,10 @@ public class ConcurrentLinkedQueue<E> <: Collection<E> {
     }
 
     public func toArray(): Array<E> {
+        // Weakly consistent snapshot: iterates via the ConcurrentLinkedQueue
+        // iterator (see the class doc for the concurrent semantics), so it may
+        // briefly spin-wait for in-flight senders and skips elements consumed
+        // concurrently during the copy.
         let estimatedSize = size
         let arr = if (estimatedSize > 0) {
             ArrayList<E>(estimatedSize)
@@ -350,6 +368,10 @@ public class ConcurrentLinkedQueue<E> <: Collection<E> {
 
     @Frozen
     public func iterator(): Iterator<E> {
+        // Weakly consistent iterator: never silently truncates. Every element
+        // committed (and not yet consumed) before creation is observed exactly
+        // once; elements concurrently removed during iteration may be skipped;
+        // the iterator briefly spin-waits on in-flight senders (see class doc).
         ConcurrentLinkedQueueIterator<E>(this, front.load())
     }
 }
@@ -404,9 +426,60 @@ class ConcurrentLinkedQueueIterator<E> <: Iterator<E> {
     @Frozen
     public func next(): ?E {
         while (hasNext) {
-            if (curIndex >= BUF_SIZE && !getNextBlock() || curIndex >= curBlock.committed.load()) {
+            let curCommitted = curBlock.committed.load()
+            if (curIndex >= BUF_SIZE) {
+                if (!getNextBlock()) {
+                    hasNext = false
+                    break
+                }
+                continue
+            }
+            if (curIndex >= curCommitted) {
+                // Mirrors pop()/front(): the single curCommitted snapshot is
+                // reused for both the "no more committed elements" check and
+                // the unfinished-sender check, so a producer's
+                // committed.fetchAdd racing between two separate loads cannot
+                // make the iterator terminate on a block whose slot curIndex
+                // has just become committed. While committed != allocated
+                // this block still has unfinished senders; retrying (instead
+                // of terminating) removes the premature termination that
+                // silently omitted elements already committed in later
+                // blocks. The precise guarantee: every element that was
+                // committed (and not yet consumed) before the iterator's
+                // creation is observed exactly once; elements concurrently
+                // consumed by remove() during iteration are skipped
+                // (curIndex = reserved below), which is standard
+                // weak-consistency behavior.
+                let (_, curAllocated) = curBlock.getAllocated()
+                if (curCommitted != curAllocated) {
+                    continue
+                }
                 hasNext = false
                 break
+            }
+            // Mirror pop()/front()'s read invariant: committed is a counter,
+            // not a prefix watermark, so concurrent senders may commit out of
+            // order (a higher-index sender increments committed before a
+            // lower-index sender has executed buffer[index] = element).
+            // Reading buffer[curIndex] while any in-flight sender exists could
+            // therefore observe the unwritten slot's zeroValue (a phantom
+            // element never enqueued). Wait until committed == allocated so
+            // every committed slot is fully written before trusting the read.
+            // Full-block short circuit: when committed == BUF_SIZE every slot
+            // is written, even if allocated overshoots (push fails at
+            // index >= BUF_SIZE after incrementing allocated without commit),
+            // so retrying would spin forever on an over-allocated full block.
+            // pop()/front() apply the same committed == BUF_SIZE bypass.
+            // Note: this deliberately compares the STALE loop-top curCommitted
+            // against a freshly read allocated (not a single snapshot). By
+            // monotonicity stale_committed <= committed <= allocated =
+            // curAllocatedRead, so equality forces all three equal: no
+            // in-flight sender, buffer[curIndex] fully written. Keep this
+            // two-load shape; do NOT replace the guard with 'curIndex <
+            // committed implies written' (false under out-of-order commits).
+            let (_, curAllocatedRead) = curBlock.getAllocated()
+            if (curCommitted != BUF_SIZE && curCommitted != curAllocatedRead) {
+                continue
             }
             let curElement = curBlock.buffer[curIndex]
             let reserved = curBlock.reserved.load()
