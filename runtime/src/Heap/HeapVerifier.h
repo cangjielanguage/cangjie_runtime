@@ -31,7 +31,7 @@ struct VerifyStackRootContext {
     }
 };
 
-class __attribute__((visibility("hidden"))) HeapVerifier {
+class HeapVerifier {
 public:
     enum class Checkpoint { PRE_GC, POST_GC };
 

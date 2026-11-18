@@ -59,7 +59,7 @@ HeapVerifier::Mode HeapVerifier::ReadModeFromEnv()
 
 // Verification is serialized by the GC's ScopedSTWLock. These buffers contain
 // no GC state: only their storage survives a checkpoint, never their bits.
-class __attribute__((visibility("hidden"))) VerifyVisitBitmap {
+class VerifyVisitBitmap {
 public:
     ~VerifyVisitBitmap() { Release(); }
 
@@ -225,7 +225,7 @@ private:
     size_t unitCount = 0;
 };
 
-class __attribute__((visibility("hidden"))) Verifier {
+class Verifier {
 public:
     explicit Verifier(size_t cycle) : gcCycle(cycle) {}
 

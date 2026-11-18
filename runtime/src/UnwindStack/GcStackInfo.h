@@ -34,7 +34,7 @@ public:
     ~GCStackInfo() override = default;
     void FillInStackTrace() override;
     void VisitStackRoots(const RootVisitor& func, Mutator& mutator) const;
-    __attribute__((visibility("hidden"))) bool VisitStackRootsForVerify(
+    bool VisitStackRootsForVerify(
         const RootVisitor& func, Mutator& mutator, VerifyStackRootContext& context) const;
     void VisitHeapReferencesOnStack(const RootVisitor& rootVisitor, const DerivedPtrVisitor& derivedPtrVisitor,
                                     Mutator& mutator) const;
