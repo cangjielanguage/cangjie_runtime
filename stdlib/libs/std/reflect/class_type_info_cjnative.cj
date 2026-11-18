@@ -181,7 +181,7 @@ public class ClassTypeInfo <: TypeInfo {
      * Searches the type info's public constructor by incoming parameter types.
      */
     public func getConstructor(parameterTypes: Array<TypeInfo>): ConstructorInfo {
-        getByNameAndParamTypes(constructors, constructorName, parameterTypes, "Can not find the specified constructor") {
+        getByNameAndParamTypes(constructors, constructorName, parameterTypes, "Cannot find the specified constructor.") {
             constructor => (constructorName, constructor.parameters)
         }
     }
@@ -190,7 +190,7 @@ public class ClassTypeInfo <: TypeInfo {
      * Searches the type info's public instance variable by incoming name.
      */
     public func getInstanceVariable(name: String): InstanceVariableInfo {
-        getByName(instanceVariables, name, "instance variable '${name}' in class ${qualifiedName} not found") {
+        getByName(instanceVariables, name, "Instance variable '${name}' in class ${qualifiedName} not found.") {
             instanceVariable => instanceVariable.name
         }
     }
@@ -199,7 +199,7 @@ public class ClassTypeInfo <: TypeInfo {
      * Searches the type info's public static variable by incoming name.
      */
     public func getStaticVariable(name: String): StaticVariableInfo {
-        getByName(staticVariables, name, "static variable '${name}' in class ${qualifiedName} not found") {
+        getByName(staticVariables, name, "Static variable '${name}' in class ${qualifiedName} not found.") {
             staticVariable => staticVariable.name
         }
     }
