@@ -195,7 +195,7 @@ enum ConvertResult<T> {
     Success(T) | Failure(String)
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte> @local?): (UInt64, UInt64, UInt64) {
     var baseInfos = match (typeBase) {
         case I8 => baseInfosInt8
@@ -218,7 +218,7 @@ func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte> @l
 }
 
 // OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
-@When[env == "ohos"]
+@When[local_mode_api != "on"]
 func getBaseInfos(typeBase: TypeBase, isNegative: Int64, rawData: Array<Byte>): (UInt64, UInt64, UInt64) {
     var baseInfos = match (typeBase) {
         case I8 => baseInfosInt8

@@ -134,6 +134,8 @@ def generate_cmake_defs(args):
         "-DCANGJIE_INCLUDE=" + (";".join(args.include) if args.include else ""),
         "-DCANGJIE_BUILD_STDLIB_WITH_COVERAGE=" + bool_to_opt(args.stdlib_coverage),
         "-DCANGJIE_ENABLE_ASAN_COV=" + bool_to_opt(args.asancov),
+        # Always pass the chosen value so it takes precedence over the CMake cache.
+        "-DCANGJIE_ENABLE_LOCAL_MODE_API=" + bool_to_opt(args.local_mode_api),
         "-DBUILD_GCC_TOOLCHAIN=" + (args.gcc_toolchain if args.gcc_toolchain and args.target is None else ""),
     ]
 
@@ -218,8 +220,12 @@ def build(args):
 
     if not os.path.exists(cmake_build_dir):
         os.makedirs(cmake_build_dir)
-        output = subprocess.Popen(cmake_command, cwd=cmake_build_dir, stdout=PIPE)
-        log_output(output)
+    # Re-run the configure step even if the build directory already exists, so that
+    # options given to this invocation (e.g. --local_mode_api) always take effect
+    # instead of silently reusing values cached by a previous build.
+    LOG.info("local API (@When[local_mode_api == \"on\"]): %s", "on" if args.local_mode_api else "off")
+    output = subprocess.Popen(cmake_command, cwd=cmake_build_dir, stdout=PIPE)
+    log_output(output)
 
     output = subprocess.Popen(build_cmd, cwd=cmake_build_dir, stdout=PIPE)
     log_output(output)
@@ -435,7 +441,16 @@ def main():
     parser_build.add_argument(
         "--gcc-toolchain", dest="gcc_toolchain", help="Specify GCC toolchain for Clang to use"
     )
-    parser_build.set_defaults(func=build)
+    local_mode_api = parser_build.add_mutually_exclusive_group()
+    local_mode_api.add_argument(
+        "--local_mode_api", dest="local_mode_api", action="store_true",
+        help="compile the experimental local-mode APIs of the standard library (default)"
+    )
+    local_mode_api.add_argument(
+        "--no_local_mode_api", dest="local_mode_api", action="store_false",
+        help="omit the experimental local-mode APIs of the standard library"
+    )
+    parser_build.set_defaults(func=build, local_mode_api=True)
 
     parser_install = subparsers.add_parser("install", help="install targets")
 

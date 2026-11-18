@@ -89,7 +89,7 @@ public struct LibC {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public unsafe static func mallocCString(str: String @local?): CString {
         var length: Int64 = str.size
         var cp: CPointer<UInt8> = LibC.malloc<UInt8>(count: length + 1)

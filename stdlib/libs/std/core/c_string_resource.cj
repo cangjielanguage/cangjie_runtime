@@ -29,7 +29,7 @@ func createStrFromCPointer(cp: CPointer<UInt8>): String {
     return String(cp, len)
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 @OverflowWrapping
 exclave func createStrLocalFromCPointer(cp: CPointer<UInt8>): String @local! {
     if (cp.isNull()) {

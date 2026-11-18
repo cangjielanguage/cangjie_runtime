@@ -26,16 +26,16 @@ public interface Collection<T> <: Iterable<T> {
         return Array<T>(this)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func isEmpty(this @local?): Bool {
         throw UnimplementedException("Current Type does not implement 'isEmpty' method for its @local? instance")
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func toArray(this @local?): Array<T> @local? {
         throw UnimplementedException("Current Type does not implement 'toArray' method for its @local? instance")
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func toArray(this @local!): Array<T> @local! {
         throw UnimplementedException("Current Type does not implement 'toArray' method for its @local! instance")
     }

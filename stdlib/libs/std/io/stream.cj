@@ -35,7 +35,7 @@ public interface InputStream {
      * @return number of bytes read and copied to the buffer (never zero) or 0 when end of stream reached
      */
     func read(buffer: Array<Byte>): Int64
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func read(this @local!, buffer: Array<Byte> @local!): Int64 {
         throw Exception()
     }
@@ -58,7 +58,7 @@ public interface OutputStream {
     func flush(): Unit {}
 
     // Keep new receiver-mode members after existing members to preserve dispatch slots.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func write(this @local!, buffer: Array<Byte> @local!): Unit {
         throw Exception()
     }
@@ -122,17 +122,17 @@ public interface Seekable {
     }
 
     // Keep new receiver-mode members after existing members to preserve dispatch slots.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func seek(this @local!, sp: SeekPosition): Int64 {
         throw Exception()
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     prop position: Int64 @local! {
         get() {
             exclave {seek(Current(0))}
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     prop remainLength: Int64 @local! {
         get() {
             exclave {
@@ -146,7 +146,7 @@ public interface Seekable {
             }
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     prop length: Int64 @local! {
         get() {
             exclave {

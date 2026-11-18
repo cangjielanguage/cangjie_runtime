@@ -96,7 +96,7 @@ public func exists(path: Path): Bool {
     exists(path._rawPath)
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public func exists(path: Path @local?): Bool {
     exists(path._rawPath)
 }
@@ -112,7 +112,7 @@ public func exists(path: String): Bool {
     }
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public func exists(path: String @local?): Bool {
     PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
 

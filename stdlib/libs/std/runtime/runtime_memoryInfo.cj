@@ -23,7 +23,7 @@ func getMaxCjHeapSize(): UIntNative
 @Intrinsic
 func getAllocatedCjHeapSize(): UIntNative
 
-@When[backend == "cjnative"]
+@When[backend == "cjnative" && local_mode_api == "on"]
 foreign func CJ_MCC_GetAllocatedLocalObjectSize(): UIntNative
 
 @Intrinsic
@@ -97,7 +97,7 @@ public func getAllocatedHeapSize(): Int64 {
  * unused chunk tails. Local objects live outside the Cangjie heap and are
  * therefore not part of getAllocatedHeapSize.
  */
-@When[backend == "cjnative" && env != "ohos"]
+@When[backend == "cjnative" && local_mode_api == "on"]
 public func getAllocatedLocalObjectSize(): Int64 {
     return Int64(unsafe { CJ_MCC_GetAllocatedLocalObjectSize() })
 }

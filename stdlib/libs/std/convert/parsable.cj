@@ -54,7 +54,7 @@ public interface RadixConvertible<T> {
     func toString(radix!: Int64): String
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 func parseCompInt(rawData: Array<Byte> @local?, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
     var num: UInt64 = 0
     var lineLength = 0
@@ -96,7 +96,7 @@ func parseCompInt(rawData: Array<Byte> @local?, formatBaseNum: UInt64, multmin: 
 }
 
 // OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
-@When[env == "ohos"]
+@When[local_mode_api != "on"]
 func parseCompInt(rawData: Array<Byte>, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
     var num: UInt64 = 0
     var lineLength = 0
@@ -799,7 +799,7 @@ extend Int64 <: Parsable<Int64> {
         return Int64(num)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     public static func parse(data: String @local?): Int64 {
         let (rawData, isNegative) = getDataAndFlag(data, true, "Int64")
@@ -942,7 +942,7 @@ extend UInt64 <: Parsable<UInt64> {
         return UInt64(parseCompInt(rawData, formatBaseNum, multmin, maxAbsVal))
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     public static func parse(data: String @local?): UInt64 {
         let (rawData, isNegative) = getDataAndFlag(data, false, "UInt64")
@@ -1024,7 +1024,7 @@ func getDataAndFlag(data: String, isSigned: Bool, typeName: String): (Array<Byte
     getDataAndFlagCore(data, isSigned, typeName, false)
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 exclave func getDataAndFlag(data: String @local?, isSigned: Bool, typeName: String): (Array<Byte>, Int64) @local? {
     if (data.isEmpty()) {
         throw IllegalArgumentException("The string is empty.")
@@ -1392,7 +1392,7 @@ extend Float64 <: Parsable<Float64> {
         parseFloat<Float64>(data)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public static func parse(data: String @local?): Float64 {
         parseFloat<Float64>(String(data))

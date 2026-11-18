@@ -15,11 +15,11 @@ public interface Iterable<E> {
     /* Returns an iterator over elements of type E. */
     func iterator(): Iterator<E>
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func iterator(this @local!): Iterator<E> @local! {
         throw IllegalStateException("Current Type does not implement 'iterator' method for its @local! instance")
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     func iterator(this @local?): Iterator<E> @local? {
         throw IllegalStateException("Current Type does not implement 'iterator' method for its @local? instance")
     }
@@ -35,7 +35,7 @@ public abstract class Iterator<T> <: Iterable<T> {
      * result has the known GC limitation documented on Option; use a heap-mode
      * iterator or consume a concrete payload type in non-generic code.
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public open func next(this @local!): ?T @local! {
         throw IllegalStateException("Current Iterator does not implement 'next' method for its @local! instance")
     }
@@ -43,7 +43,7 @@ public abstract class Iterator<T> <: Iterable<T> {
      * When this iterator is local, its result has the same generic
      * match-unpacking limitation as next(this @local!); see Option.
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public open func next(this @local?): ?T @local? {
         throw IllegalStateException("Current Iterator does not implement 'next' method for its @local? instance")
     }
@@ -51,10 +51,10 @@ public abstract class Iterator<T> <: Iterable<T> {
     @Frozen
     public init() {}
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!) {}
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local?) {}
 
     /*
@@ -65,10 +65,10 @@ public abstract class Iterator<T> <: Iterable<T> {
     @Frozen
     public func iterator(): Iterator<T> { this }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func iterator(this @local!): Iterator<T> @local! { this }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func iterator(this @local?): Iterator<T> @local? { this }
 }
 

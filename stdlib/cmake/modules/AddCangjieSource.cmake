@@ -11,6 +11,14 @@ set(CJNATIVE_BACKEND "cjnative")
 
 # Reusing this module must not enable experimental language features implicitly.
 option(CANGJIE_ENABLE_LOCAL_MODE "Enable experimental local mode for Cangjie libraries" OFF)
+# Value of the user-defined condition `local_mode_api` (see @When[local_mode_api == "on"]).
+# Passed as --cfg local_mode_api=on|off regardless of CANGJIE_ENABLE_LOCAL_MODE, because the
+# sources reference the condition in @When and cjc rejects undefined conditions.
+option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile declarations guarded by @When[local_mode_api == \"on\"]" OFF)
+# Compiling the local-mode APIs requires the parser to accept local-mode syntax.
+if(CANGJIE_ENABLE_LOCAL_MODE_API AND NOT CANGJIE_ENABLE_LOCAL_MODE)
+    message(FATAL_ERROR "CANGJIE_ENABLE_LOCAL_MODE_API=ON requires CANGJIE_ENABLE_LOCAL_MODE=ON")
+endif()
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
@@ -143,6 +151,18 @@ function(add_cangjie_library target_name)
     # OHOS therefore needs the parser flags too, even when @When omits those APIs.
     if(CANGJIE_ENABLE_LOCAL_MODE)
         list(APPEND cangjie_compile_flags "--experimental" "--enable-local-mode")
+    endif()
+
+    # The user-defined condition `local_mode_api` is independent of the parser flags above:
+    # sources reference it in @When, and cjc rejects @When that references an undefined
+    # condition. It is therefore always passed explicitly, even when
+    # CANGJIE_ENABLE_LOCAL_MODE is OFF, which yields a plain-only build. cjc also rejects a
+    # repeated key (e.g. another `--cfg local_mode_api=...` from CANGJIE_BUILD_ARGS), so the
+    # value cannot be bypassed silently.
+    if(CANGJIE_ENABLE_LOCAL_MODE_API)
+        list(APPEND cangjie_compile_flags "--cfg" "local_mode_api=on")
+    else()
+        list(APPEND cangjie_compile_flags "--cfg" "local_mode_api=off")
     endif()
 
     if (CANGJIELIB_IS_CJNATIVE_BACKEND)

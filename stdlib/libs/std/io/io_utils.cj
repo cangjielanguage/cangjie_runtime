@@ -87,7 +87,7 @@ public func readToEnd<T>(from: T): Array<Byte> where T <: InputStream & Seekable
     arr.slice(0, readSize)
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public exclave func readToEnd<T>(from: T @local!): Array<Byte> @local! where T <: InputStream & Seekable {
     let sum = from.length
     const MAX_DIRECT_ALLOC_SIZE: Int64 = 1 << 30  // 1 GB

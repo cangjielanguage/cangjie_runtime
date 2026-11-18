@@ -585,13 +585,13 @@ class ConcurrentHashMapEntryView<K, V> <: MapEntryView<K, V> {
 
     // ConcurrentHashMap is not adapted to local mode (it has no local members at all); no valid
     // instance exists in a local context, so the local form of MapEntryView is explicitly rejected.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop key: K @local? {
         get() {
             throw UnimplementedException("ConcurrentHashMapEntryView does not support local mode")
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public mut prop value: ?V @local! {
         get() {
             throw UnimplementedException("ConcurrentHashMapEntryView does not support local mode")

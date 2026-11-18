@@ -13,7 +13,7 @@ package std.core
  */
 var globalOutOfMemoryError = OutOfMemoryError()
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 @C
 func throwImplicitException(id: Int64, args: CPointer<Unit>): Unit {
     match (id) {
@@ -28,7 +28,7 @@ func throwImplicitException(id: Int64, args: CPointer<Unit>): Unit {
     }
 }
 
-@When[env == "ohos"]
+@When[local_mode_api != "on"]
 @C
 func throwImplicitException(id: Int64, args: CPointer<Unit>): Unit {
     match (id) {
@@ -38,7 +38,7 @@ func throwImplicitException(id: Int64, args: CPointer<Unit>): Unit {
         case 3 =>
             var msg = (args as CPointer<UInt8>).getOrThrow()
             throw IncompatiblePackageException(createStrFromCPointer(msg))
-        // LocalRegionOutOfMemoryError is unavailable on OHOS.
+        // LocalRegionOutOfMemoryError is only declared when local_mode_api is on.
         case 4 => throw OutOfMemoryError()
         case _ => ()
     }

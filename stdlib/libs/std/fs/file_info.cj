@@ -21,7 +21,7 @@ public struct FileInfo <: Equatable<FileInfo> {
     public init(path: Path) {
         this(path, true)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, path: Path @local!) {
         this(path, true)
     }
@@ -29,7 +29,7 @@ public struct FileInfo <: Equatable<FileInfo> {
     public init(path: String) {
         this(Path(path), true)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, path: String @local!) {
         this(Path(path) @local!, true)
     }
@@ -43,7 +43,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
         _path = toAbsolutePath(path)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, path: Path @local!, isCheckPath: Bool) {
         if (isCheckPath && !exists(path)) {
             throw FSException("The input path `${path}` does not exist.")
@@ -56,7 +56,7 @@ public struct FileInfo <: Equatable<FileInfo> {
             _path.fileName
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop name: String @local? {
         get() {
             exclave {
@@ -80,7 +80,7 @@ public struct FileInfo <: Equatable<FileInfo> {
             _path
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop path: Path @local? {
         get() {
             _path
@@ -125,7 +125,7 @@ public struct FileInfo <: Equatable<FileInfo> {
             return callNativeFunc(CJ_FS_PathSize, "Failed to get file size.")
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop size: Int64 @local? {
         get() {
             callNativeFunc(CJ_FS_PathSize, "Failed to get file size.")
@@ -220,7 +220,7 @@ public struct FileInfo <: Equatable<FileInfo> {
     /**
      * @throws FSException if cPath is invalid
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
@@ -239,7 +239,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
@@ -258,7 +258,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int8>, shouldFixLongPath!: Bool = true): Bool {
         unsafe {
             let raw = _path.toString()
@@ -281,7 +281,7 @@ public struct FileInfo <: Equatable<FileInfo> {
      * @throws FSException if cPath is invalid
      * @throws FSException if operation not permitted on Windows
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
         shouldFixLongPath!: Bool = true): Bool {
         unsafe {
@@ -305,7 +305,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
         shouldFixLongPath!: Bool = true): Bool {
         unsafe {
@@ -329,7 +329,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString, Bool) -> Int8>, flag: Bool,
         shouldFixLongPath!: Bool = true): Bool {
         unsafe {
@@ -356,7 +356,7 @@ public struct FileInfo <: Equatable<FileInfo> {
     /**
      * @throws FSException if `nativeFunction` returns negative error code
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
         unsafe {
             let raw = _path.toString()
@@ -375,7 +375,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func callNativeFunc(this @local?, nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
         unsafe {
             let raw = _path.toString()
@@ -394,7 +394,7 @@ public struct FileInfo <: Equatable<FileInfo> {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func callNativeFunc(nativeFunction: CFunc<(CString) -> Int64>, msg: String, shouldFixLongPath!: Bool = true): Int64 {
         unsafe {
             let raw = _path.toString()

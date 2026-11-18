@@ -43,7 +43,7 @@ public class StringBuilder <: ToString {
 
     // The buffer data stays heap-allocated: a plain field cannot hold an @local! array (type mismatch),
     // and the instance may outlive the region, so a local buffer would dangle.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!) {
         this.data = Array<UInt8>(defaultCapacity, repeat: 0)
         this.endIndex = 0
@@ -95,7 +95,7 @@ public class StringBuilder <: ToString {
         this.endIndex = 0
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, capacity: Int64) {
         if (capacity <= 0) {
             throw IllegalArgumentException("The capacity should be positive.")
@@ -134,14 +134,14 @@ public class StringBuilder <: ToString {
         return String(this.data[0..this.endIndex])
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func toString(this @local?): String @local! {
         let itemData: Array<UInt8> @local! = Array<UInt8>(this.endIndex, repeat: 0)
         this.data.copyTo(itemData, 0, 0, this.endIndex)
         String(itemData)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave func toStringLocal(this @local!): String @local! {
         let itemData: Array<UInt8> @local! = Array<UInt8>(this.endIndex, repeat: 0)
         this.data.copyTo(itemData, 0, 0, this.endIndex)
@@ -182,7 +182,7 @@ public class StringBuilder <: ToString {
     }
 
     // Note: do not implement it by delegating to a same-named plain method — under an @local! receiver a same-named call resolves recursively to itself.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave func growLocal(this @local!, minCapacity: Int64): Unit {
         if (this.data.size - this.endIndex >= minCapacity) {
             return
@@ -198,7 +198,7 @@ public class StringBuilder <: ToString {
     }
 
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave func appendRune(this @local!, r: Rune): Unit {
         let byte = UInt32(r)
         if (byte <= UTF8_1_MAX) {
@@ -214,7 +214,7 @@ public class StringBuilder <: ToString {
     }
 
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave func appendString(this @local!, str: String @local?): Unit {
         if (str.isEmpty()) {
             return
@@ -228,7 +228,7 @@ public class StringBuilder <: ToString {
 
     // Do not assign a local array to the plain field data (it confuses field metadata during GC scanning; SIGSEGV observed);
     // uniformly follow the "format into a String @local! -> appendString copies the bytes" template.
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave func appendValue<T>(this @local!, v: T @local?): Unit where T <: ToString {
         this.appendString(v.toString())
     }
@@ -248,7 +248,7 @@ public class StringBuilder <: ToString {
 
     @OverflowWrapping
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func append(str: String @local?): Unit {
         if (str.isEmpty()) {
             return
@@ -261,7 +261,7 @@ public class StringBuilder <: ToString {
     }
 
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func append(this @local!, str: String @local?): Unit {
         this.appendString(str)
     }
@@ -350,7 +350,7 @@ public class StringBuilder <: ToString {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func append<T>(this @local!, v: T @local?): Unit where T <: ToString {
         this.appendValue<T>(v)
     }
@@ -551,7 +551,7 @@ func numberToString(number: UInt64, endIndex: Int64, buffer: Array<Byte>): Unit 
 }
 
 @OverflowWrapping
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 exclave func numberToString(number: UInt64, endIndex: Int64, buffer: Array<Byte> @local!): Unit {
     //make sure endindex is smaller then buffer.size
     var next = endIndex - 1

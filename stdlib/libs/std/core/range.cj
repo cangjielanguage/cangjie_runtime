@@ -83,7 +83,7 @@ public struct Range<T> <: Iterable<T> where T <: Countable<T> & Comparable<T> & 
     }
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 extend<T> Range<T> <: Copyable where T <: Copyable {}
 
 public class RangeIterator<T> <: Iterator<T> where T <: Countable<T> & Comparable<T> & Equatable<T> {
