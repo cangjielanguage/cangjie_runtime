@@ -178,7 +178,7 @@ public:
     virtual void PostGarbageCollection(uint64_t gcIndex);
 
     // False means enumeration stopped; context retains the failing frame.
-    __attribute__((visibility("hidden"))) static bool VisitStackRootsForVerify(
+    static bool VisitStackRootsForVerify(
         const RootVisitor& visitor, RegSlotsMap& regSlotsMap, const FrameInfo& frame, VerifyStackRootContext& context);
     static void VisitStackRoots(const RootVisitor& visitor, RegSlotsMap& regSlotsMap, const FrameInfo& frame,
                                 Mutator& mutator);

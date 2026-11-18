@@ -356,7 +356,7 @@ public:
     }
 
     // Returns false on incomplete stack enumeration after releasing mutator guards.
-    __attribute__((visibility("hidden"))) bool VisitRootsForVerify(const RootVisitor& visitor,
+    bool VisitRootsForVerify(const RootVisitor& visitor,
                                                                  VerifyStackRootContext& context);
 
     ObjectRef* AddNativeFrameRoot(BaseObject* obj);
