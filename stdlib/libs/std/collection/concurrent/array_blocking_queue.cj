@@ -154,11 +154,31 @@ public class ArrayBlockingQueue<E> {
         receiveMonitor.unlock()
     }
 
+    // Mirrors the non-timeout variant: after registering in 'sendQSize',
+    // recheck the condition before the (timed) wait. Notifiers read the
+    // waiter counters without holding the monitor, so a waiter that skips
+    // this recheck can enter 'wait' after a notifier observed an empty
+    // waiter set: no notify is issued and the caller sleeps the whole
+    // timeout even though a slot is already writable (lost wakeup).
+    //
+    // Each round waits only for the REMAINING time until the caller's
+    // deadline, and exits once it is reached: otherwise a condition that
+    // never becomes true (eternally full queue) would re-enter
+    // 'wait(timeout:)' with the full timeout forever and 'add(element,
+    // timeout:)' would never return false at its deadline. Note
+    // 'Monitor.wait(timeout:)' requires a positive duration, so the
+    // deadline check must precede the call.
     private func waitForWritableSlot(timeout: Duration): Duration {
         receiveMonitor.lock()
         let startTime = MonoTime.now()
         sendQSize.fetchAdd(1)
-        receiveMonitor.wait(timeout: timeout)
+        while (isFull()) {
+            let elapsed = MonoTime.now() - startTime
+            if (elapsed >= timeout) {
+                break
+            }
+            receiveMonitor.wait(timeout: timeout - elapsed)
+        }
         sendQSize.fetchSub(1)
         let endTime = MonoTime.now()
         receiveMonitor.unlock()
@@ -222,11 +242,31 @@ public class ArrayBlockingQueue<E> {
         sendMonitor.unlock()
     }
 
+    // Mirrors the non-timeout variant: after registering in 'receiveQSize',
+    // recheck the condition before the (timed) wait. Notifiers read the
+    // waiter counters without holding the monitor, so a waiter that skips
+    // this recheck can enter 'wait' after a notifier observed an empty
+    // waiter set: no notify is issued and the caller sleeps the whole
+    // timeout even though an element is already readable (lost wakeup).
+    //
+    // Each round waits only for the REMAINING time until the caller's
+    // deadline, and exits once it is reached: otherwise a condition that
+    // never becomes true (eternally empty queue) would re-enter
+    // 'wait(timeout:)' with the full timeout forever and 'remove(timeout:)'
+    // would never return None at its deadline. Note
+    // 'Monitor.wait(timeout:)' requires a positive duration, so the
+    // deadline check must precede the call.
     private func waitForReadableSlot(timeout: Duration): Duration {
         sendMonitor.lock()
         let startTime = MonoTime.now()
         receiveQSize.fetchAdd(1)
-        sendMonitor.wait(timeout: timeout)
+        while (size == 0) {
+            let elapsed = MonoTime.now() - startTime
+            if (elapsed >= timeout) {
+                break
+            }
+            sendMonitor.wait(timeout: timeout - elapsed)
+        }
         receiveQSize.fetchSub(1)
         let endTime = MonoTime.now()
         sendMonitor.unlock()
