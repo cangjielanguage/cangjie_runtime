@@ -30,7 +30,7 @@ StdAst::ParseRes* CJ_AST_ParseDecl(void* fptr, const uint8_t* tokensBytes, int64
 
 StdAst::ParseRes* CJ_AST_ParsePropMemberDecl(void* fptr, const uint8_t* tokensBytes);
 
-StdAst::ParseRes* CJ_AST_ParsePrimaryConstructor(void* fptr, const uint8_t* tokensBytes);
+StdAst::ParseRes* CJ_AST_ParsePrimaryConstructor(void* fptr, const uint8_t* tokensBytes, int64_t* tokenCounter);
 
 StdAst::ParseRes* CJ_AST_ParsePattern(void* fptr, const uint8_t* tokensBytes, int64_t* tokenCounter);
 

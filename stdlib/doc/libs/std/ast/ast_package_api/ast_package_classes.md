@@ -6161,6 +6161,17 @@ public class FuncType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop arrow
 
 ```cangjie
@@ -12745,6 +12756,17 @@ public class ParenType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop lParen
 
 ```cangjie
@@ -13274,6 +13296,17 @@ public class PrefixType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop baseType
 
 ```cangjie
@@ -13708,6 +13741,17 @@ public class PrimitiveType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop keyword
 
 ```cangjie
@@ -14524,6 +14568,17 @@ public class QualifiedType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop baseType
 
 ```cangjie
@@ -15531,6 +15586,17 @@ public class RefType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop commas
 
 ```cangjie
@@ -17233,6 +17299,17 @@ public class ThisType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop keyword
 
 ```cangjie
@@ -19316,6 +19393,17 @@ public class TupleType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop lParen
 
 ```cangjie
@@ -19911,17 +19999,6 @@ public mut prop colon: Token
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - 当设置的 [Token](ast_package_structs.md#struct-token) 不是 ":" 操作符时，抛出异常。
 
-<!--Del_sink-->
-### prop modal
-
-```cangjie
-public mut prop modal: ModalInfo
-```
-
-功能：获取或设置类型节点末尾的模态类型，即 local 模态类型，如 `Array<Int64> @ local!` 中的 `@ local!`，用于指定该类型的模式。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
-
-类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
-<!--DelEnd_sink-->
 ### prop typeParameterName
 
 ```cangjie
@@ -19988,47 +20065,6 @@ typeNode.myDump(): FuncType {
   }
 ```
 
-<!--Del_sink-->
-### func modalTokens()
-
-```cangjie
-protected func modalTokens(): Tokens
-```
-
-功能：获取类型节点末尾模态标注对应的 [Tokens](ast_package_classes.md#class-tokens) 序列，供子类在 [toTokens](#func-totokens) 的实现末尾追加。当类型节点没有末尾模态标注时，返回空的 [Tokens](ast_package_classes.md#class-tokens)。
-
-返回值：
-
-- [Tokens](ast_package_classes.md#class-tokens) - 类型节点末尾模态标注对应的 [Tokens](ast_package_classes.md#class-tokens) 序列。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import std.ast.*
-
-// 在子类中调用
-extend PrimitiveType {
-    public func myModalTokens(): Tokens {
-        return modalTokens()
-    }
-}
-
-main(): Unit {
-    // 创建 TypeNode 的子类
-    let typeNode = PrimitiveType(quote(Int64))
-
-    // 输出末尾模态标注对应的 Tokens 数量
-    println("typeNode.myModalTokens().size: ${typeNode.myModalTokens().size}")
-}
-```
-
-运行结果：
-
-```text
-typeNode.myModalTokens().size: 0
-```
-<!--DelEnd_sink-->
 ### func toTokens()
 
 ```cangjie
@@ -21298,6 +21334,17 @@ public class VArrayType <: TypeNode {
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+功能：获取或设置类型节点末尾的模态类型。未标注模式时为空的 [ModalInfo](ast_package_classes.md#class-modalinfo) 对象。
+
+类型：[ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop dollar
 
 ```cangjie
@@ -22665,6 +22712,7 @@ main(): Unit {
 Visiting ExceptTypePattern
 ```
 
+<!--Del_sink-->
 ### func visit(ExclaveExpr)
 
 ```cangjie
@@ -22711,7 +22759,7 @@ main(): Unit {
 ```text
 Visiting ExclaveExpr
 ```
-
+<!--DelEnd_sink-->
 ### func visit(Expr)
 
 ```cangjie
@@ -23893,6 +23941,7 @@ main(): Unit {
 Visiting MemberAccess
 ```
 
+<!--Del_sink-->
 ### func visit(ModalInfo)
 
 ```cangjie
@@ -23931,7 +23980,7 @@ main(): Unit {
 ```text
 Visiting ModalInfo
 ```
-
+<!--DelEnd_sink-->
 ### func visit(Modifier)
 
 ```cangjie
@@ -24989,6 +25038,7 @@ main(): Unit {
 Visiting SynchronizedExpr
 ```
 
+<!--Del_sink-->
 ### func visit(ThisParam)
 
 ```cangjie
@@ -25027,7 +25077,7 @@ main(): Unit {
 ```text
 Visiting ThisParam
 ```
-
+<!--DelEnd_sink-->
 ### func visit(ThisType)
 
 ```cangjie

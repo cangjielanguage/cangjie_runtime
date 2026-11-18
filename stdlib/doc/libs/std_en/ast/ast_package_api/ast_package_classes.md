@@ -3207,6 +3207,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Purpose: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop arrow
 
 ```cangjie
@@ -6720,6 +6731,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop lParen
 
 ```cangjie
@@ -6964,6 +6986,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop baseType
 
 ```cangjie
@@ -7174,6 +7207,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop keyword
 
 ```cangjie
@@ -7589,6 +7633,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop baseType
 
 ```cangjie
@@ -8161,6 +8216,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Purpose: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop commas
 
 ```cangjie
@@ -9097,6 +9163,17 @@ Parent Types:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop keyword
 
 ```cangjie
@@ -10091,6 +10168,17 @@ Parent Type:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop lParen
 
 ```cangjie
@@ -10409,17 +10497,6 @@ Exceptions:
 
 - [ASTException](ast_package_exceptions.md#class-astexception) - Thrown when the set [Token](ast_package_structs.md#struct-token) is not the ":" operator.
 
-<!--Del_sink-->
-### prop modal
-
-```cangjie
-public mut prop modal: ModalInfo
-```
-
-Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
-
-Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
-<!--DelEnd_sink-->
 ### prop typeParameterName
 
 ```cangjie
@@ -10470,19 +10547,6 @@ Returns:
 
 - [String](../../core/core_package_api/core_package_structs.md#struct-string) - The formatted output content.
 
-<!--Del_sink-->
-### func modalTokens()
-
-```cangjie
-protected func modalTokens(): Tokens
-```
-
-Function: Gets the [Tokens](ast_package_classes.md#class-tokens) sequence corresponding to the modal annotation at the end of the type node, for subclasses to append at the end of their [toTokens](#func-totokens) implementation. Returns an empty [Tokens](ast_package_classes.md#class-tokens) when the type node has no trailing modal annotation.
-
-Returns:
-
-- [Tokens](ast_package_classes.md#class-tokens) - The [Tokens](ast_package_classes.md#class-tokens) sequence corresponding to the modal annotation at the end of the type node.
-<!--DelEnd_sink-->
 ## class TypePattern
 
 ```cangjie
@@ -10795,6 +10859,17 @@ Parent Types:
 
 - [TypeNode](#class-typenode)
 
+<!--Del_sink-->
+### prop modal
+
+```cangjie
+public mut prop modal: ModalInfo
+```
+
+Function: Gets or sets the modal type at the end of the type node, that is, the local modal type, such as `@ local!` in `Array<Int64> @ local!`, which is used to specify the mode of the type. When no mode is annotated, it is an empty [ModalInfo](ast_package_classes.md#class-modalinfo) object.
+
+Type: [ModalInfo](ast_package_classes.md#class-modalinfo)
+<!--DelEnd_sink-->
 ### prop dollar
 
 ```cangjie
@@ -11469,6 +11544,7 @@ Parameters:
 
 - _: [ExceptTypePattern](ast_package_classes.md#class-excepttypepattern) - The node being traversed of type [ExceptTypePattern](ast_package_classes.md#class-excepttypepattern).
 
+<!--Del_sink-->
 ### func visit(ExclaveExpr)
 
 ```cangjie
@@ -11480,7 +11556,7 @@ Function: Defines the operation when visiting a node, requires override.
 Parameters:
 
 - _: [ExclaveExpr](ast_package_classes.md#class-exclaveexpr) - The node being traversed of type [ExclaveExpr](ast_package_classes.md#class-exclaveexpr).
-
+<!--DelEnd_sink-->
 ### func visit(Expr)
 
 ```cangjie
@@ -11830,6 +11906,7 @@ Parameters:
 
 - _: [MemberAccess](ast_package_classes.md#class-memberaccess) - The node being traversed of type [MemberAccess](ast_package_classes.md#class-memberaccess).
 
+<!--Del_sink-->
 ### func visit(ModalInfo)
 
 ```cangjie
@@ -11841,7 +11918,7 @@ Function: Defines the operation when visiting a node, requires override.
 Parameters:
 
 - _: [ModalInfo](ast_package_classes.md#class-modalinfo) - The node being traversed of type [ModalInfo](ast_package_classes.md#class-modalinfo).
-
+<!--DelEnd_sink-->
 ### func visit(Modifier)
 
 ```cangjie
@@ -12154,6 +12231,7 @@ Parameters:
 
 - _: [SynchronizedExpr](ast_package_classes.md#class-synchronizedexpr) - The node being traversed of type [SynchronizedExpr](ast_package_classes.md#class-synchronizedexpr).
 
+<!--Del_sink-->
 ### func visit(ThisParam)
 
 ```cangjie
@@ -12165,7 +12243,7 @@ Function: Defines the operation when visiting a node, requires override.
 Parameters:
 
 - _: [ThisParam](ast_package_classes.md#class-thisparam) - The node being traversed of type [ThisParam](ast_package_classes.md#class-thisparam).
-
+<!--DelEnd_sink-->
 ### func visit(ThisType)
 
 ```cangjie

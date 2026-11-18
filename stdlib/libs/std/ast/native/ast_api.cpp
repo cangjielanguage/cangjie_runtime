@@ -50,12 +50,53 @@ const GlobalOptions* GetGlobalOptions(void* fptr)
     return &mc->ci->invocation.globalOptions;
 }
 
+// CANGJIE_AST_LOCAL_MODE_API mirrors CANGJIE_ENABLE_LOCAL_MODE_API (see this
+// directory's CMakeLists.txt): the local-mode APIs are compiled into the
+// library. Together with __ohos__ (local mode is always disabled there,
+// consistent with ParserImpl::IsLocalModeEnabled()) it decides whether local
+// mode may be enabled below. When the APIs are compiled out, the cj-side
+// TokenKind/PATTERNS and the AST builders no longer describe exclave/demode,
+// so the lexer and the parsers must not produce such tokens or nodes either:
+// they would surface as ILLEGAL tokens and unsupported-node errors and break
+// the toTokens()/reparse round-trip.
+
 /// Lexer does not take compile options in its constructor, set the related ones here.
-/// Local mode is enabled by default when there is no compile option context.
+/// Local mode is enabled by default when there is no compile option context,
+/// except on OHOS or when the local-mode APIs are compiled out of the library.
 void SetLexerOptions(Lexer& lex, const GlobalOptions* opts)
 {
+#if defined(__ohos__) || !defined(CANGJIE_AST_LOCAL_MODE_API)
+    lex.SetLocalModeEnabled(false);
+#else
     lex.SetLocalModeEnabled(!opts || opts->enableLocalMode);
+#endif
     lex.SetEHEnabled(opts && opts->enableEH);
+}
+
+/// Options handed to every Parser constructed below. The Parser enables local
+/// mode by default when it gets no compile options, except on OHOS where it is
+/// always disabled. Keep that behavior while the local-mode APIs are compiled
+/// in; otherwise return options with local mode off (a copy of the macro
+/// context options, or plain defaults without a macro context) so that the
+/// parser never produces local-mode nodes the cj side can no longer represent.
+const GlobalOptions* GetParserOptions(void* fptr)
+{
+#if defined(__ohos__) || defined(CANGJIE_AST_LOCAL_MODE_API)
+    return GetGlobalOptions(fptr);
+#else
+    const GlobalOptions* opts = GetGlobalOptions(fptr);
+    if (opts != nullptr && !opts->enableLocalMode) {
+        return opts;
+    }
+    // offOpts is a per-thread first-call snapshot: only enableLocalMode is
+    // re-forced to false on every call; every other field is frozen at the value
+    // of the first macro context that reached this branch on the current thread.
+    // thread_local gives each thread its own instance, so this helper itself is
+    // safe under concurrent callers.
+    static thread_local GlobalOptions offOpts = (opts != nullptr) ? *opts : GlobalOptions();
+    offOpts.enableLocalMode = false;
+    return &offOpts;
+#endif
 }
 
 std::string ParseWithError(
@@ -74,7 +115,7 @@ std::string ParseWithError(
         diag.DisableScopeCheck();
     }
     diag.SetDisableWarning(true);
-    Parser declParser(fileID, tokenStr, diag, sm, false, GetGlobalOptions(fptr));
+    Parser declParser(fileID, tokenStr, diag, sm, false, GetParserOptions(fptr));
     if (kind == ParseKind::PROGRAM) {
         declParser.ParseTopLevel();
     } else if (kind == ParseKind::EXPR) {
@@ -238,7 +279,7 @@ ParseRes* CJ_AST_ParseExpr(void* fptr, const uint8_t* tokensBytes, int64_t* toke
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
+    Parser parser(tokens, diag, sm, false, GetParserOptions(fptr));
     auto expr = parser.ParseExprLibast();
     while (parser.Skip(TokenKind::NL) || parser.Skip(TokenKind::SEMI)) {
     }
@@ -278,7 +319,7 @@ ParseRes* CJ_AST_ParseAnnotationArguments(const uint8_t* tokensBytes)
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false);
+    Parser parser(tokens, diag, sm, false, GetParserOptions(nullptr));
     auto node = parser.ParseCustomAnnotation();
 
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
@@ -299,7 +340,7 @@ ParseRes* CJ_AST_ParsePattern(void* fptr, const uint8_t* tokensBytes, int64_t* t
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
+    Parser parser(tokens, diag, sm, false, GetParserOptions(fptr));
     auto node = parser.ParsePattern();
 
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
@@ -331,7 +372,7 @@ ParseRes* CJ_AST_ParseType(void* fptr, const uint8_t* tokensBytes, int64_t* toke
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
+    Parser parser(tokens, diag, sm, false, GetParserOptions(fptr));
     diag.EmitCategoryDiagnostics(DiagCategory::PARSE);
     auto node = parser.ParseType();
 
@@ -355,7 +396,8 @@ ParseRes* CJ_AST_ParseType(void* fptr, const uint8_t* tokensBytes, int64_t* toke
     return FillSuccessParseRes(result, node.get(), tokenCounter, parser.GetProcessedTokens());
 }
 
-ParseRes* CJ_ParseDeclCommon(void* fptr, const uint8_t* tokensBytes, ScopeKind scopeKind, int64_t* tokenCounter)
+ParseRes* CJ_ParseDeclCommon(void* fptr, const uint8_t* tokensBytes, ScopeKind scopeKind, int64_t* tokenCounter,
+    bool requireSingleParamList = false)
 {
     Cangjie::ICE::TriggerPointSetter iceSetter(CompileStage::PARSE);
     std::vector<Token> tokens = TokenSerialization::GetTokensFromBytes(tokensBytes);
@@ -370,7 +412,7 @@ ParseRes* CJ_ParseDeclCommon(void* fptr, const uint8_t* tokensBytes, ScopeKind s
     }
     diag.SetDisableWarning(true);
     diag.EnableCheckRangeErrorCodeRatherICE();
-    Parser declParser(tokens, diag, sm, false, GetGlobalOptions(fptr));
+    Parser declParser(tokens, diag, sm, false, GetParserOptions(fptr));
     // Using unknown_scope to differ normal parser and parser in libast. Normal parsing step has solid scope.
     auto decl = declParser.ParseDecl(scopeKind);
 
@@ -393,6 +435,19 @@ ParseRes* CJ_ParseDeclCommon(void* fptr, const uint8_t* tokensBytes, ScopeKind s
         result->eMsg[errMsg.size()] = '\0';
         return result;
     }
+    // The libast FFI protocol is "parse exactly one decl and consume all input tokens".
+    // For the primary constructor entry, a second parameter list (named-parameter syntax
+    // like 'foo(a)(b)') would be silently dropped by the deserializer which only reads
+    // the first one, so reject it here.
+    if (requireSingleParamList && decl->astKind == AST::ASTKind::PRIMARY_CTOR_DECL) {
+        auto& ctorDecl = static_cast<const AST::PrimaryCtorDecl&>(*decl);
+        if (ctorDecl.funcBody && ctorDecl.funcBody->paramLists.size() > 1) {
+            std::string errMsg = "unexpected extra parameter list after primary constructor parameters";
+            result->node = nullptr;
+            result->eMsg = CloneString(errMsg, errMsg.size() + 1);
+            return result;
+        }
+    }
     NodeSerialization::NodeWriter nodeWriter(decl.get());
     if (tokenCounter) {
         *tokenCounter = static_cast<int64_t>(declParser.GetProcessedTokens());
@@ -412,9 +467,9 @@ ParseRes* CJ_AST_ParsePropMemberDecl(void* fptr, const uint8_t* tokensBytes)
     return CJ_ParseDeclCommon(fptr, tokensBytes, ScopeKind::PROP_MEMBER_GETTER_BODY, nullptr);
 }
 
-ParseRes* CJ_AST_ParsePrimaryConstructor(void* fptr, const uint8_t* tokensBytes)
+ParseRes* CJ_AST_ParsePrimaryConstructor(void* fptr, const uint8_t* tokensBytes, int64_t* tokenCounter)
 {
-    return CJ_ParseDeclCommon(fptr, tokensBytes, ScopeKind::CLASS_BODY, nullptr);
+    return CJ_ParseDeclCommon(fptr, tokensBytes, ScopeKind::CLASS_BODY, tokenCounter, true);
 }
 
 ParseRes* CJ_AST_ParseTopLevel(void* fptr, const uint8_t* tokensBytes)
@@ -424,7 +479,7 @@ ParseRes* CJ_AST_ParseTopLevel(void* fptr, const uint8_t* tokensBytes)
     DiagnosticEngine diag;
     SourceManager sm;
     InitParseDiagnostic(diag, sm);
-    Parser parser(tokens, diag, sm, false, GetGlobalOptions(fptr));
+    Parser parser(tokens, diag, sm, false, GetParserOptions(fptr));
     auto file = parser.ParseTopLevel();
     ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
     // result free on cangjie side

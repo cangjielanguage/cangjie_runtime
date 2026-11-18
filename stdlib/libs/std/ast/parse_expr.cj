@@ -227,7 +227,7 @@ func createCallExpr(expr: ASTFormat_Expr): Expr {
     var args = ArrayList<Argument>(argSrc.size, {i => createArgument(argSrc[i])})
     var rParen = Token(TokenKind.RPAREN).addPosition(callExpr.GetRightParenPos())
     var call = CallExpr(childExpr, lParen, args, rParen)
-    call.modal = createModalInfo(callExpr.GetModal())
+    buildModalFrom(call, callExpr)
     return call
 }
 
@@ -644,19 +644,8 @@ func createPrimitiveTypeExpr(expr: ASTFormat_Expr, exprBase: ASTFormat_NodeBase)
     let beginPos = exprBase.GetBegin()
     var kind = Token(TokenKindHelper.getPrimitiveTypeTokenKind(typeKind)).addPosition(beginPos)
     var primExpr = PrimitiveTypeExpr(kind)
-    primExpr.modal = createModalInfo(primitiveTypeExpr.GetModal())
+    buildModalFrom(primExpr, primitiveTypeExpr)
     return primExpr
-}
-
-func createExclaveExpr(expr: ASTFormat_Expr, exprBase: ASTFormat_NodeBase): Expr {
-    var exclaveExpr = match (expr.GetExprAsExclaveExpr()) {
-        case Some(v) => v
-        case None => throw ParseASTException()
-    }
-    var exclaveToken = Token(TokenKind.EXCLAVE).addPosition(exclaveExpr.GetExclavePos())
-    var block = generateBlock(exclaveExpr.GetBody())
-    var node = ExclaveExpr(exclaveToken, block)
-    return node
 }
 
 func createArrayLiteral(expr: ASTFormat_Expr): Expr {
@@ -894,3 +883,4 @@ func createMacroExpandExpr(expr: ASTFormat_Expr) {
         case None => throw ParseASTException("Failed to create the 'MacroExpandExpr' node.")
     }
 }
+

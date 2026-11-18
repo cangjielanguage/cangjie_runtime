@@ -88,6 +88,14 @@ if(CANGJIE_BUILD_STDLIB_WITH_COVERAGE)
     target_compile_options(${libname}-objs PUBLIC "-fno-exceptions")
     target_compile_definitions(${libname}-objs PRIVATE CANGJIE_ENABLE_GCOV)
 endif()
+# CANGJIE_AST_LOCAL_MODE_API tells ast_api.cpp whether the local-mode APIs are
+# compiled into the library. When they are not (CANGJIE_ENABLE_LOCAL_MODE_API=OFF,
+# the AddCangjieSource default), the cj side of std.ast trims the local-mode
+# tokens and AST builders, so the FFI's lexer and parsers must keep local mode
+# off; OHOS is handled by __ohos__ in the source.
+if(CANGJIE_ENABLE_LOCAL_MODE_API)
+    target_compile_definitions(${libname}-objs PRIVATE CANGJIE_AST_LOCAL_MODE_API)
+endif()
 target_include_directories(${libname}-objs PRIVATE ${CANGJIE_INC_DIR} ${CMAKE_BINARY_DIR}/include ${FLATBUFFERS_INCLUDE_DIR})
 
 set(TARGET_AR ar)

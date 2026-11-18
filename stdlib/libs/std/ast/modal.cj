@@ -18,6 +18,7 @@ package std.ast
  * this dimension requires coordinated compiler, schema, and conversion updates;
  * an independent mode dimension needs its own representation.
  */
+@When[local_mode_api == "on"]
 public enum ASTMode {
     MODAL_NONE |
     MODAL_NOT |
@@ -61,6 +62,7 @@ public enum ASTMode {
 
 // A parsed postfix modal such as `@local!` / `@local?` / `@~local`, attached to a Type, CallExpr,
 // PrimitiveTypeExpr, FuncDecl or ThisParam. `isEmpty()` is true when there is no modal.
+@When[local_mode_api == "on"]
 public class ModalInfo {
     init() {}
     init(at: Token, local: Token, mode: ASTMode, marker: Token) {
@@ -159,6 +161,7 @@ public class ModalInfo {
 }
 
 // Build a ModalInfo from an ASTFormat_ModalInfo. Returns an empty ModalInfo when absent.
+@When[local_mode_api == "on"]
 func createModalInfo(modal: Option<ASTFormat_ModalInfo>): ModalInfo {
     var info = match (modal) {
         case Some(v) => v

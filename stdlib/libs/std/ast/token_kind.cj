@@ -178,8 +178,8 @@ public enum TokenKind <: ToString {
     | THROWING /*  "throwing"         */
     | DOUBLE_COLON /*  "::"               */
     | FEATURES /*   "features"         */
-    | EXCLAVE /*  "exclave"          */
-    | DEMODE /*   "demode"           */
+    | @When[local_mode_api == "on"] EXCLAVE /*  "exclave"          */
+    | @When[local_mode_api == "on"] DEMODE /*   "demode"           */
     | ...
 
     public operator func ==(right: TokenKind): Bool {
@@ -844,19 +844,11 @@ public enum TokenKind <: ToString {
                 case FEATURES => true
                 case _ => false
             }
-            case EXCLAVE => match (right) {
-                case EXCLAVE => true
-                case _ => false
-            }
-            case DEMODE => match (right) {
-                case DEMODE => true
-                case _ => false
-            }
             case ILLEGAL => match (right) {
                 case ILLEGAL => true
                 case _ => false
             }
-            case _ => false
+            case _ => eqKindVariant(this, right)
         }
     }
 
@@ -1031,10 +1023,8 @@ public enum TokenKind <: ToString {
             case RESUME => return "RESUME"
             case THROWING => return "THROWING"
             case FEATURES => return "FEATURES"
-            case EXCLAVE => return "EXCLAVE"
-            case DEMODE => return "DEMODE"
             case ILLEGAL => return "ILLEGAL"
-            case _ => return "INVALID_TOKENKIND"
+            case _ => return kindToStringVariant(this)
         }
     }
 
@@ -1075,7 +1065,7 @@ public enum TokenKind <: ToString {
  * XXX: To add TokenPrecedence? Use map if map can solve the problem.
  * The ORDER MUST be the SAME as the ones in Tokens.inc.
  */
-let PATTERNS: Array<(TokenKind, String, String)> = [
+let BASE_PATTERNS: Array<(TokenKind, String, String)> = [
     (TokenKind.DOT, "dot", "."),
     (TokenKind.COMMA, "comma", ","),
     (TokenKind.LPAREN, "l_paren", "("),
@@ -1241,9 +1231,8 @@ let PATTERNS: Array<(TokenKind, String, String)> = [
     (TokenKind.ILLEGAL, "illegal", ""),
     (TokenKind.DOUBLE_COLON, "double_colon", "::"),
     (TokenKind.FEATURES, "features", "features"),
-    (TokenKind.EXCLAVE, "exclave", "exclave"),
-    (TokenKind.DEMODE, "demode", "demode"),
 ]
+let PATTERNS: Array<(TokenKind, String, String)> = BASE_PATTERNS.concat(getVariantPatterns())
 
 /**
  * Conversion function for Enum to UInt16
@@ -1415,9 +1404,7 @@ func getTokenID(tk: TokenKind): UInt16 {
         case TokenKind.HANDLE => return 161
         case TokenKind.DOUBLE_COLON => return 163
         case TokenKind.FEATURES => return 164
-        case TokenKind.EXCLAVE => return 165
-        case TokenKind.DEMODE => return 166
-        case _ => return 162
+        case _ => return getTokenIDVariant(tk)
     }
 }
 

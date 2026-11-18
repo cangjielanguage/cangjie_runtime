@@ -10,6 +10,8 @@ package std.ast
 
 public abstract class Visitor {
     private var breakTraverseFlag = false
+    
+    @When[local_mode_api == "on"]
     func isTraversalStopped(): Bool {
         return breakTraverseFlag
     }
@@ -212,8 +214,11 @@ public abstract class Visitor {
 
     protected open func visit(_: MacroExpandParam): Unit {}
     // Keep new overloads after existing entries to preserve virtual method slots.
+    @When[local_mode_api == "on"]
     protected open func visit(_: ExclaveExpr): Unit {}
+    @When[local_mode_api == "on"]
     protected open func visit(_: ThisParam): Unit {}
+    @When[local_mode_api == "on"]
     protected open func visit(_: ModalInfo): Unit {}
 
 }
