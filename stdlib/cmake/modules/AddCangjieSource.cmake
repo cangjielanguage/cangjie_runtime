@@ -176,10 +176,12 @@ function(add_cangjie_library target_name)
     endif()
 
     set(MKDIR_TEMP_FILES_CMD)
-    # append backend-options
-    list(LENGTH CANGJIELIB_OPTS options_length)
+    # append backend-options. cmake_parse_arguments stores the BACKEND_OPTS
+    # values in CANGJIELIB_BACKEND_OPTS; the former CANGJIELIB_OPTS variable
+    # was never set, so the documented option was silently dropped.
+    list(LENGTH CANGJIELIB_BACKEND_OPTS options_length)
     if(NOT (options_length EQUAL 0))
-        list(APPEND cangjie_compile_flags ${CANGJIELIB_OPTS})
+        list(APPEND cangjie_compile_flags ${CANGJIELIB_BACKEND_OPTS})
     endif()
     # append config options
     if(NOT ("${CANGJIELIB_CONFIG_OPTS}" STREQUAL ""))

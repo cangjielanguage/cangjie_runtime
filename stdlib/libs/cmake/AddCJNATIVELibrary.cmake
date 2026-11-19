@@ -1028,6 +1028,9 @@ add_cangjie_library(
     IS_STDLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
+    # The package declares its preset types with the experimental @ArkTS
+    # interop capability, so the stdlib build opts in explicitly.
+    BACKEND_OPTS --experimental
     PACKAGE_NAME "interop.arkts"
     MODULE_NAME "std"
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop/arkts
