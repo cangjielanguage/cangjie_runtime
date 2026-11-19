@@ -1601,6 +1601,7 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```
 
 <!--DelEnd_sink-->
+<!--Del-->
 ## interface ForeignRuntime\<T> where T <: ForeignRuntime\<T>
 
 ```cangjie
@@ -1618,6 +1619,10 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
 Function: This interface represents a foreign runtime.
 
 Member accesses, index accesses, calls, and member and element updates on [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> instances, and implicit conversions to [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T>, are implemented by the static functions of this interface.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 ### static func fromExtern\<R>(Extern\<T>)
 
@@ -1770,6 +1775,7 @@ Exceptions:
 - [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - Thrown if the conversion fails.
 - [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
 
+<!--DelEnd-->
 ## interface Greater\<T>
 
 ```cangjie

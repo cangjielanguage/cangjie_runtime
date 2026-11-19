@@ -1610,6 +1610,7 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```
 
 <!--DelEnd_sink-->
+<!--Del-->
 ## interface ForeignRuntime\<T> where T <: ForeignRuntime\<T>
 
 ```cangjie
@@ -1627,6 +1628,10 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
 功能：该接口表示外部运行时。
 
 [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> 实例上的成员访问、索引访问、调用、成员和元素的修改，以及到 [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> 的隐式类型转换，由该接口的静态函数实现。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 ### static func fromExtern\<R>(Extern\<T>)
 
@@ -1779,6 +1784,7 @@ static func toExtern<R>(v: R): Extern<T>
 - [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - 当无法转换时，抛出异常。
 - [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
 
+<!--DelEnd-->
 ## interface Greater\<T>
 
 ```cangjie

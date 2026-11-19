@@ -494,6 +494,7 @@ main() {
 ```
 
 <!--DelEnd-->
+<!--Del-->
 ## class ExternConversionException
 
 ```cangjie
@@ -504,6 +505,10 @@ public class ExternConversionException <: Exception {
 ```
 
 功能：表示值无法在仓颉与外部运行时之间转换的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -549,6 +554,8 @@ main() {
 }
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternFunctionAccessException
 
 ```cangjie
@@ -559,6 +566,10 @@ public class ExternFunctionAccessException <: Exception {
 ```
 
 功能：表示外部值不可调用的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -604,6 +615,8 @@ main() {
 }
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternFunctionCallException
 
 ```cangjie
@@ -614,6 +627,10 @@ public class ExternFunctionCallException <: Exception {
 ```
 
 功能：表示调用外部值时参数错误的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -659,6 +676,8 @@ main() {
 }
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternIndexedAccessException
 
 ```cangjie
@@ -669,6 +688,10 @@ public class ExternIndexedAccessException <: Exception {
 ```
 
 功能：表示外部值的索引错误或越界的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -714,6 +737,8 @@ main() {
 }
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternMemberAccessException
 
 ```cangjie
@@ -724,6 +749,10 @@ public class ExternMemberAccessException <: Exception {
 ```
 
 功能：表示访问或修改不存在的外部值成员的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -769,6 +798,8 @@ main() {
 }
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ForeignRuntimeException
 
 ```cangjie
@@ -779,6 +810,10 @@ public class ForeignRuntimeException <: Exception {
 ```
 
 功能：表示外部运行时抛出异常的异常类。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 父类型：
 
@@ -824,6 +859,7 @@ main() {
 }
 ```
 
+<!--DelEnd-->
 ## class IllegalArgumentException
 
 ```cangjie

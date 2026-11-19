@@ -8295,6 +8295,7 @@ Duration 4: 3h
 Duration 1 is not greater than or equal to Duration 4
 ```
 
+<!--Del-->
 ## struct Extern\<T> where T <: ForeignRuntime\<T>
 
 ```cangjie
@@ -8307,6 +8308,10 @@ public struct Extern<T> where T <: ForeignRuntime<T> {
 功能：表示外部运行时 `T` 中的值。
 
 对该类型实例的成员访问、索引访问、调用以及成员和元素的修改由 `T` 的静态函数实现，详见 [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet)。
+
+> **注意：**
+>
+> 不支持平台：OpenHarmony。
 
 ### init(Any)
 
@@ -8344,6 +8349,7 @@ public static func getPayload(e: Extern<T>): Any
 
 - [Any](core_package_interfaces.md#interface-any) - `e` 的表示。
 
+<!--DelEnd-->
 ## struct LibC
 
 ```cangjie

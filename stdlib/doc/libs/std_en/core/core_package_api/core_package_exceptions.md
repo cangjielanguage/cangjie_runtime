@@ -604,6 +604,7 @@ main() {
 }
 ```
 
+<!--Del-->
 ## class ExternConversionException
 
 ```cangjie
@@ -614,6 +615,10 @@ public class ExternConversionException <: Exception {
 ```
 
 Function: Represents an exception class for values that can't be converted between Cangjie and a foreign runtime.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -677,6 +682,8 @@ Exception message: Custom exception message
 Exception class name: ExternConversionException: Custom exception message
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternFunctionAccessException
 
 ```cangjie
@@ -687,6 +694,10 @@ public class ExternFunctionAccessException <: Exception {
 ```
 
 Function: Represents an exception class for foreign values that are not callable.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -750,6 +761,8 @@ Exception message: Custom exception message
 Exception class name: ExternFunctionAccessException: Custom exception message
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternFunctionCallException
 
 ```cangjie
@@ -760,6 +773,10 @@ public class ExternFunctionCallException <: Exception {
 ```
 
 Function: Represents an exception class for wrong arguments in calls to foreign values.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -823,6 +840,8 @@ Exception message: Custom exception message
 Exception class name: ExternFunctionCallException: Custom exception message
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternIndexedAccessException
 
 ```cangjie
@@ -833,6 +852,10 @@ public class ExternIndexedAccessException <: Exception {
 ```
 
 Function: Represents an exception class for wrong or out-of-bounds indices of foreign values.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -896,6 +919,8 @@ Exception message: Custom exception message
 Exception class name: ExternIndexedAccessException: Custom exception message
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ExternMemberAccessException
 
 ```cangjie
@@ -906,6 +931,10 @@ public class ExternMemberAccessException <: Exception {
 ```
 
 Function: Represents an exception class for accesses or updates of non-existing members of foreign values.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -969,6 +998,8 @@ Exception message: Custom exception message
 Exception class name: ExternMemberAccessException: Custom exception message
 ```
 
+<!--DelEnd-->
+<!--Del-->
 ## class ForeignRuntimeException
 
 ```cangjie
@@ -979,6 +1010,10 @@ public class ForeignRuntimeException <: Exception {
 ```
 
 Function: Represents an exception class for exceptions thrown by a foreign runtime.
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
 
 Parent Types:
 
@@ -1042,6 +1077,7 @@ Exception message: Custom exception message
 Exception class name: ForeignRuntimeException: Custom exception message
 ```
 
+<!--DelEnd-->
 ## class IllegalArgumentException
 
 ```cangjie

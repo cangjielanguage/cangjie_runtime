@@ -9,10 +9,12 @@
 package std.core
 
 /** Returns the payload of @p e. The compiler desugars a call into the member access e.payload. */
+@When[env != "ohos"]
 @Intrinsic
 func getExtern<T>(e: Extern<T>): Any where T <: ForeignRuntime<T>
 
 /** Sets the payload of @p e. The compiler desugars a call into the assignment e.payload = payload. */
+@When[env != "ohos"]
 @Intrinsic
 func setExtern<T>(e: Extern<T>, payload: Any): Unit where T <: ForeignRuntime<T>
 
@@ -23,6 +25,7 @@ func setExtern<T>(e: Extern<T>, payload: Any): Unit where T <: ForeignRuntime<T>
  * Extern<T> are dynamic: the compiler desugars them into calls to the corresponding static functions of @p T. An
  * expression of type U used where Extern<T> is expected is implicitly converted with T.toExtern<U>.
  */
+@When[env != "ohos"]
 public struct Extern<T> where T <: ForeignRuntime<T> {
     /**
      * The representation of the foreign value, chosen by @p T. It is only accessed through getExtern and setExtern,
@@ -42,6 +45,7 @@ public struct Extern<T> where T <: ForeignRuntime<T> {
 }
 
 /** The operations of a foreign runtime, implemented by @p T for its values of type Extern<T>. */
+@When[env != "ohos"]
 public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     /**
      * Returns the member @p field of @p e. Used for e.f.
@@ -104,6 +108,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
 }
 
 /** Thrown when a member of a foreign value can't be accessed. */
+@When[env != "ohos"]
 public class ExternMemberAccessException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
@@ -111,6 +116,7 @@ public class ExternMemberAccessException <: Exception {
 }
 
 /** Thrown when a foreign value is not callable. */
+@When[env != "ohos"]
 public class ExternFunctionAccessException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
@@ -118,6 +124,7 @@ public class ExternFunctionAccessException <: Exception {
 }
 
 /** Thrown when a foreign value is called with wrong arguments. */
+@When[env != "ohos"]
 public class ExternFunctionCallException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
@@ -125,6 +132,7 @@ public class ExternFunctionCallException <: Exception {
 }
 
 /** Thrown when an element of a foreign value can't be accessed. */
+@When[env != "ohos"]
 public class ExternIndexedAccessException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
@@ -132,6 +140,7 @@ public class ExternIndexedAccessException <: Exception {
 }
 
 /** Thrown when a value can't be converted between Cangjie and a foreign runtime. */
+@When[env != "ohos"]
 public class ExternConversionException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
@@ -139,6 +148,7 @@ public class ExternConversionException <: Exception {
 }
 
 /** Thrown when a foreign runtime fails. */
+@When[env != "ohos"]
 public class ForeignRuntimeException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }
