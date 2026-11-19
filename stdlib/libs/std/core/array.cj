@@ -56,7 +56,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public const init(this @local!) {
         exclave {
             this.start = 0
@@ -75,7 +75,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public init(this @local!, size: Int64, repeat!: T @local!) {
         exclave {
             this.start = 0
@@ -87,7 +87,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public init(this @local!, size: Int64, initElement: ((Int64) -> T @local!) @local?) {
         exclave {
             this.start = 0
@@ -106,7 +106,7 @@ public struct Array<T> {
     // Note: a lambda in `@local?` mode cannot capture `@local!` variables; the closure can only
     // reference plain/@local? captures or pure computation.
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public init(this @local?, size: Int64, initElement: ((Int64) -> T @local?) @local?) {
         exclave {
             this.start = 0
@@ -132,7 +132,7 @@ public struct Array<T> {
 
     // This constructor accepts only Array; other Collection implementations are rejected.
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     init(this @local!, elements: Collection<T> @local!) {
         exclave {
             match (elements) {
@@ -148,7 +148,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     init(this @local?, elements: Collection<T> @local?) {
         exclave {
             match (elements) {
@@ -179,7 +179,7 @@ public struct Array<T> {
         this.len = len
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     exclave init(this @local!, data: RawArray<T> @local!, start: Int64, len: Int64) {
         this.rawptr = data
@@ -187,7 +187,7 @@ public struct Array<T> {
         this.len = len
     }
     
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     exclave init(this @local?, data: RawArray<T> @local?, start: Int64, len: Int64) {
         this.rawptr = data
@@ -216,7 +216,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop first: Option<T> @local! {
         get() {
             exclave {
@@ -229,7 +229,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop first: Option<T> @local? {
         get() {
             exclave {
@@ -242,7 +242,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop last: Option<T> @local! {
         get() {
             exclave {
@@ -255,7 +255,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop last: Option<T> @local? {
         get() {
             exclave {
@@ -281,7 +281,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func slice(this @local!, start: Int64, len: Int64): Array<T> @local! {
         if (start < 0 || len < 0 || start > this.len || len > this.len - start) {
             throw IndexOutOfBoundsException(arraySliceOutOfBoundsExceptionMessage(this.len, start, len))
@@ -292,7 +292,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func slice(this @local?, start: Int64, len: Int64): Array<T> @local? {
         if (start < 0 || len < 0 || start > this.len || len > this.len - start) {
             throw IndexOutOfBoundsException(arraySliceOutOfBoundsExceptionMessage(this.len, start, len))
@@ -313,7 +313,7 @@ public struct Array<T> {
 
     @OverflowWrapping
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func get(this @local!, index: Int64): Option<T> @local! {
         exclave {
             if (UInt64(index) >= UInt64(this.len)) {
@@ -325,7 +325,7 @@ public struct Array<T> {
 
     @OverflowWrapping
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func get(this @local?, index: Int64): Option<T> @local? {
         exclave {
             if (UInt64(index) >= UInt64(this.len)) {
@@ -354,7 +354,7 @@ public struct Array<T> {
 
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public operator func [](this @local!, index: Int64): T @local! {
         // Using type conversion to replace typical bounds checking,
         // if (index < 0 || index >= this.len), to a single comparison.
@@ -367,7 +367,7 @@ public struct Array<T> {
     }
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave operator func [](this @local?, index: Int64): T @local? {
         // Using type conversion to replace typical bounds checking,
         // if (index < 0 || index >= this.len), to a single comparison.
@@ -394,7 +394,7 @@ public struct Array<T> {
 
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public operator func [](this @local!, index: Int64, value!: T @local!): Unit {
         if (UInt64(index) >= UInt64(this.len)) {
             throw IndexOutOfBoundsException(arrayIndexOutOfBoundsExceptionMessage(this.len, index))
@@ -412,13 +412,13 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave operator func [](this @local!, range: Range<Int64>): Array<T> @local! {
         rangeSlice(range, this.len)
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave operator func [](this @local?, range: Range<Int64>): Array<T> @local? {
         rangeSlice(range, this.len)
     }
@@ -431,7 +431,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func fill(this @local!, value: T @local!): Unit {
         for (i in 0..this.len) {
             arraySetUnchecked<T>(this.rawptr, this.start + i, value)
@@ -464,7 +464,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public operator func [](this @local!, range: Range<Int64>, value!: Array<T> @local!): Unit {
         if (range.step != 1) {
             throw IllegalArgumentException(arrayInvalidRangeStepExceptionMessage(range.step))
@@ -500,7 +500,7 @@ public struct Array<T> {
     /** Reverse array elements in place. */
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func reverse(this @local!): Unit {
         var i: Int64 = start
         var j: Int64 = start + len - 1
@@ -546,7 +546,7 @@ public struct Array<T> {
         return Array<T>(this.rawptr, this.start + start_, end_ - start_)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     private func rangeSlice(this @local!, range: Range<Int64>, _: Int64): Array<T> @local! {
         if (range.step != 1) {
@@ -562,7 +562,7 @@ public struct Array<T> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     private func rangeSlice(this @local?, range: Range<Int64>, _: Int64): Array<T> @local? {
         if (range.step != 1) {
@@ -584,7 +584,7 @@ public struct Array<T> {
         0 <= start_ && start_ <= end_ && end_ <= this.len
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     const func isLegal(this @local?, start_: Int64, end_: Int64): Bool {
         0 <= start_ && start_ <= end_ && end_ <= this.len
@@ -614,7 +614,7 @@ public struct Array<T> {
         return (start, end)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     const func normalize(this @local?, range: Range<Int64>): (Int64, Int64) {
@@ -658,6 +658,7 @@ public struct Array<T> {
         }
     }
 
+@When[local_mode_api == "on"]
     private const func rangeToString(this @local?, range: Range<Int64>): String {
         let start = if (range.hasStart) {
             range.start
@@ -690,7 +691,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func clone(this @local!): Array<T> @local! {
         if (len == 0) {
             Array<T>()
@@ -703,7 +704,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func clone(this @local?): Array<T> @local? {
         exclave {
             if (len == 0) {
@@ -717,7 +718,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func toArray(this @local?): Array<T> @local? {
         this.clone()
     }
@@ -756,7 +757,7 @@ public struct Array<T> {
      */
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func clone(this @local!, range: Range<Int64>): Array<T> @local! {
         let (start_, end_): (Int64, Int64) = normalize(range)
         let step = range.step
@@ -810,7 +811,7 @@ public struct Array<T> {
     }
     
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func copyTo(this @local!, dst: Array<T> @local!, srcStart: Int64, dstStart: Int64, copyLen: Int64): Unit {
         if (copyLen == 0) {
             return
@@ -845,7 +846,7 @@ public struct Array<T> {
     }
     
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func copyTo(this @local!, dst: Array<T> @local!): Unit {
         exclave {
         if (this.len == 0) {
@@ -882,7 +883,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func concat(this @local!, other: Array<T> @local!): Array<T> @local! {
         exclave {
             if (this.len == 0) {
@@ -905,14 +906,14 @@ public struct Array<T> {
         return arrayGetUnchecked(this.rawptr, start + index)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local!, index: Int64): T @local! {
         exclave { arrayGetUnchecked<T>(this.rawptr, start + index) }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     protected unsafe func getUnchecked(this @local?, index: Int64): T @local? {
@@ -925,7 +926,7 @@ public struct Array<T> {
         return arraySetUnchecked(this.rawptr, start + index, element)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     protected exclave unsafe func setUnchecked(this @local!, index: Int64, element: T @local!): Unit {
@@ -949,7 +950,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func swap(this @local!, index1: Int64, index2: Int64): Unit {
         if (index1 < 0 || len <= index1) {
             throw IllegalArgumentException("Index1 is less than 0 or not less than the size of this array.")
@@ -979,7 +980,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func splitAt(this @local!, mid: Int64): (Array<T>, Array<T>) @local! {
         exclave {
             if (mid < 0 || this.len < mid) {
@@ -1012,7 +1013,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func repeat(this @local!, n: Int64): Array<T> @local! {
         exclave {
             if (n <= 0) {
@@ -1039,7 +1040,7 @@ public struct Array<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func map<R>(this @local!, transform: ((T @local!) -> R @local!) @local?): Array<R> @local! {
         exclave {
             let newRawPtr = rawArrayAllocate2<R>(this.len)
@@ -1084,7 +1085,7 @@ public struct Array<T> {
         return Array<T>()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func step(this @local!, count: Int64): Array<T> @local! {
         exclave {
             if (count <= 0) {
@@ -1130,7 +1131,7 @@ public struct Array<T> {
         return Array<T>(newRawPtr, 0, newLen)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func take(this @local!, count: Int64): Array<T> @local! {
         exclave {
             if (count == 0) {
@@ -1173,7 +1174,7 @@ public struct Array<T> {
         return Array<T>(newRawPtr, 0, newLen)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func skip(this @local!, count: Int64): Array<T> @local! {
         exclave {
             if (count < 0) {
@@ -1215,7 +1216,7 @@ public struct Array<T> {
         return Array<T>(newRawPtr, 0, t)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func filter(this @local!, predicate: ((T @local?) -> Bool) @local?): Array<T> @local! {
         exclave {
             if (this.len == 0) {
@@ -1252,7 +1253,7 @@ public struct Array<T> {
         return result
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func flatMap<R>(this @local!, transform: ((T @local!) -> Array<R> @local!) @local?): Array<R> @local! {
         exclave {
             // Amortised linear: grow the buffer geometrically and copy only the newly appended run.
@@ -1325,7 +1326,7 @@ public struct Array<T> {
         return Array<R>(newRawPtr, 0, j)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func filterMap<R>(this @local!, transform: ((T @local!) -> Option<R> @local!) @local?): Array<R> @local! {
         exclave {
             if (this.len == 0) {
@@ -1372,7 +1373,7 @@ public struct Array<T> {
         return Array<T>(newRawPtr,0,newSize)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func intersperse(this @local!, separator: T @local!): Array<T> @local! {
         exclave {
             if (this.len < 2) {
@@ -1403,7 +1404,7 @@ public struct Array<T> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func forEach(this @local!, action: ((T @local!) -> Unit) @local?): Unit {
         var i: Int64 = 0
         while (i < this.len) {
@@ -1428,7 +1429,7 @@ public struct Array<T> {
         return true
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func all(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
@@ -1456,7 +1457,7 @@ public struct Array<T> {
         return false
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func any(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
@@ -1484,7 +1485,7 @@ public struct Array<T> {
         return true
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func none(this @local?, predicate: ((T @local?) -> Bool) @local?): Bool {
         var i: Int64 = 0
         while (i < this.len) {
@@ -1512,7 +1513,7 @@ public struct Array<T> {
         return result
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func fold<R>(this @local!, initial: R @local!, operation: ((R @local!, T @local!) -> R @local!) @local?): R @local! {
         exclave {
             var result: R @local! = initial
@@ -1647,10 +1648,10 @@ private func arrayInvalidRangeStepExceptionMessage(rangeStep: Int64): String {
     "Array slice step must be 1, got '${rangeStep}'."
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public interface Copyable {}
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 extend<T> Array<T> where T <: Copyable {
 
     @Frozen

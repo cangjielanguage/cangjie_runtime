@@ -22,7 +22,7 @@ public func canonicalize(path: String): Path {
     return Path(processPathHeader(path, Path.canonicalizePath(path)))
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public func canonicalize(path: String @local!): Path @local! {
     exclave {
         PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
@@ -43,7 +43,7 @@ public func canonicalize(path: Path): Path {
     return Path(processPathHeader(rawPath, Path.canonicalizePath(rawPath)))
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public func canonicalize(path: Path @local!): Path @local! {
     exclave {
         PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
@@ -81,7 +81,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
     public init(rawPath: String) {
         _rawPath = rawPath
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, rawPath: String @local!) {
         _rawPath = rawPath
     }
@@ -96,7 +96,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
             return getParent(_rawPath)
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop parent: Path @local! {
         get() {
             exclave {
@@ -116,7 +116,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
             return getFileName(_rawPath)
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop fileName: String @local? {
         get() {
             exclave {
@@ -164,7 +164,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
         return isAbsolutePath(_rawPath)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func isAbsolute(this @local?): Bool {
         PathValidator.throwIfEmptyOrContainsNullByte("path", _rawPath, false)
         isAbsolutePath(_rawPath)
@@ -179,7 +179,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return !isAbsolutePath(_rawPath)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func checkWindowsSpecialPrefix(this @local?, path: String @local?): Unit {
         if (!isWindows) {
             return
@@ -202,7 +202,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func checkWindowsSpecialPrefix(path: String): Unit {
         if (!isWindows) {
             return
@@ -239,7 +239,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return Path(newPath)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func join(this @local!, path: String @local!): Path @local! {
         exclave {
             PathValidator.throwIfContainsNullByte("path", path, true)
@@ -277,7 +277,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         return join(path.toString())
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func join(this @local!, path: Path @local!): Path @local! {
         exclave {
             join(path._rawPath)
@@ -287,7 +287,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
     public func isEmpty(): Bool {
         _rawPath.isEmpty()
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func isEmpty(this @local?): Bool {
         _rawPath.isEmpty()
     }
@@ -440,7 +440,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
     public func toString(): String {
         return _rawPath
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func toString(this @local?): String @local! {
         _rawPath.toString()
     }
@@ -474,7 +474,7 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     static func canonicalizePath(pathStr: String @local!): Array<Byte> @local! {
         exclave {
             unsafe {
@@ -507,14 +507,14 @@ public struct Path <: Equatable<Path> & Hashable & ToString {
 class PathValidator {
     private init() {} // static class
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     static func throwIfEmpty(name: String, path: String @local?, isInput: Bool): Unit {
         if (path.isEmpty()) {
             throw IllegalArgumentException(generateExceptionMessage(name, "cannot be empty", isInput))
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     static func throwIfEmpty(name: String, path: String, isInput: Bool): Unit {
         if (path.isEmpty()) {
             throw IllegalArgumentException(generateExceptionMessage(name, "cannot be empty", isInput))
@@ -527,7 +527,7 @@ class PathValidator {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     static func throwIfContainsNullByte(name: String, path: String @local?, isInput: Bool): Unit {
         for (i in 0..path.size) {
             if (path[i] == 0) {
@@ -541,24 +541,24 @@ class PathValidator {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: Path @local?, isInput: Bool): Unit {
         throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: String @local?, isInput: Bool): Unit {
         throwIfEmpty(name, path, isInput)
         throwIfContainsNullByte(name, path, isInput)
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: String, isInput: Bool): Unit {
         throwIfEmpty(name, path, isInput)
         throwIfContainsNullByte(name, path, isInput)
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     static func throwIfEmptyOrContainsNullByte(name: String, path: Path, isInput: Bool): Unit {
         throwIfEmptyOrContainsNullByte(name, path.toString(), isInput)
     }

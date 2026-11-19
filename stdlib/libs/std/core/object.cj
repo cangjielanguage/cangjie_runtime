@@ -13,10 +13,10 @@ public interface Any {}
 public open class Object <: Any {
     public const init() {}
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave const init(this @local!) { }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave const init(this @local?) { }
 }
 
@@ -38,7 +38,7 @@ public func refEq(a: Object, b: Object): Bool {
  *
  * @return true means they are the same Object.
  */
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public func refEq(a: Object @local?, b: Object @local?): Bool {
     return intrinsicRefEq(a, b)
 }
@@ -47,13 +47,22 @@ public func refEq(a: Object @local?, b: Object @local?): Bool {
 @Intrinsic
 public unsafe func zeroValue<T>(): T
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 @Intrinsic
 public unsafe func zeroValue2<T>(): T @local!
 
+@When[local_mode_api == "on"]
 @Intrinsic
 func intrinsicRefEq(a: Object @local?, b: Object @local?): Bool
 
-@When[backend == "cjnative"]
+@When[local_mode_api != "on"]
+@Intrinsic
+func intrinsicRefEq(a: Object, b: Object): Bool
+
+@When[backend == "cjnative" && local_mode_api == "on"]
 @Intrinsic
 func intrinsicRefEqRawArray<T>(a: RawArray<T> @local?, b: RawArray<T> @local?): Bool
+
+@When[backend == "cjnative" && local_mode_api != "on"]
+@Intrinsic
+func intrinsicRefEqRawArray<T>(a: RawArray<T>, b: RawArray<T>): Bool

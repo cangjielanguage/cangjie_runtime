@@ -167,7 +167,7 @@ extend Rune {
     }
 
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public static func fromUtf8(arr: Array<UInt8> @local?, index: Int64): (Rune, Int64) {
         if (UInt64(index) >= UInt64(arr.size)) {
             throw IllegalArgumentException("Invalid UTF-8 byte sequence: index '${index}' is out of bounds, size is '${arr.size}'.")
@@ -187,6 +187,7 @@ extend Rune {
         }
     }
 
+@When[local_mode_api == "on"]
     static func fromUtf8(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): (Rune, Int64) {
         let byte0: UInt8 = arrayGetUnchecked<UInt8>(arr, startIndex)
         return match {
@@ -255,7 +256,7 @@ extend Rune {
     }
 
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public static func intoUtf8Array(c: Rune, arr: Array<UInt8> @local?, index: Int64): Int64 {
         var ch = UInt32(c)
         checkIndexValid(c, arr, index)
@@ -308,7 +309,7 @@ extend Rune {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private static func checkIndexValid(c: Rune, arr: Array<UInt8> @local?, index: Int64): Unit {
         if (index < 0) {
             throw IllegalArgumentException("Invalid argument 'index': expected a non-negative value, got '${index}'.")

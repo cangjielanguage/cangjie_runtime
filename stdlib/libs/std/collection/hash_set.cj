@@ -82,13 +82,13 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         this.myMap = HashMap<T, Unit>(capacity)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave init(this @local!) {
         myMap = HashMap<T, Unit>()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave init(this @local!, capacity: Int64) {
         myMap = HashMap<T, Unit>(capacity)
@@ -120,7 +120,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return myMap.contains(element)
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave func contains(this @local!, element: T @local!): Bool {
         return myMap.contains(element)
@@ -173,7 +173,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave func add(this @local!, element: T @local!): Bool {
         return match (this.myMap.add(element, ())) {
@@ -215,7 +215,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
     /**
      * Add all elements from another local HashSet.
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave func add(this @local!, all!: HashSet<T> @local!): Unit {
         for ((k, _) in all.myMap) {
@@ -510,7 +510,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return this.myMap.keys().iterator()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave func iterator(this @local!): Iterator<T> @local! {
         myMap.keys().iterator()
@@ -542,7 +542,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return myMap.isEmpty()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public func isEmpty(this @local?): Bool {
         return myMap.isEmpty()
@@ -558,7 +558,7 @@ public class HashSet<T> <: Set<T> where T <: Hashable & Equatable<T> {
         return myMap.keys().toArray()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     public exclave func toArray(this @local!): Array<T> @local! {
         return myMap.keys().toArray()

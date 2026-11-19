@@ -37,7 +37,7 @@ public class ByteBuffer <: IOStream & Seekable {
     public init() {
         this(DEFAULT_CAPACITY)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!) {
         this(DEFAULT_CAPACITY)
     }
@@ -57,7 +57,7 @@ public class ByteBuffer <: IOStream & Seekable {
         this.start = 0
         this._length = 0
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, capacity: Int64) {
         if (capacity < 0) {
             throw IllegalArgumentException("The capacity must be greater than or equal to 0: ${capacity}.")
@@ -140,7 +140,7 @@ public class ByteBuffer <: IOStream & Seekable {
         _length -= len
         return len
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func read(this @local!, buffer: Array<Byte> @local!): Int64 {
         if (_length == 0) {
             return 0
@@ -194,7 +194,7 @@ public class ByteBuffer <: IOStream & Seekable {
             _length = bufSize
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     public exclave func write(this @local!, buffer: Array<Byte>): Unit {
         let bufSize = buffer.size
@@ -207,7 +207,7 @@ public class ByteBuffer <: IOStream & Seekable {
             _length = bufSize
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     public exclave func write(this @local!, buffer: Array<Byte> @local!): Unit {
         let bufSize = buffer.size
@@ -286,7 +286,7 @@ public class ByteBuffer <: IOStream & Seekable {
 
         grow(growSize)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func reserve(this @local!, additional: Int64): Unit {
         if (additional < 0) {
             throw IllegalArgumentException("The additional must be greater than or equal to 0.")
@@ -336,7 +336,7 @@ public class ByteBuffer <: IOStream & Seekable {
 
         this.start
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func seek(this @local!, sp: SeekPosition): Int64 {
         let pos: Int64 = match (sp) {
             case Current(offset) => this.start + offset
@@ -365,7 +365,7 @@ public class ByteBuffer <: IOStream & Seekable {
         myData.copyTo(itemData, 0, 0, start + _length)
         myData = itemData
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private exclave func grow(this @local!, minCapacity: Int64): Unit {
         let oldCapacity = myData.size
         var newCapacity = checkGrowSize(oldCapacity, (oldCapacity >> 1))
@@ -378,7 +378,17 @@ public class ByteBuffer <: IOStream & Seekable {
         myData = itemData
     }
 
+    @When[local_mode_api == "on"]
     private func checkGrowSize(this @local?, oldSize: Int64, additional: Int64): Int64 {
+        try {
+            return oldSize + additional
+        } catch (_: OverflowException) {
+            throw OverflowException("Capacity overflow: the maximum value cannot exceed 'Int64 max'.")
+        }
+    }
+
+    @When[local_mode_api != "on"]
+    private func checkGrowSize(oldSize: Int64, additional: Int64): Int64 {
         try {
             return oldSize + additional
         } catch (_: OverflowException) {

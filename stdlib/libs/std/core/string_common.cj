@@ -68,6 +68,7 @@ func checkUtf8Of2Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64)
     Rune(((UInt32(byte1) & LOW_5_MASK) << SHIFT_6) | (UInt32(byte2) & LOW_6_MASK))
 }
 
+@When[local_mode_api == "on"]
 func checkUtf8Of2Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 2 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 2 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
@@ -127,6 +128,7 @@ func checkUtf8Of3Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64)
     Rune(code)
 }
 
+@When[local_mode_api == "on"]
 func checkUtf8Of3Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 3 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 3 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
@@ -222,6 +224,7 @@ func checkUtf8Of4Bytes(arr: RawArray<UInt8>, startIndex: Int64, endIndex: Int64)
     Rune(code)
 }
 
+@When[local_mode_api == "on"]
 func checkUtf8Of4Bytes(arr: RawArray<UInt8> @local?, startIndex: Int64, endIndex: Int64): Rune {
     if (startIndex + 4 > endIndex) {
         throw IllegalArgumentException("Invalid UTF-8: need 4 bytes from index '${startIndex}', but only '${endIndex - startIndex}' byte(s) available.")
@@ -315,6 +318,7 @@ func checkInvalid(arr: RawArray<Byte>, startIndex: Int64, endIndex: Int64): Unit
         }
     }
 }
+@When[local_mode_api == "on"]
 func checkInvalid(arr: RawArray<Byte> @local?, startIndex: Int64, endIndex: Int64): Unit {
     var i = startIndex
     while (i < endIndex) {
@@ -353,25 +357,25 @@ class StringIteratorData {
         this.nextPos = 0
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, data: Array<UInt8> @local!) {
         myData = data
         end = myData.size
         nextPos = 0
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, data: RawArray<UInt8> @local!) {
         this.myData = toArray(data)
         this.end = myData.size
         this.nextPos = 0
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local?, data: Array<UInt8> @local?) {
         myData = data
         end = myData.size
         nextPos = 0
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local?, data: RawArray<UInt8> @local?) {
         this.myData = toArray(data)
         this.end = myData.size
@@ -384,12 +388,12 @@ class StringRuneIterator <: Iterator<Rune> {
     @Frozen
     StringRuneIterator(let iteratorData: StringIteratorData) {}
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -408,7 +412,7 @@ class StringRuneIterator <: Iterator<Rune> {
         iteratorData.nextPos += num
         return Some<Rune>(rune)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     @Frozen
     public exclave func next(this @local!): Option<Rune> @local! {
@@ -419,7 +423,7 @@ class StringRuneIterator <: Iterator<Rune> {
         iteratorData.nextPos += num
         return Some<Rune>(rune)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @OverflowWrapping
     @Frozen
     public exclave func next(this @local?): Option<Rune> @local? {
@@ -437,12 +441,12 @@ class StringByteIterator <: Iterator<Byte> {
     @Frozen
     StringByteIterator(let iteratorData: StringIteratorData) {}
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -461,7 +465,7 @@ class StringByteIterator <: Iterator<Byte> {
         iteratorData.nextPos = iteratorData.nextPos + 1
         return byte
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local!): Option<Byte> @local! {
@@ -472,7 +476,7 @@ class StringByteIterator <: Iterator<Byte> {
         iteratorData.nextPos = iteratorData.nextPos + 1
         return byte
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local?): Option<Byte> @local? {
@@ -491,12 +495,12 @@ class StringLineIterator <: Iterator<String> {
     @Frozen
     StringLineIterator(let iteratorData: StringIteratorData) {}
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local!, iteratorData: StringIteratorData @local!) {
         this.iteratorData = iteratorData
     }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     exclave init(this @local?, iteratorData: StringIteratorData @local?) {
         this.iteratorData = iteratorData
     }
@@ -544,7 +548,7 @@ class StringLineIterator <: Iterator<String> {
         return Some(str)
     }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local!): Option<String> @local! {
@@ -585,7 +589,7 @@ class StringLineIterator <: Iterator<String> {
         Some<String>(str)
     }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
     @Frozen
     @OverflowWrapping
     public exclave func next(this @local?): Option<String> @local? {
@@ -679,7 +683,7 @@ class StringLazySplitIterator <: Iterator<String> {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     init(orgStrData: Array<UInt8>, orgStrSize: Int64, str: String @local?, maxSplits: Int64, removeEmpty: Bool) {
         this.orgData = orgStrData
         this.separatorLen = str.size

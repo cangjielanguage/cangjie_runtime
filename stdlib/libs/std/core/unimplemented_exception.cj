@@ -13,7 +13,7 @@ package std.core
  * concrete type has not provided the required method. For example,
  * `ToString.toString(this @local?)` throws it when not overridden.
  */
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public class UnimplementedException <: Exception {
     public init() {
         super("UnimplementedException")

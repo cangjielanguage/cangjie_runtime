@@ -45,7 +45,7 @@ func toArray<T>(raw: RawArray<T>): Array<T> {
     return Array<T>(raw, 0, arraySize(raw))
 }
 @Frozen
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 exclave func toArray<T>(raw: RawArray<T> @local!): Array<T> @local! {
     if (arraySize(raw) == 0) {
         return Array<T>()
@@ -53,7 +53,7 @@ exclave func toArray<T>(raw: RawArray<T> @local!): Array<T> @local! {
     return Array<T>(raw, 0, arraySize(raw))
 }
 @Frozen
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 exclave func toArray<T>(raw: RawArray<T> @local?): Array<T> @local? {
     if (arraySize(raw) == 0) {
         // Empty result keeps the @local? mode without the removed no-arg @local? ctor:
@@ -71,13 +71,13 @@ extend<T> Array<T> <: Collection<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func iterator(this @local!): Iterator<T> @local! {
         ArrayIterator<T>(this) @local!
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func iterator(this @local?): Iterator<T> @local? {
         ArrayIterator<T>(this) @local?
     }
@@ -94,7 +94,7 @@ extend<T> Array<T> <: Collection<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop size: Int64 @local? {
         get() {
             this.len
@@ -107,7 +107,7 @@ extend<T> Array<T> <: Collection<T> {
         return this.len == 0
     }
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func isEmpty(this @local?): Bool {
         return this.size == 0
     }
@@ -118,7 +118,7 @@ extend<T> Array<T> <: Collection<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func toArray(this @local!): Array<T> @local! {
         this.clone()
     }
@@ -144,7 +144,7 @@ extend<T> Array<T> <: ToString where T <: ToString {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func toString(this @local?): String @local! {
         let sb: StringBuilder @local! = StringBuilder()
         sb.appendRune(r'[')
@@ -494,7 +494,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave init(this @local!, data: Array<T> @local!) {
         this.myData = data
         this.end = data.size
@@ -502,7 +502,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     }
 
     @Frozen
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave init(this @local?, data: Array<T> @local?) {
         this.myData = data
         this.end = data.size
@@ -525,7 +525,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     /** Returns the next element in the iteration. */
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func next(this @local!): Option<T> @local! {
         if (this.myPosition < this.end) {
             let v: T @local! = arrayGetUnchecked<T>(this.myData.rawptr, this.myData.start + this.myPosition)
@@ -538,7 +538,7 @@ public class ArrayIterator<T> <: Iterator<T> {
     /** Returns the next element in the iteration. */
     @Frozen
     @OverflowWrapping
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func next(this @local?): Option<T> @local? {
         if (this.myPosition < this.end) {
             let v: T @local? = arrayGetUnchecked<T>(this.myData.rawptr, this.myData.start + this.myPosition)
@@ -565,7 +565,7 @@ public struct CPointerHandle<T> where T <: CType {
         this.array = arr
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     internal exclave init(this @local?, ptr: CPointer<T> @local?, arr: Array<T> @local?) {
         pointer = ptr
         array = arr
@@ -584,7 +584,7 @@ public unsafe func acquireArrayRawData<T>(arr: Array<T>): CPointerHandle<T> wher
 }
 
 @Frozen
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public exclave unsafe func acquireArrayRawData<T>(arr: Array<T> @local?): CPointerHandle<T> @local? where T <: CType {
     CPointerHandle<T>(acquireRawData<T>(arr.rawptr) + arr.start, arr)
 }
@@ -595,7 +595,7 @@ public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T>): Unit where
 }
 
 @Frozen
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T> @local?): Unit where T <: CType {
     releaseRawData(handle.array.rawptr, handle.pointer - handle.array.start)
 }
@@ -605,7 +605,7 @@ public unsafe func releaseArrayRawData<T>(handle: CPointerHandle<T> @local?): Un
  * @local? forms not provided in this file: contains, indexOf(element) without fromIndex,
  * and `==` / `!=` (==/!= are limited by extend member shadowing).
  */
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 extend<T> Array<T> where T <: Equatable<T> {
     @Frozen
     public func indexOf(this @local?, element: T @local?, fromIndex: Int64): Option<Int64> {

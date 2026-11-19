@@ -66,7 +66,7 @@ public struct FileDescriptor {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop fileHandle: IntNative @local? {
         get() {
             _fileHandle
@@ -74,7 +74,7 @@ public struct FileDescriptor {
     }
 }
 
-@When[env != "ohos"]
+@When[local_mode_api == "on"]
 extend FileDescriptor <: Copyable {}
 
 public class File <: Resource & IOStream & Seekable {
@@ -85,7 +85,7 @@ public class File <: Resource & IOStream & Seekable {
     private var _canWrite: Bool = true
     private var _canSeek: Bool = true
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     ~init(this @local?) {
         if (isHandleValid(_fileDescriptor._fileHandle)) {
             unsafe { CJ_FS_CloseFile(_fileDescriptor._fileHandle) }
@@ -93,7 +93,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     ~init() {
         if (isHandleValid(_fileDescriptor._fileHandle)) {
             unsafe { CJ_FS_CloseFile(_fileDescriptor._fileHandle) }
@@ -128,7 +128,7 @@ public class File <: Resource & IOStream & Seekable {
         openFile()
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave init(this @local!, path: String @local!, mode: OpenMode @local!) {
         PathValidator.throwIfEmptyOrContainsNullByte("path", path, true)
 
@@ -190,7 +190,7 @@ public class File <: Resource & IOStream & Seekable {
             _fileDescriptor._fileHandle = v
         }
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     mut prop fileHandle: FileHandle @local! {
         get() {
             exclave { _fileDescriptor._fileHandle }
@@ -206,7 +206,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public prop length: Int64 @local! {
         get() {
             getsize()
@@ -262,7 +262,7 @@ public class File <: Resource & IOStream & Seekable {
         }
         return readBytes
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func read(this @local!, buffer: Array<Byte> @local!): Int64 {
         checkCanRead()
         if (buffer.size == 0) {
@@ -296,7 +296,7 @@ public class File <: Resource & IOStream & Seekable {
     }
 
     public func flush(): Unit {}
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func flush(this @local?): Unit {}
 
     /**
@@ -320,7 +320,7 @@ public class File <: Resource & IOStream & Seekable {
         return val
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func seek(this @local!, sp: SeekPosition): Int64 {
         if (!canSeek()) {
             throw FSException("Cannot seek in file '${_fileInfo.path}': file does not support seeking.")
@@ -337,7 +337,7 @@ public class File <: Resource & IOStream & Seekable {
         return val
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func canSeek(this @local?): Bool {
         if (isClosed()) {
             return false
@@ -345,7 +345,7 @@ public class File <: Resource & IOStream & Seekable {
         return _canSeek
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func canSeek(): Bool {
         if (isClosed()) {
             return false
@@ -383,7 +383,7 @@ public class File <: Resource & IOStream & Seekable {
         fileHandle = InvalidHandle
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public exclave func close(this @local!): Unit {
         if (!isHandleValid(fileHandle)) {
             return
@@ -400,7 +400,7 @@ public class File <: Resource & IOStream & Seekable {
     public func isClosed(): Bool {
         return !isHandleValid(fileHandle)
     }
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public func isClosed(this @local?): Bool {
         return !isHandleValid(_fileDescriptor._fileHandle)
     }
@@ -497,7 +497,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     public static exclave func readFrom(path: String @local!): Array<Byte> @local! {
         var file = File(path, Read) @local!
         try {
@@ -570,7 +570,7 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if file already exists when operation is create
      * @throws FSException if path is invalid
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func openFile(this @local?): Unit {
         let isExists = exists(_fileInfo.path)
         let (r, w, s, openMode): (Bool, Bool, Bool, Int32) = match ((_openMode, isExists)) {
@@ -613,7 +613,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func openFile(): Unit {
         let isExists = exists(_fileInfo.path)
         let (r, w, s, openMode): (Bool, Bool, Bool, Int32) = match ((_openMode, isExists)) {
@@ -656,7 +656,18 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
+    @When[local_mode_api == "on"]
     private func getsize(this @local?): Int64 {
+        if (!isHandleValid(_fileDescriptor._fileHandle)) {
+            return -1
+        }
+        unsafe {
+            return CJ_FS_GetFileSize(_fileDescriptor._fileHandle)
+        }
+    }
+
+    @When[local_mode_api != "on"]
+    private func getsize(): Int64 {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             return -1
         }
@@ -669,7 +680,7 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if the file to read is not opened
      * @throws FSException if the file does not have the read permission
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func checkCanRead(this @local?): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("Cannot read file '${_fileInfo.path}': file is not opened.")
@@ -679,7 +690,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func checkCanRead(): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("Cannot read file '${_fileInfo.path}': file is not opened.")
@@ -693,7 +704,7 @@ public class File <: Resource & IOStream & Seekable {
      * @throws FSException if the file to truncate is not opened
      * @throws FSException if the file does not have the write permission
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func checkCanTruncate(this @local?): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("Cannot truncate file '${_fileInfo.path}': file is not opened.")
@@ -704,7 +715,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func checkCanTruncate(): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("Cannot truncate file '${_fileInfo.path}': file is not opened.")
@@ -723,7 +734,7 @@ public class File <: Resource & IOStream & Seekable {
      * @return Length successfully written into the array buffer
      * @since 0.17.4
      */
-    @When[env != "ohos"]
+    @When[local_mode_api == "on"]
     private func directRead(this @local?, buffer: Array<Byte> @local?): Int64 {
         unsafe {
             let bufPtr: CPointerHandle<Byte> @local? = acquireArrayRawData(buffer)
@@ -733,7 +744,7 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[env == "ohos"]
+    @When[local_mode_api != "on"]
     private func directRead(buffer: Array<Byte>): Int64 {
         unsafe {
             let bufPtr: CPointerHandle<Byte> = acquireArrayRawData(buffer)
