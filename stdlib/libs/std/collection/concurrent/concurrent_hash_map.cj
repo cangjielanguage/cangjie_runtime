@@ -439,6 +439,17 @@ class HNode<K, V> where K <: Hashable & Equatable<K> {
     let version: Int64
     let migratingIndex = AtomicInt64(0)
     let migratedIndex = AtomicInt64(0)
+    /* Abort marker: NOT a dedicated field. When a stripe migration of this
+     * table fails with an exception, 'migratedIndex' is set to a negative
+     * sentinel (Int64.Min). A negative value is impossible on the success
+     * path (only non-negative fetchAdd sums occur), so "migratedIndex < 0"
+     * means "this table version's resize round is dead". Reusing the
+     * existing counter (instead of adding a member) keeps the class layout
+     * and type metadata byte-identical: the compatibility analysis of the
+     * previous fix attempt (PR !1820) proved that adding even ONE internal
+     * field to HNode breaks forward dynamic compatibility (new-compiled
+     * binary + old std .so segfaults), and that the full fix minus the
+     * field is green in all four dynamic/static scenarios. */
     /**
      * The reference of the previous hash table,
      * which is the current hash table before the latest size extension.
@@ -495,36 +506,58 @@ class HNode<K, V> where K <: Hashable & Equatable<K> {
     func migrate(start: Int64, end: Int64, step: Int64): Unit {
         if (let Some(preHT) <- pre.load()) {
             lockG.lock(start)
-            for (index in start..end : step) {
-                if (buckets[index].refList().isSome()) {
-                    continue
+            try {
+                for (index in start..end : step) {
+                    if (buckets[index].refList().isSome()) {
+                        continue
+                    }
+                    let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
+                    preHT.freeze(preIndex)
+                    buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
                 }
-                let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
-                preHT.freeze(preIndex)
-                buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
+            } finally {
+                /* A mid-migration throw (e.g. OutOfMemoryError from the
+                 * bucket-transfer allocation) must not leak this stripe
+                 * mutex: later writers hashing to the stripe would block
+                 * on it forever. */
+                lockG.unlock(start)
             }
-            lockG.unlock(start)
         }
     }
 
     func tryGetBucket(index: Int64): Bool {
         lockG.lock(index)
-        if (freezeFlags[index]) {
-            lockG.unlock(index)
-            return false
-        }
+        /* Tracks whether THIS function still owns the stripe mutex. On a
+         * 'true' return the lock is handed over to the caller (whose
+         * try/finally releases it), so it is released here only on the
+         * 'false' return or when a throw propagates. */
+        var owned = true
+        try {
+            if (freezeFlags[index]) {
+                return false
+            }
 
-        if (buckets[index].refList().isSome()) {
+            if (buckets[index].refList().isSome()) {
+                owned = false // hand the lock over to the caller
+                return true
+            }
+
+            if (let Some(preHT) <- pre.load()) {
+                let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
+                preHT.freeze(preIndex)
+                buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
+            }
+
+            owned = false // hand the lock over to the caller
             return true
+        } finally {
+            /* Releases exactly when this function still owns the lock: the
+             * 'false' return and any throw (e.g. an OutOfMemoryError from
+             * the migration transfer). */
+            if (owned) {
+                lockG.unlock(index)
+            }
         }
-
-        if (let Some(preHT) <- pre.load()) {
-            let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
-            preHT.freeze(preIndex)
-            buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
-        }
-
-        return true
     }
 
     /**
@@ -538,22 +571,37 @@ class HNode<K, V> where K <: Hashable & Equatable<K> {
     @OverflowWrapping
     func tryGetBucketWithEntries(index: Int64): (?KVList<K, V>, Bool) {
         lockG.lock(index)
-        if (freezeFlags[index]) {
-            lockG.unlock(index)
-            return (None, false)
-        }
+        /* Tracks whether THIS function still owns the stripe mutex. On a
+         * 'true' return the lock is handed over to the caller (whose
+         * try/finally releases it), so it is released here only on the
+         * 'false' return or when a throw propagates. */
+        var owned = true
+        try {
+            if (freezeFlags[index]) {
+                return (None, false)
+            }
 
-        if (let Some(entries) <- buckets[index].refList()) {
-            return (Some(entries), true)
-        }
+            if (let Some(entries) <- buckets[index].refList()) {
+                owned = false // hand the lock over to the caller
+                return (Some(entries), true)
+            }
 
-        if (let Some(preHT) <- pre.load()) {
-            let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
-            preHT.freeze(preIndex)
-            buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
-        }
+            if (let Some(preHT) <- pre.load()) {
+                let preIndex = index & (preHT.buckets.size - 1) // Index of bucket remains to be migrated
+                preHT.freeze(preIndex)
+                buckets[index].migrate(preHT.buckets[preIndex].refList(), buckets.size - 1, index)
+            }
 
-        return (buckets[index].refList(), true)
+            owned = false // hand the lock over to the caller
+            return (buckets[index].refList(), true)
+        } finally {
+            /* Releases exactly when this function still owns the lock: the
+             * 'false' return and any throw (e.g. an OutOfMemoryError from
+             * the migration transfer). */
+            if (owned) {
+                lockG.unlock(index)
+            }
+        }
     }
 }
 
@@ -807,8 +855,9 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
                     ret = curHT.buckets[index].copyAddIfAbsent(hash, key, value)
                 } finally {
                     // copyAddIfAbsent invokes the user-overridden == (entries.find)
-                    // which may throw: the stripe mutex must be released on every
-                    // path, otherwise later writers to this stripe block forever.
+                    // and performs bucket allocations, either of which may throw:
+                    // the stripe mutex must be released on every path, otherwise
+                    // later writers to this stripe block forever.
                     curHT.lockG.unlock(index)
                 }
                 break
@@ -1098,7 +1147,35 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
         var i = curHT.migratingIndex.fetchAdd(1)
         var migrateCnt = 0
         while (i < concurrencyLevel) {
-            curHT.migrate(i, sz, concurrencyLevel)
+            try {
+                curHT.migrate(i, sz, concurrencyLevel)
+            } catch (e: Exception) {
+                /* A stripe migration failed. Mark the round dead with the
+                 * negative sentinel (plain fetchAdd sums can never go
+                 * negative, so "< 0" unambiguously means "failed"), return
+                 * the failed claim (the CLAIM can be re-taken by a later
+                 * resize round and the idempotent re-migration is safe, but
+                 * this table version can never be published again once its
+                 * migratedIndex is negative - see the FAIL-SAFE DEGRADATION
+                 * note in the publish-wait loop below), and stop the thread
+                 * elected to publish the next table from waiting for
+                 * convergence. The new table is NOT published this round, so
+                 * the invariant that the previous table is fully migrated
+                 * before 'head' advances stays intact (one-level read
+                 * fallback remains correct). The exception still propagates
+                 * to the caller. */
+                curHT.migratedIndex.store(Int64.Min)
+                curHT.migratingIndex.compareAndSwap(i + 1, i)
+                throw e
+            } catch (e: Error) {
+                /* Same bookkeeping as the Exception branch above. Errors
+                 * (e.g. OutOfMemoryError from the bucket-transfer
+                 * allocation) are catchable in Cangjie and must not wedge
+                 * the resize protocol either. */
+                curHT.migratedIndex.store(Int64.Min)
+                curHT.migratingIndex.compareAndSwap(i + 1, i)
+                throw e
+            }
             migrateCnt++
             i = curHT.migratingIndex.fetchAdd(1)
         }
@@ -1107,10 +1184,55 @@ public class ConcurrentHashMap<K, V> <: ConcurrentMap<K, V> & Collection<(K, V)>
         if (!curHNodeVersion.compareAndSwap(curHT.version, newVersion)) {
             return // There exists a thread allocating new hashtable, returns
         }
-        while (curHT.migratedIndex.load() < concurrencyLevel) {}
-        /* Allocate new hashtable */
+        while (curHT.migratedIndex.load() < concurrencyLevel) {
+            /* A stripe migration failed mid-transfer and its claim was
+             * consumed: migratedIndex can never reach concurrencyLevel.
+             * The negative sentinel marks that round as dead; give up
+             * instead of spinning forever. FAIL-SAFE DEGRADATION (not
+             * recovery): the sentinel is sticky - success paths only
+             * fetchAdd non-negative counts, so from Int64.Min the counter
+             * can never return to a non-negative value, and it is only
+             * zeroed on a NEW HNode whose publication itself depends on
+             * this round succeeding. This table version therefore NEVER
+             * publishes a successor table; the map stays fully usable
+             * (correct reads via the one-level 'pre' fallback, correct
+             * writes via tryGetBucket on-demand migration) but its capacity
+             * is frozen at the current size and later size-eligible writes
+             * repeat a claim-CAS-abort round. Per-round reset would need a
+             * new field, which the !1820 compatibility analysis forbids for
+             * this class layout; recovering the counter is left as future
+             * work. Additionally, the publication path below never runs
+             * after the sentinel, so this table keeps 'pre = Some(P)' for
+             * its whole lifetime: the frozen pre-table P (holding entries
+             * removed from this table after the freeze, potentially
+             * sensitive values) stays strongly referenced and is not GC
+             * reclaimable. Bounded by the table size at freeze time; the
+             * same no-new-field constraint applies to any freeze-time
+             * snapshot cleanup. The version CAS roll-back here only restores the
+             * invariant that a winning publisher either publishes or
+             * visibly gives up - it does NOT make the resize retriable. */
+            if (curHT.migratedIndex.load() < 0) {
+                curHNodeVersion.compareAndSwap(newVersion, curHT.version)
+                return
+            }
+        }
+        /* Publish in the original order (detach the fallback chain first,
+         * then allocate and store the new table): migration is fully
+         * complete here, so every element is already present in this table
+         * and detaching 'pre' first stays safe even if the allocation
+         * below throws. On allocation failure the version CAS is rolled
+         * back, so later resizes retry instead of believing a publisher
+         * is already working on a table that will never be published. */
         curHT.pre.store(None<HNode<K, V>>)
-        head.store(HNode<K, V>(sz << 1, Some(curHT), lockG[newVersion & 1], newVersion))
+        var published = false
+        try {
+            head.store(HNode<K, V>(sz << 1, Some(curHT), lockG[newVersion & 1], newVersion))
+            published = true
+        } finally {
+            if (!published) {
+                curHNodeVersion.compareAndSwap(newVersion, curHT.version)
+            }
+        }
     }
 
     /*
