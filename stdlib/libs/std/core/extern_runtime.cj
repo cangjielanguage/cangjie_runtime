@@ -47,6 +47,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * Returns the member @p field of @p e. Used for e.f.
      *
      * @throws ExternMemberAccessException if @p e has no member @p field.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func memberAccess(e: Extern<T>, field: String): Extern<T>
 
@@ -54,6 +55,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * Returns the element of @p e at @p index. Used for e[i]; e[i1, ..., in] is rejected.
      *
      * @throws ExternIndexedAccessException if @p e has no element at @p index.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
 
@@ -61,6 +63,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * Sets the member @p field of @p e to @p value. Used for e.f = v.
      *
      * @throws ExternMemberAccessException if the member @p field of @p e can't be set.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
 
@@ -68,6 +71,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * Sets the element of @p e at @p index to @p value. Used for e[i] = v.
      *
      * @throws ExternIndexedAccessException if the element of @p e at @p index can't be set.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
 
@@ -76,7 +80,8 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * the result of e.f.
      *
      * @throws ExternFunctionAccessException if @p e is not callable.
-     * @throws ExternFunctionCallException if the call fails.
+     * @throws ExternFunctionCallException if the arguments are wrong.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
 
@@ -84,6 +89,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * Converts @p h to a Cangjie value of type @p R. It is never called implicitly.
      *
      * @throws ExternConversionException if @p h can't be represented as a value of type @p R.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func fromExtern<R>(h: Extern<T>): R
 
@@ -92,6 +98,7 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
      * expected.
      *
      * @throws ExternConversionException if @p v can't be represented in the foreign runtime.
+     * @throws ForeignRuntimeException if the foreign runtime throws an exception.
      */
     static func toExtern<R>(v: R): Extern<T>
 }
@@ -110,7 +117,7 @@ public class ExternFunctionAccessException <: Exception {
     protected override func getClassName(): String { "ExternFunctionAccessException" }
 }
 
-/** Thrown when a call to a foreign value fails. */
+/** Thrown when a foreign value is called with wrong arguments. */
 public class ExternFunctionCallException <: Exception {
     public init() { super() }
     public init(message: String) { super(message) }

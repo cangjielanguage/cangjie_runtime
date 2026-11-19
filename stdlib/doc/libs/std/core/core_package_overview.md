@@ -170,8 +170,8 @@ core 包是标准库的核心包，提供了适用仓颉语言编程最基本的
 | [Exception](./core_package_api/core_package_exceptions.md#class-exception) | `Exception` 是所有异常类的父类。 |
 | <!--DelRow--> [ExclusiveScopeException](./core_package_api/core_package_exceptions.md#class-exclusivescopeexception) | 自定义异常类，用于包装在独占作用域中抛出的异常。它保留了原始异常的堆栈信息，不支持主动构造该异常，但是可以被捕获到。 |
 | [ExternConversionException](./core_package_api/core_package_exceptions.md#class-externconversionexception) | 表示值无法在仓颉与外部运行时之间转换的异常类。 |
-| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | 表示访问不存在的外部函数的异常类。 |
-| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | 表示调用外部函数时参数错误的异常类。 |
+| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | 表示外部值不可调用的异常类。 |
+| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | 表示调用外部值时参数错误的异常类。 |
 | [ExternIndexedAccessException](./core_package_api/core_package_exceptions.md#class-externindexedaccessexception) | 表示外部值的索引错误或越界的异常类。 |
 | [ExternMemberAccessException](./core_package_api/core_package_exceptions.md#class-externmemberaccessexception) | 表示访问或修改不存在的外部值成员的异常类。 |
 | [ForeignRuntimeException](./core_package_api/core_package_exceptions.md#class-foreignruntimeexception) | 表示外部运行时抛出异常的异常类。 |

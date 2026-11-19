@@ -170,8 +170,8 @@ It includes built-in types (signed integers, unsigned integers, floating-point n
 | [Exception](./core_package_api/core_package_exceptions.md#class-exception) | `Exception` is the parent class of all exception classes. |
 | [ExclusiveScopeException](./core_package_api/core_package_exceptions.md#class-exclusivescopeexception) | Custom exception class to wrap exceptions thrown in an exclusive scope. It preserves the original exception's stack trace and information. |
 | [ExternConversionException](./core_package_api/core_package_exceptions.md#class-externconversionexception) | Exception class representing values that can't be converted between Cangjie and a foreign runtime. |
-| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | Exception class representing accesses to non-existing foreign functions. |
-| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | Exception class representing wrong arguments in calls to foreign functions. |
+| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | Exception class representing foreign values that are not callable. |
+| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | Exception class representing wrong arguments in calls to foreign values. |
 | [ExternIndexedAccessException](./core_package_api/core_package_exceptions.md#class-externindexedaccessexception) | Exception class representing wrong or out-of-bounds indices of foreign values. |
 | [ExternMemberAccessException](./core_package_api/core_package_exceptions.md#class-externmemberaccessexception) | Exception class representing accesses or updates of non-existing members of foreign values. |
 | [ForeignRuntimeException](./core_package_api/core_package_exceptions.md#class-foreignruntimeexception) | Exception class representing exceptions thrown by a foreign runtime. |

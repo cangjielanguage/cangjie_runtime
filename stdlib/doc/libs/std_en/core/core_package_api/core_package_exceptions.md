@@ -686,7 +686,7 @@ public class ExternFunctionAccessException <: Exception {
 }
 ```
 
-Function: Represents an exception class for accesses to non-existing foreign functions.
+Function: Represents an exception class for foreign values that are not callable.
 
 Parent Types:
 
@@ -759,7 +759,7 @@ public class ExternFunctionCallException <: Exception {
 }
 ```
 
-Function: Represents an exception class for wrong arguments in calls to foreign functions.
+Function: Represents an exception class for wrong arguments in calls to foreign values.
 
 Parent Types:
 

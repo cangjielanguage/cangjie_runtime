@@ -1663,7 +1663,7 @@ Returns:
 
 Exceptions:
 
-- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - Thrown if the function does not exist.
+- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - Thrown if the foreign value is not callable.
 - [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) - Thrown if the arguments are wrong.
 - [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
 

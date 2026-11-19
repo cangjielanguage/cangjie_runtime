@@ -558,7 +558,7 @@ public class ExternFunctionAccessException <: Exception {
 }
 ```
 
-功能：表示访问不存在的外部函数的异常类。
+功能：表示外部值不可调用的异常类。
 
 父类型：
 
@@ -613,7 +613,7 @@ public class ExternFunctionCallException <: Exception {
 }
 ```
 
-功能：表示调用外部函数时参数错误的异常类。
+功能：表示调用外部值时参数错误的异常类。
 
 父类型：
 

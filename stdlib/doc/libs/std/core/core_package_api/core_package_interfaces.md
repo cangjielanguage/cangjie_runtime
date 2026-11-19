@@ -1672,7 +1672,7 @@ static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
 
 异常：
 
-- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - 当函数不存在时，抛出异常。
+- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - 当外部值不可调用时，抛出异常。
 - [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) - 当参数错误时，抛出异常。
 - [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
 
