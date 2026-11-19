@@ -1627,6 +1627,10 @@ static func fromExtern<R>(h: Extern<T>): R
 
 Function: Converts a foreign value to a value of type `R`.
 
+> **Note:**
+>
+> An [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) instance can be constructed from an arbitrary representation, so implementations of [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) must check its type.
+
 Parameters:
 
 - h: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.

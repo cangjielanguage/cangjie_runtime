@@ -1636,6 +1636,10 @@ static func fromExtern<R>(h: Extern<T>): R
 
 功能：将外部值转换为 `R` 类型的值。
 
+> **注意：**
+>
+> [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) 实例可以由任意表示构造，[ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) 的实现者需要检查表示的类型。
+
 参数：
 
 - h: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。

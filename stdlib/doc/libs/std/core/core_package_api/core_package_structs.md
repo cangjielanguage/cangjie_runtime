@@ -8316,6 +8316,10 @@ public init(payload: Any)
 
 功能：根据外部值的表示构造一个 Extern 实例。
 
+> **注意：**
+>
+> [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) 实例可以由任意表示构造，[ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) 的实现者需要检查表示的类型。
+
 参数：
 
 - payload: [Any](core_package_interfaces.md#interface-any) - 外部值的表示。
@@ -8327,6 +8331,10 @@ public static func getPayload(e: Extern<T>): Any
 ```
 
 功能：获取外部值的表示。
+
+> **注意：**
+>
+> [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) 实例可以由任意表示构造，[ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) 的实现者需要检查表示的类型。
 
 参数：
 

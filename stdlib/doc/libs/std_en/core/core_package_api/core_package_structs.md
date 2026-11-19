@@ -7865,6 +7865,10 @@ public init(payload: Any)
 
 Function: Constructs an Extern instance from the representation of a foreign value.
 
+> **Note:**
+>
+> An [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) instance can be constructed from an arbitrary representation, so implementations of [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) must check its type.
+
 Parameters:
 
 - payload: [Any](core_package_interfaces.md#interface-any) - The representation of the foreign value.
@@ -7876,6 +7880,10 @@ public static func getPayload(e: Extern<T>): Any
 ```
 
 Function: Gets the representation of a foreign value.
+
+> **Note:**
+>
+> An [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) instance can be constructed from an arbitrary representation, so implementations of [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) must check its type.
 
 Parameters:
 
