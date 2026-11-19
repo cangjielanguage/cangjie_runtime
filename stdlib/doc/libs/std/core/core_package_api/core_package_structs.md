@@ -8295,6 +8295,47 @@ Duration 4: 3h
 Duration 1 is not greater than or equal to Duration 4
 ```
 
+## struct Extern\<T> where T <: ForeignRuntime\<T>
+
+```cangjie
+public struct Extern<T> where T <: ForeignRuntime<T> {
+    public init(payload: Any)
+    public static func getPayload(e: Extern<T>): Any
+}
+```
+
+功能：表示外部运行时 `T` 中的值。
+
+对该类型实例的成员访问、索引访问、调用以及成员和元素的修改由 `T` 的静态函数实现，详见 [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet)。
+
+### init(Any)
+
+```cangjie
+public init(payload: Any)
+```
+
+功能：根据外部值的表示构造一个 Extern 实例。
+
+参数：
+
+- payload: [Any](core_package_interfaces.md#interface-any) - 外部值的表示。
+
+### static func getPayload(Extern\<T>)
+
+```cangjie
+public static func getPayload(e: Extern<T>): Any
+```
+
+功能：获取外部值的表示。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+
+返回值：
+
+- [Any](core_package_interfaces.md#interface-any) - `e` 的表示。
+
 ## struct LibC
 
 ```cangjie

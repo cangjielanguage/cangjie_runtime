@@ -118,6 +118,7 @@ core 包是标准库的核心包，提供了适用仓颉语言编程最基本的
 | [Resource](./core_package_api/core_package_interfaces.md#interface-resource) | 该接口用于资源管理，通常用于内存、句柄等资源的关闭和释放。 |
 | [ToString](./core_package_api/core_package_interfaces.md#interface-tostring) | 该接口用来提供具体类型的字符串表示。 |
 | [CType](./core_package_api/core_package_interfaces.md#interface-ctype) | 表示支持与 C 语言互操作的接口。 |
+| [ForeignRuntime\<T> where T <: ForeignRuntime\<T>](./core_package_api/core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) | 该接口表示外部运行时。 |
 
 ### 类
 
@@ -155,6 +156,7 @@ core 包是标准库的核心包，提供了适用仓颉语言编程最基本的
 | [CStringResource](./core_package_api/core_package_structs.md#struct-cstringresource) | 该结构体表示 `CString` 对应的资源管理类型，其实例可以通过 `CString` 的成员函数 `asResource` 获取。 |
 | [DefaultHasher](./core_package_api/core_package_structs.md#struct-defaulthasher) | 该结构体提供了默认哈希算法实现。 |
 | [Duration](./core_package_api/core_package_structs.md#struct-duration) | 表示时间间隔，是一个描述一段时间的时间类型，提供了常用的静态实例，以及计算、比较等功能。 |
+| [Extern\<T> where T <: ForeignRuntime\<T>](./core_package_api/core_package_structs.md#struct-externt-where-t--foreignruntimet) | 表示外部运行时 `T` 中的值。 |
 | [LibC](./core_package_api/core_package_structs.md#struct-libc) | 提供了仓颉中较为高频使用的 C 接口，如申请、释放堆上 CType 实例。 |
 | [Range\<T> where T <: Countable\<T> & Comparable\<T> & Equatable\<T>](./core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) | 该结构体是区间类型，用于表示一个拥有固定范围和步长的 `T` 的序列，要求 `T` 是可数的，有序的。 |
 | [String](./core_package_api/core_package_structs.md#struct-string) | 该结构体表示仓颉字符串，提供了构造、查找、拼接等一系列字符串操作。 |
@@ -167,6 +169,12 @@ core 包是标准库的核心包，提供了适用仓颉语言编程最基本的
 | [Error](./core_package_api/core_package_exceptions.md#class-error) | `Error` 是所有错误类的父类。该类不可被继承，不可初始化，但是可以被捕获到。 |
 | [Exception](./core_package_api/core_package_exceptions.md#class-exception) | `Exception` 是所有异常类的父类。 |
 | <!--DelRow--> [ExclusiveScopeException](./core_package_api/core_package_exceptions.md#class-exclusivescopeexception) | 自定义异常类，用于包装在独占作用域中抛出的异常。它保留了原始异常的堆栈信息，不支持主动构造该异常，但是可以被捕获到。 |
+| [ExternConversionException](./core_package_api/core_package_exceptions.md#class-externconversionexception) | 表示值无法在仓颉与外部运行时之间转换的异常类。 |
+| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | 表示访问不存在的外部函数的异常类。 |
+| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | 表示调用外部函数时参数错误的异常类。 |
+| [ExternIndexedAccessException](./core_package_api/core_package_exceptions.md#class-externindexedaccessexception) | 表示外部值的索引错误或越界的异常类。 |
+| [ExternMemberAccessException](./core_package_api/core_package_exceptions.md#class-externmemberaccessexception) | 表示访问或修改不存在的外部值成员的异常类。 |
+| [ForeignRuntimeException](./core_package_api/core_package_exceptions.md#class-foreignruntimeexception) | 表示外部运行时抛出异常的异常类。 |
 | [IllegalArgumentException](./core_package_api/core_package_exceptions.md#class-illegalargumentexception) | 表示参数非法的异常类。 |
 | [IllegalFormatException](./core_package_api/core_package_exceptions.md#class-illegalformatexception) | 表示变量的格式无效或不标准时的异常类。 |
 | [IllegalMemoryException](./core_package_api/core_package_exceptions.md#class-illegalmemoryexception) | 表示内存操作错误的异常类。 |

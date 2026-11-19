@@ -1610,6 +1610,171 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```
 
 <!--DelEnd_sink-->
+## interface ForeignRuntime\<T> where T <: ForeignRuntime\<T>
+
+```cangjie
+public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
+    static func memberAccess(e: Extern<T>, field: String): Extern<T>
+    static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+    static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
+    static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+    static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
+    static func fromExtern<R>(h: Extern<T>): R
+    static func toExtern<R>(v: R): Extern<T>
+}
+```
+
+功能：该接口表示外部运行时。
+
+[Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> 实例上的成员访问、索引访问、调用、成员和元素的修改，以及到 [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> 的隐式类型转换，由该接口的静态函数实现。
+
+### static func fromExtern\<R>(Extern\<T>)
+
+```cangjie
+static func fromExtern<R>(h: Extern<T>): R
+```
+
+功能：将外部值转换为 `R` 类型的值。
+
+参数：
+
+- h: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+
+返回值：
+
+- R - 转换后的值。
+
+异常：
+
+- [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - 当无法转换时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func functionCall(Extern\<T>, Array\<Any>)
+
+```cangjie
+static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
+```
+
+功能：调用外部值，用于实现 `e(args)`。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+- args: [Array](core_package_structs.md#struct-arrayt)\<[Any](core_package_interfaces.md#interface-any)> - 调用参数。
+
+返回值：
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 调用结果。
+
+异常：
+
+- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - 当函数不存在时，抛出异常。
+- [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) - 当参数错误时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func indexedAccess(Extern\<T>, Any)
+
+```cangjie
+static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+```
+
+功能：获取外部值的元素，用于实现 `e[arg]`。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+- arg: [Any](core_package_interfaces.md#interface-any) - 索引。
+
+返回值：
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 索引对应的元素。
+
+异常：
+
+- [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) - 当索引错误或越界时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func indexedUpdate(Extern\<T>, Any, Any)
+
+```cangjie
+static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+```
+
+功能：修改外部值的元素，用于实现 `e[field] = value`。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+- field: [Any](core_package_interfaces.md#interface-any) - 索引。
+- value: [Any](core_package_interfaces.md#interface-any) - 新值。
+
+异常：
+
+- [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) - 当索引错误或越界时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func memberAccess(Extern\<T>, String)
+
+```cangjie
+static func memberAccess(e: Extern<T>, field: String): Extern<T>
+```
+
+功能：获取外部值的成员，用于实现 `e.field`。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+- field: [String](core_package_structs.md#struct-string) - 成员名。
+
+返回值：
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 成员的值。
+
+异常：
+
+- [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) - 当成员不存在时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func memberUpdate(Extern\<T>, String, Any)
+
+```cangjie
+static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
+```
+
+功能：修改外部值的成员，用于实现 `e.field = value`。
+
+参数：
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
+- field: [String](core_package_structs.md#struct-string) - 成员名。
+- value: [Any](core_package_interfaces.md#interface-any) - 新值。
+
+异常：
+
+- [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) - 当成员不存在时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
+### static func toExtern\<R>(R)
+
+```cangjie
+static func toExtern<R>(v: R): Extern<T>
+```
+
+功能：将 `R` 类型的值转换为外部值。在需要 [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> 类型的位置使用 `R` 类型的值时，隐式调用该函数。
+
+参数：
+
+- v: R - 待转换的值。
+
+返回值：
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 转换后的外部值。
+
+异常：
+
+- [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - 当无法转换时，抛出异常。
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - 当外部运行时抛出异常时，抛出异常。
+
 ## interface Greater\<T>
 
 ```cangjie

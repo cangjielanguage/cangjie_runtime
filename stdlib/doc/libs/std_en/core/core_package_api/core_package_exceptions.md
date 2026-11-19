@@ -604,6 +604,444 @@ main() {
 }
 ```
 
+## class ExternConversionException
+
+```cangjie
+public class ExternConversionException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for values that can't be converted between Cangjie and a foreign runtime.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExternConversionException](core_package_exceptions.md#class-externconversionexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternConversionException instance using the default constructor
+    let exception = ExternConversionException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ExternConversionException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [ExternConversionException](core_package_exceptions.md#class-externconversionexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternConversionException instance with a custom message
+    let exception = ExternConversionException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ExternConversionException: Custom exception message
+```
+
+## class ExternFunctionAccessException
+
+```cangjie
+public class ExternFunctionAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for accesses to non-existing foreign functions.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternFunctionAccessException instance using the default constructor
+    let exception = ExternFunctionAccessException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ExternFunctionAccessException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternFunctionAccessException instance with a custom message
+    let exception = ExternFunctionAccessException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ExternFunctionAccessException: Custom exception message
+```
+
+## class ExternFunctionCallException
+
+```cangjie
+public class ExternFunctionCallException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for wrong arguments in calls to foreign functions.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternFunctionCallException instance using the default constructor
+    let exception = ExternFunctionCallException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ExternFunctionCallException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternFunctionCallException instance with a custom message
+    let exception = ExternFunctionCallException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ExternFunctionCallException: Custom exception message
+```
+
+## class ExternIndexedAccessException
+
+```cangjie
+public class ExternIndexedAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for wrong or out-of-bounds indices of foreign values.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternIndexedAccessException instance using the default constructor
+    let exception = ExternIndexedAccessException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ExternIndexedAccessException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternIndexedAccessException instance with a custom message
+    let exception = ExternIndexedAccessException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ExternIndexedAccessException: Custom exception message
+```
+
+## class ExternMemberAccessException
+
+```cangjie
+public class ExternMemberAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for accesses or updates of non-existing members of foreign values.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternMemberAccessException instance using the default constructor
+    let exception = ExternMemberAccessException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ExternMemberAccessException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs an [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create an ExternMemberAccessException instance with a custom message
+    let exception = ExternMemberAccessException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ExternMemberAccessException: Custom exception message
+```
+
+## class ForeignRuntimeException
+
+```cangjie
+public class ForeignRuntimeException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+Function: Represents an exception class for exceptions thrown by a foreign runtime.
+
+Parent Types:
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a default [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) instance with an empty default exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create a ForeignRuntimeException instance using the default constructor
+    let exception = ForeignRuntimeException()
+    println("Default exception message: '" + exception.message + "'")
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Default exception message: ''
+Exception class name: ForeignRuntimeException
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs a [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) instance with the specified exception message.
+
+Parameters:
+
+- message: [String](core_package_structs.md#struct-string) - The exception message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+main() {
+    // Create a ForeignRuntimeException instance with a custom message
+    let exception = ForeignRuntimeException("Custom exception message")
+    println("Exception message: " + exception.message)
+    println("Exception class name: " + exception.toString())
+}
+```
+
+Output:
+
+```text
+Exception message: Custom exception message
+Exception class name: ForeignRuntimeException: Custom exception message
+```
+
 ## class IllegalArgumentException
 
 ```cangjie

@@ -1601,6 +1601,171 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```
 
 <!--DelEnd_sink-->
+## interface ForeignRuntime\<T> where T <: ForeignRuntime\<T>
+
+```cangjie
+public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
+    static func memberAccess(e: Extern<T>, field: String): Extern<T>
+    static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+    static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
+    static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+    static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
+    static func fromExtern<R>(h: Extern<T>): R
+    static func toExtern<R>(v: R): Extern<T>
+}
+```
+
+Function: This interface represents a foreign runtime.
+
+Member accesses, index accesses, calls, and member and element updates on [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> instances, and implicit conversions to [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T>, are implemented by the static functions of this interface.
+
+### static func fromExtern\<R>(Extern\<T>)
+
+```cangjie
+static func fromExtern<R>(h: Extern<T>): R
+```
+
+Function: Converts a foreign value to a value of type `R`.
+
+Parameters:
+
+- h: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+
+Returns:
+
+- R - The converted value.
+
+Exceptions:
+
+- [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - Thrown if the conversion fails.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func functionCall(Extern\<T>, Array\<Any>)
+
+```cangjie
+static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
+```
+
+Function: Calls a foreign value. It implements `e(args)`.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+- args: [Array](core_package_structs.md#struct-arrayt)\<[Any](core_package_interfaces.md#interface-any)> - The arguments.
+
+Returns:
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The result of the call.
+
+Exceptions:
+
+- [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) - Thrown if the function does not exist.
+- [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) - Thrown if the arguments are wrong.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func indexedAccess(Extern\<T>, Any)
+
+```cangjie
+static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+```
+
+Function: Gets an element of a foreign value. It implements `e[arg]`.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+- arg: [Any](core_package_interfaces.md#interface-any) - The index.
+
+Returns:
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The element at the index.
+
+Exceptions:
+
+- [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) - Thrown if the index is wrong or out of bounds.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func indexedUpdate(Extern\<T>, Any, Any)
+
+```cangjie
+static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+```
+
+Function: Updates an element of a foreign value. It implements `e[field] = value`.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+- field: [Any](core_package_interfaces.md#interface-any) - The index.
+- value: [Any](core_package_interfaces.md#interface-any) - The new value.
+
+Exceptions:
+
+- [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) - Thrown if the index is wrong or out of bounds.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func memberAccess(Extern\<T>, String)
+
+```cangjie
+static func memberAccess(e: Extern<T>, field: String): Extern<T>
+```
+
+Function: Gets a member of a foreign value. It implements `e.field`.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+- field: [String](core_package_structs.md#struct-string) - The member name.
+
+Returns:
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The value of the member.
+
+Exceptions:
+
+- [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) - Thrown if the member does not exist.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func memberUpdate(Extern\<T>, String, Any)
+
+```cangjie
+static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
+```
+
+Function: Updates a member of a foreign value. It implements `e.field = value`.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+- field: [String](core_package_structs.md#struct-string) - The member name.
+- value: [Any](core_package_interfaces.md#interface-any) - The new value.
+
+Exceptions:
+
+- [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) - Thrown if the member does not exist.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
+### static func toExtern\<R>(R)
+
+```cangjie
+static func toExtern<R>(v: R): Extern<T>
+```
+
+Function: Converts a value of type `R` to a foreign value. It is called implicitly when a value of type `R` is used where [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> is expected.
+
+Parameters:
+
+- v: R - The value to convert.
+
+Returns:
+
+- [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The converted foreign value.
+
+Exceptions:
+
+- [ExternConversionException](core_package_exceptions.md#class-externconversionexception) - Thrown if the conversion fails.
+- [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) - Thrown if the foreign runtime throws an exception.
+
 ## interface Greater\<T>
 
 ```cangjie

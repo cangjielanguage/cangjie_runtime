@@ -118,6 +118,7 @@ It includes built-in types (signed integers, unsigned integers, floating-point n
 | [Resource](./core_package_api/core_package_interfaces.md#interface-resource) | This interface manages resources, typically used for closing and releasing memory, handles, etc. |
 | [ToString](./core_package_api/core_package_interfaces.md#interface-tostring) | This interface provides a string representation of a specific type. |
 | [CType](./core_package_api/core_package_interfaces.md#interface-ctype) | Represents an interface supporting C language interoperability. |
+| [ForeignRuntime\<T> where T <: ForeignRuntime\<T>](./core_package_api/core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) | This interface represents a foreign runtime. |
 
 ### Classes
 
@@ -155,6 +156,7 @@ It includes built-in types (signed integers, unsigned integers, floating-point n
 | [CStringResource](./core_package_api/core_package_structs.md#struct-cstringresource) | This struct represents the resource management type corresponding to `CString`, and its instance can be obtained through the member function `asResource` of `CString`. |
 | [DefaultHasher](./core_package_api/core_package_structs.md#struct-defaulthasher) | This struct provides the default hash algorithm implementation. |
 | [Duration](./core_package_api/core_package_structs.md#struct-duration) | Represents a time interval, which is a time type describing a period of time, providing common static instances as well as calculation and comparison functions. |
+| [Extern\<T> where T <: ForeignRuntime\<T>](./core_package_api/core_package_structs.md#struct-externt-where-t--foreignruntimet) | Represents a value of the foreign runtime `T`. |
 | [LibC](./core_package_api/core_package_structs.md#struct-libc) | Provides high-frequency used C interfaces in Cangjie, such as allocating and freeing heap-based CType instances. |
 | [Range\<T> where T <: Countable\<T> & Comparable\<T> & Equatable\<T>](./core_package_api/core_package_structs.md#struct-ranget-where-t--countablet--comparablet--equatablet) | This class is an interval type used to represent a sequence of `T` with fixed range and step size, requiring `T` to be countable and ordered. |
 | [String](./core_package_api/core_package_structs.md#struct-string) | This struct represents the Cangjie string, providing a series of string operations such as construction, searching, and concatenation. |
@@ -167,6 +169,12 @@ It includes built-in types (signed integers, unsigned integers, floating-point n
 | [Error](./core_package_api/core_package_exceptions.md#class-error) | `Error` is the parent class of all error classes. This class cannot be inherited or initialized, but can be caught. |
 | [Exception](./core_package_api/core_package_exceptions.md#class-exception) | `Exception` is the parent class of all exception classes. |
 | [ExclusiveScopeException](./core_package_api/core_package_exceptions.md#class-exclusivescopeexception) | Custom exception class to wrap exceptions thrown in an exclusive scope. It preserves the original exception's stack trace and information. |
+| [ExternConversionException](./core_package_api/core_package_exceptions.md#class-externconversionexception) | Exception class representing values that can't be converted between Cangjie and a foreign runtime. |
+| [ExternFunctionAccessException](./core_package_api/core_package_exceptions.md#class-externfunctionaccessexception) | Exception class representing accesses to non-existing foreign functions. |
+| [ExternFunctionCallException](./core_package_api/core_package_exceptions.md#class-externfunctioncallexception) | Exception class representing wrong arguments in calls to foreign functions. |
+| [ExternIndexedAccessException](./core_package_api/core_package_exceptions.md#class-externindexedaccessexception) | Exception class representing wrong or out-of-bounds indices of foreign values. |
+| [ExternMemberAccessException](./core_package_api/core_package_exceptions.md#class-externmemberaccessexception) | Exception class representing accesses or updates of non-existing members of foreign values. |
+| [ForeignRuntimeException](./core_package_api/core_package_exceptions.md#class-foreignruntimeexception) | Exception class representing exceptions thrown by a foreign runtime. |
 | [IllegalArgumentException](./core_package_api/core_package_exceptions.md#class-illegalargumentexception) | Exception class representing illegal arguments. |
 | [IllegalFormatException](./core_package_api/core_package_exceptions.md#class-illegalformatexception) | Exception class for invalid or non-standard variable formats. |
 | [IllegalMemoryException](./core_package_api/core_package_exceptions.md#class-illegalmemoryexception) | Exception class for memory operation errors. |

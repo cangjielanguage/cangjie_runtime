@@ -494,6 +494,336 @@ main() {
 ```
 
 <!--DelEnd-->
+## class ExternConversionException
+
+```cangjie
+public class ExternConversionException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示值无法在仓颉与外部运行时之间转换的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExternConversionException](core_package_exceptions.md#class-externconversionexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ExternConversionException实例
+    let exception = ExternConversionException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ExternConversionException](core_package_exceptions.md#class-externconversionexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ExternConversionException实例
+    let exception = ExternConversionException("自定义异常信息")
+}
+```
+
+## class ExternFunctionAccessException
+
+```cangjie
+public class ExternFunctionAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示访问不存在的外部函数的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ExternFunctionAccessException实例
+    let exception = ExternFunctionAccessException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ExternFunctionAccessException](core_package_exceptions.md#class-externfunctionaccessexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ExternFunctionAccessException实例
+    let exception = ExternFunctionAccessException("自定义异常信息")
+}
+```
+
+## class ExternFunctionCallException
+
+```cangjie
+public class ExternFunctionCallException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示调用外部函数时参数错误的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ExternFunctionCallException实例
+    let exception = ExternFunctionCallException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ExternFunctionCallException](core_package_exceptions.md#class-externfunctioncallexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ExternFunctionCallException实例
+    let exception = ExternFunctionCallException("自定义异常信息")
+}
+```
+
+## class ExternIndexedAccessException
+
+```cangjie
+public class ExternIndexedAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示外部值的索引错误或越界的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ExternIndexedAccessException实例
+    let exception = ExternIndexedAccessException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ExternIndexedAccessException](core_package_exceptions.md#class-externindexedaccessexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ExternIndexedAccessException实例
+    let exception = ExternIndexedAccessException("自定义异常信息")
+}
+```
+
+## class ExternMemberAccessException
+
+```cangjie
+public class ExternMemberAccessException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示访问或修改不存在的外部值成员的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ExternMemberAccessException实例
+    let exception = ExternMemberAccessException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ExternMemberAccessException](core_package_exceptions.md#class-externmemberaccessexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ExternMemberAccessException实例
+    let exception = ExternMemberAccessException("自定义异常信息")
+}
+```
+
+## class ForeignRuntimeException
+
+```cangjie
+public class ForeignRuntimeException <: Exception {
+    public init()
+    public init(message: String)
+}
+```
+
+功能：表示外部运行时抛出异常的异常类。
+
+父类型：
+
+- [Exception](#class-exception)
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个默认的 [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) 实例，默认异常信息为空。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用默认构造函数创建ForeignRuntimeException实例
+    let exception = ForeignRuntimeException()
+}
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：根据异常信息构造一个 [ForeignRuntimeException](core_package_exceptions.md#class-foreignruntimeexception) 实例。
+
+参数：
+
+- message: [String](core_package_structs.md#struct-string) - 异常提示信息。
+
+示例：
+
+<!-- run -->
+```cangjie
+main() {
+    // 使用带消息的构造函数创建ForeignRuntimeException实例
+    let exception = ForeignRuntimeException("自定义异常信息")
+}
+```
+
 ## class IllegalArgumentException
 
 ```cangjie
