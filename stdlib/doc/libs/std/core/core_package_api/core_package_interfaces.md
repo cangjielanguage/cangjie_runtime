@@ -1615,9 +1615,9 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```cangjie
 public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     static func memberAccess(e: Extern<T>, field: String): Extern<T>
-    static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+    static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
     static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
-    static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+    static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
     static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
     static func fromExtern<R>(h: Extern<T>): R
     static func toExtern<R>(v: R): Extern<T>
@@ -1675,15 +1675,15 @@ static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
 ### static func indexedAccess(Extern\<T>, Any)
 
 ```cangjie
-static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
 ```
 
-功能：获取外部值的元素，用于实现 `e[arg]`。
+功能：获取外部值的元素，用于实现 `e[index]`。
 
 参数：
 
 - e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
-- arg: [Any](core_package_interfaces.md#interface-any) - 索引。
+- index: [Any](core_package_interfaces.md#interface-any) - 索引。
 
 返回值：
 
@@ -1697,15 +1697,15 @@ static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
 ### static func indexedUpdate(Extern\<T>, Any, Any)
 
 ```cangjie
-static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
 ```
 
-功能：修改外部值的元素，用于实现 `e[field] = value`。
+功能：修改外部值的元素，用于实现 `e[index] = value`。
 
 参数：
 
 - e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - 外部值。
-- field: [Any](core_package_interfaces.md#interface-any) - 索引。
+- index: [Any](core_package_interfaces.md#interface-any) - 索引。
 - value: [Any](core_package_interfaces.md#interface-any) - 新值。
 
 异常：

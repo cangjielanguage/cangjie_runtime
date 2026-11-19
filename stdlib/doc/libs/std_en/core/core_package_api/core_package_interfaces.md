@@ -1606,9 +1606,9 @@ caught: Current Type does not implement '==' method for its @local? instance
 ```cangjie
 public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     static func memberAccess(e: Extern<T>, field: String): Extern<T>
-    static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+    static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
     static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
-    static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+    static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
     static func functionCall(e: Extern<T>, args: Array<Any>): Extern<T>
     static func fromExtern<R>(h: Extern<T>): R
     static func toExtern<R>(v: R): Extern<T>
@@ -1666,15 +1666,15 @@ Exceptions:
 ### static func indexedAccess(Extern\<T>, Any)
 
 ```cangjie
-static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
 ```
 
-Function: Gets an element of a foreign value. It implements `e[arg]`.
+Function: Gets an element of a foreign value. It implements `e[index]`.
 
 Parameters:
 
 - e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
-- arg: [Any](core_package_interfaces.md#interface-any) - The index.
+- index: [Any](core_package_interfaces.md#interface-any) - The index.
 
 Returns:
 
@@ -1688,15 +1688,15 @@ Exceptions:
 ### static func indexedUpdate(Extern\<T>, Any, Any)
 
 ```cangjie
-static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
 ```
 
-Function: Updates an element of a foreign value. It implements `e[field] = value`.
+Function: Updates an element of a foreign value. It implements `e[index] = value`.
 
 Parameters:
 
 - e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
-- field: [Any](core_package_interfaces.md#interface-any) - The index.
+- index: [Any](core_package_interfaces.md#interface-any) - The index.
 - value: [Any](core_package_interfaces.md#interface-any) - The new value.
 
 Exceptions:

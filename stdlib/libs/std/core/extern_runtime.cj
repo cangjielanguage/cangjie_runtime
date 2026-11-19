@@ -51,11 +51,11 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     static func memberAccess(e: Extern<T>, field: String): Extern<T>
 
     /**
-     * Returns the element of @p e at index @p arg. Used for e[i]; e[i1, ..., in] is rejected.
+     * Returns the element of @p e at @p index. Used for e[i]; e[i1, ..., in] is rejected.
      *
-     * @throws ExternIndexedAccessException if @p e has no element at index @p arg.
+     * @throws ExternIndexedAccessException if @p e has no element at @p index.
      */
-    static func indexedAccess(e: Extern<T>, arg: Any): Extern<T>
+    static func indexedAccess(e: Extern<T>, index: Any): Extern<T>
 
     /**
      * Sets the member @p field of @p e to @p value. Used for e.f = v.
@@ -65,11 +65,11 @@ public interface ForeignRuntime<T> where T <: ForeignRuntime<T> {
     static func memberUpdate(e: Extern<T>, field: String, value: Any): Unit
 
     /**
-     * Sets the element of @p e at index @p field to @p value. Used for e[i] = v.
+     * Sets the element of @p e at @p index to @p value. Used for e[i] = v.
      *
-     * @throws ExternIndexedAccessException if the element of @p e at index @p field can't be set.
+     * @throws ExternIndexedAccessException if the element of @p e at @p index can't be set.
      */
-    static func indexedUpdate(e: Extern<T>, field: Any, value: Any): Unit
+    static func indexedUpdate(e: Extern<T>, index: Any, value: Any): Unit
 
     /**
      * Calls @p e with the arguments @p args and returns the result. Used for e(a1, ..., an); e.f(a1, ..., an) calls
