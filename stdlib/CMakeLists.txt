@@ -12,8 +12,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 # consumers that only reuse AddCangjieSource retain the module's OFF default.
 option(CANGJIE_ENABLE_LOCAL_MODE "Build the standard library with experimental local mode" ON)
 message(STATUS "Cangjie standard library local mode: ${CANGJIE_ENABLE_LOCAL_MODE}")
-# The full standard-library build includes experimental local-mode APIs by default.
-option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile the experimental local-mode APIs of the standard library" ON)
+# The experimental local-mode APIs are opt-in, independently of syntax support.
+option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile the experimental local-mode APIs of the standard library" OFF)
 message(STATUS "Cangjie standard library local API: ${CANGJIE_ENABLE_LOCAL_MODE_API}")
 # The standard library sources reference local-mode syntax throughout, so the full project
 # cannot be built with the parser support disabled. Reject it here instead of letting the

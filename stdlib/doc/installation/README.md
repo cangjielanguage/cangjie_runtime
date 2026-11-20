@@ -170,4 +170,4 @@ To update the Cangjie toolchain, first uninstall the current version, then follo
 
 `CANGJIE_ENABLE_LOCAL_MODE` controls whether `add_cangjie_library` passes `--experimental --enable-local-mode`. The standard-library project requires this syntax support. When reusing only `AddCangjieSource.cmake`, the syntax and API switches both default to `OFF`.
 
-The full standard-library build includes the experimental local-mode APIs by default. To omit them while keeping syntax support, use `python3 build.py build -t release --no_local_mode_api` in `stdlib`, or set `-DCANGJIE_ENABLE_LOCAL_MODE_API=OFF` when configuring with CMake.
+The full standard-library build omits experimental local-mode APIs by default while keeping syntax support enabled. To include the APIs, run `python3 build.py build -t release --local_mode_api` in `stdlib`, or set `-DCANGJIE_ENABLE_LOCAL_MODE_API=ON` when configuring with CMake.
