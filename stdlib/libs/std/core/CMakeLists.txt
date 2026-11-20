@@ -13,6 +13,7 @@ set(CANGJIE_CORE_SRCS
     duration.cj
     sleep.cj
     option.cj
+    extern_runtime.cj
     to_string.cj
     endian.cj
     float.cj

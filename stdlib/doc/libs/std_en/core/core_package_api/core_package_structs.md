@@ -7844,6 +7844,61 @@ Duration 4: 3h
 Duration 1 is not greater than or equal to Duration 4
 ```
 
+<!--Del-->
+## struct Extern\<T> where T <: ForeignRuntime\<T>
+
+```cangjie
+public struct Extern<T> where T <: ForeignRuntime<T> {
+    public init(payload: Any)
+    public static func getPayload(e: Extern<T>): Any
+}
+```
+
+Function: Represents a value of the foreign runtime `T`.
+
+Member accesses, index accesses, calls, and member and element updates on instances of this type are implemented by the static functions of `T`. For details, see [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet).
+
+> **Note:**
+>
+> Unsupported platform: OpenHarmony.
+
+### init(Any)
+
+```cangjie
+public init(payload: Any)
+```
+
+Function: Constructs an Extern instance from the representation of a foreign value.
+
+> **Note:**
+>
+> An [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) instance can be constructed from an arbitrary representation, so implementations of [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) must check its type.
+
+Parameters:
+
+- payload: [Any](core_package_interfaces.md#interface-any) - The representation of the foreign value.
+
+### static func getPayload(Extern\<T>)
+
+```cangjie
+public static func getPayload(e: Extern<T>): Any
+```
+
+Function: Gets the representation of a foreign value.
+
+> **Note:**
+>
+> An [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet) instance can be constructed from an arbitrary representation, so implementations of [ForeignRuntime](core_package_interfaces.md#interface-foreignruntimet-where-t--foreignruntimet) must check its type.
+
+Parameters:
+
+- e: [Extern](core_package_structs.md#struct-externt-where-t--foreignruntimet)\<T> - The foreign value.
+
+Returns:
+
+- [Any](core_package_interfaces.md#interface-any) - The representation of `e`.
+
+<!--DelEnd-->
 ## struct LibC
 
 ```cangjie
