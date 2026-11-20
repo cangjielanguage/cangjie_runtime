@@ -42,7 +42,7 @@ MAddress HeapManager::AllocateLocal(size_t allocSize)
 void HeapManager::Init(const HeapParam& param)
 {
     Heap::GetHeap().Init(param);
-    regionSpace = &reinterpret_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
+    regionSpace = &static_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
     localObjectAllocator = &regionSpace->GetLocalObjectAllocator();
 }
 

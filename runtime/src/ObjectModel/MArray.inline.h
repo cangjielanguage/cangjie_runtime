@@ -148,9 +148,10 @@ inline MArray* MArray::NewLocalArray(MIndex nElems, TypeInfo& arrayClass)
     }
 
     auto elem = arrayClass.GetSuperTypeInfo();
+    CHECK_DETAIL(elem != nullptr, "local array has no super type");
     auto elemBytes = sizeof(void*);
     if (!elem->IsRef()) {
-        elemBytes = arrayClass.GetSuperTypeInfo()->GetComponentSize();
+        elemBytes = elem->GetComponentSize();
     }
     return NewLocalKnownWidthArray(nElems, arrayClass, elemBytes);
 }

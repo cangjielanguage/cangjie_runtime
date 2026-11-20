@@ -10,13 +10,11 @@
 
 #include "Base/Macros.h"
 #include "Common/TypeDef.h"
+#include "Heap/Allocator/RegionSpace.h"
 #include "Heap/Collector/GcRequest.h"
 #include "RuntimeConfig.h"
 
 namespace MapleRuntime {
-class LocalObjectAllocator;
-class RegionSpace;
-
 // replace this for Heap.
 class HeapManager {
 public:

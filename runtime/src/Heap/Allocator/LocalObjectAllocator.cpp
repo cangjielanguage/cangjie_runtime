@@ -484,8 +484,7 @@ void NativeLocalObjectAllocator::StartRegion(Mutator& mutator, FrameAddress* own
     // A frame only records the current allocation position. Allocate() creates
     // a chunk lazily when the first allocation cannot use the active chunk.
     data->currentFrame = frame;
-    VLOG(LOCAL_REGION, "StartNativeLocalRegion: mutator %p, frame %p, ownerFA %p, chunk %p, top %p", &mutator,
-         frame, ownerFA, data->currentChunk, reinterpret_cast<void*>(data->regionTop));
+    VLOG(LOCAL_REGION, "StartNativeLocalRegion");
 }
 
 ALWAYS_INLINE MAddress NativeLocalObjectAllocator::TryAllocate(MutatorData& data, size_t size)
@@ -526,8 +525,7 @@ MAddress NativeLocalObjectAllocator::Allocate(Mutator& mutator, size_t size)
     AppendActiveChunk(*data, chunk);
     addr = TryAllocate(*data, size);
     CHECK_DETAIL(addr != 0, "native local allocation failed after adding chunk");
-    VLOG(LOCAL_REGION, "AllocNativeLocalObject: mutator %p, chunk %p, obj %p, objSize %zu", &mutator, chunk,
-         reinterpret_cast<void*>(addr), size);
+    VLOG(LOCAL_REGION, "AllocNativeLocalObject: objSize %zu", size);
     return addr;
 }
 
@@ -571,12 +569,10 @@ void NativeLocalObjectAllocator::EndRegion(Mutator& mutator, FrameAddress* owner
             targetFrame = targetFrame->prev;
         }
         if (targetFrame == nullptr) {
-            LOG(RTLOG_WARNING, "skip native local region end for mismatched frame: ownerFA %p target %p",
-                frame->ownerFA, ownerFA);
+            LOG(RTLOG_WARNING, "skip native local region end for mismatched frame");
             return;
         }
-        VLOG(LOCAL_REGION, "EndNativeLocalRegion across frame boundary: top ownerFA %p, target ownerFA %p",
-             frame->ownerFA, ownerFA);
+        VLOG(LOCAL_REGION, "EndNativeLocalRegion across frame boundary");
         while (data->currentFrame != nullptr) {
             bool reachedTarget = data->currentFrame == targetFrame;
             EndTopFrame(mutator, *data);

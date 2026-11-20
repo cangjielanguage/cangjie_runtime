@@ -537,7 +537,7 @@ extern "C" size_t MCC_GetAllocatedLocalObjectSize()
     // mode excludes the unused tail of the current allocation chunk.
     ScopedEnterSaferegion enterSaferegion(false);
     ScopedStopTheWorld stw("get allocated local object size");
-    RegionSpace& regionSpace = reinterpret_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
+    RegionSpace& regionSpace = static_cast<RegionSpace&>(Heap::GetHeap().GetAllocator());
     return regionSpace.GetLocalObjectAllocator().GetAllocatedObjectBytes();
 }
 
@@ -653,7 +653,9 @@ extern "C" void CJ_MCC_RemoveSignalHandler(int signal, bool (*fn)(int, siginfo_t
 
 extern "C" ArrayRef MCC_FillInStackTraceImpl(const TypeInfo* arrayInfo, const ArrayRef excepMsg)
 {
-    ExceptionWrapper& eWrapper = Mutator::GetMutator()->GetExceptionWrapper();
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "cannot fill stack trace without mutator");
+    ExceptionWrapper& eWrapper = mutator->GetExceptionWrapper();
     MIndex msgLength = excepMsg->GetLength();
     if (msgLength != 0) {
         eWrapper.SetExceptionMessage(reinterpret_cast<const char*>(excepMsg->ConvertToCArray()), msgLength);
@@ -2203,22 +2205,30 @@ extern "C" void CJ_MRT_RegisterExceptionCallback(void(*callback)())
 
 extern "C" void MCC_StartLocalRegion(FrameAddress* ownerFA)
 {
-    Mutator::GetMutator()->StartLocalObjectRegion(ownerFA);
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "start local region without mutator");
+    mutator->StartLocalObjectRegion(ownerFA);
 }
 
 extern "C" void MCC_EndLocalRegion(FrameAddress* ownerFA)
 {
-    Mutator::GetMutator()->EndLocalObjectRegion(ownerFA);
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "end local region without mutator");
+    mutator->EndLocalObjectRegion(ownerFA);
 }
 
 extern "C" void MCC_AddLocalFinalizer(ObjectPtr obj)
 {
-    Mutator::GetMutator()->AddLocalFinalizer(obj);
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "add local finalizer without mutator");
+    mutator->AddLocalFinalizer(obj);
 }
 
 extern "C" void MCC_RemoveLocalFinalizer(ObjectPtr obj)
 {
-    Mutator::GetMutator()->RemoveLocalFinalizer(obj);
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "remove local finalizer without mutator");
+    mutator->RemoveLocalFinalizer(obj);
 }
 
 extern "C" ObjRef MCC_NewLocalObject(const TypeInfo* klass, MSize size)
