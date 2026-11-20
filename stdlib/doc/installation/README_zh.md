@@ -174,4 +174,4 @@ $ rm -rf <path>/<to>/cangjie
 
 `CANGJIE_ENABLE_LOCAL_MODE` 控制 `add_cangjie_library` 是否传入 `--experimental --enable-local-mode`。标准库主工程要求开启语法支持；单独复用 `AddCangjieSource.cmake` 时，语法和 API 开关默认均为 `OFF`。
 
-标准库主工程默认编译实验性的 local-mode API。若要关闭 API 而保留语法支持，在 `stdlib` 下使用 `python3 build.py build -t release --no_local_mode_api`，或在 CMake 配置时设置 `-DCANGJIE_ENABLE_LOCAL_MODE_API=OFF`。
+标准库主工程默认不编译实验性的 local-mode API，语法支持仍保持开启。若要编译这些 API，在 `stdlib` 下使用 `python3 build.py build -t release --local_mode_api`，或在 CMake 配置时设置 `-DCANGJIE_ENABLE_LOCAL_MODE_API=ON`。
