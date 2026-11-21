@@ -21,7 +21,8 @@ package std.interop.arkts
  * is a bidirectional mapping to the ArkTS `unknown` type: a value that satisfies
  * the `ArkTSType` constraint can be assigned to a variable of this type. The
  * mapping itself, and the relation that `@ArkTS`-annotated types implicitly
- * implement this interface, arrive with AR-05/06 and are not guaranteed here.
+ * implement this interface, are not available in this release and will be
+ * available in a later release.
  */
 @ArkTS
 public interface ArkTSType {}
@@ -40,20 +41,20 @@ public interface ArkTSType {}
  * `ArkTSArray<T>` is the stdlib-predefined external ArkTS type for the ArkTS
  * `T[]`/`Array<T>` object. By design an instance references an ArkTS array
  * object, so modifications performed on either the ArkTS side or the Cangjie
- * side are visible on the other side; that reference semantics is deferred and
- * arrives with AR-05/06.
+ * side are visible on the other side; that reference semantics is not
+ * available in this release and will be available in a later release.
  *
- * The members below are the R-16 subset shipped in this version: 14 of the 30
+ * The members below are the subset shipped in this version: 14 of the 30
  * designed members. They are declared without bodies in the foreign class
- * bound to ArkTS `Array`, and the rest arrive with AR-05/06. Every member is
- * implemented on the ArkTS side.
+ * bound to ArkTS `Array`, and the rest will be available in a later release.
+ * Every member is implemented on the ArkTS side.
  */
 @ArkTS[foreignName: "Array"]
 public foreign class ArkTSArray<T> {
     public init(arrayLength: Float64)
     public init(@RestParam items: Array<T>)
     public static func isArray(arg: ArkTSType): Bool
-    public static prop prototype: ArkTSType
+    public static prop prototype: ArkTSArray<ArkTSType>
     public prop length: Float64
     public func pop(): Option<T>
     public func push(@RestParam items: Array<T>): Float64
@@ -75,12 +76,12 @@ public foreign class ArkTSArray<T> {
  * same reference semantics as `ArkTSArray<T>`. `charAt`/`toString` necessarily
  * copy the contents into a Cangjie `String`; `slice`/`substring`/
  * `toUpperCase`/`toLowerCase` return a primitive JS string, carried by the
- * returned `ArkTSString` handle. That reference semantics is deferred and
- * arrives with AR-05/06.
+ * returned `ArkTSString` handle. That reference semantics is not available in
+ * this release and will be available in a later release.
  *
- * The members below are the R-16 subset shipped in this version: 11 of the 47
+ * The members below are the subset shipped in this version: 11 of the 47
  * designed members, declared without bodies, under the same package and name
- * contract as `ArkTSArray<T>`; the rest arriving with AR-05/06.
+ * contract as `ArkTSArray<T>`; the rest will be available in a later release.
  */
 @ArkTS[foreignName: "String"]
 public foreign class ArkTSString {
@@ -102,20 +103,19 @@ public foreign class ArkTSString {
  * whose parameter and return types satisfy the `ArkTSType` constraint.
  */
 
-// TODO: minimal viable form. The constraints below are not expressible in the
-// current source language and remain compiler-builtin behaviors:
+// The constraints below are not expressible in the current source language and
+// remain compiler-builtin behaviors:
 // - the parent type `Function` does not exist in stdlib yet, so the
 //   inheritance `ArkTSFunc<F> <: Function` cannot be declared;
 // - the constraint that `F` is a Cangjie function type satisfying the
 //   `ArkTSType` constraint is checked by the compiler, not by a where-clause;
-// - construction from a value of type `F` and direct call of the value are
-//   compiler-builtin behaviors (like `CFunc<F>`); only a private no-arg init
-//   is declared, to keep the shell non-constructible until that path arrives.
-//   No public init takes an `F` because a Cangjie function type is not an
-//   ArkTS-compatible type and thus cannot appear in a foreign member signature.
+// - construction via `ArkTSFunc<F>(f)` and direct call of the value are
+//   compiler-builtin behaviors (like `CFunc<F>`). A Cangjie function type is
+//   not an ArkTS-compatible type, so the compiler special-cases this
+//   constructor instead of treating it as an ordinary foreign member.
 @ArkTS
-public class ArkTSFunc<F> {
-    private init() {}
+public foreign class ArkTSFunc<F> {
+    public init(f: F)
 }
 
 /**
@@ -124,11 +124,12 @@ public class ArkTSFunc<F> {
  * and `F` is a Cangjie function type satisfying the `ArkTSType` constraint. The
  * value is not directly callable.
  *
- * Like `ArkTSFunc<F>` it is special-cased by the compiler, and it currently
- * stays an empty shell whose private constructor prevents external
- * construction.
+ * Like `ArkTSFunc<F>` it is special-cased by the compiler. It has no public
+ * constructor: its values come only from `@HasThis`-annotated `foreign func`
+ * declarations, and `bind` returns a callable `ArkTSFunc<F>` bound to
+ * `thisArg`.
  */
 @ArkTS
-public class ArkTSFuncWithThis<ThisT, F> {
-    private init() {}
+public foreign class ArkTSFuncWithThis<ThisT, F> {
+    public func bind(thisArg: ThisT): ArkTSFunc<F>
 }

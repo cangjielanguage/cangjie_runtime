@@ -8,7 +8,7 @@ public foreign class ArkTSArray<T> {
     public init(arrayLength: Float64)
     public init(@RestParam items: Array<T>)
     public static func isArray(arg: ArkTSType): Bool
-    public static prop prototype: ArkTSType
+    public static prop prototype: ArkTSArray<ArkTSType>
     public prop length: Float64
     public func pop(): Option<T>
     public func push(@RestParam items: Array<T>): Float64
@@ -24,9 +24,9 @@ public foreign class ArkTSArray<T> {
 
 功能：ArkTS `Array<T>`/`T[]` 对象的仓颉侧类型。设计上它与 ArkTS 数组对象引用同一实例，任一侧的修改对另一侧可见。
 
-引用语义和成员级转换随 AR-05/06 落地，本版本尚未实现。AR-03 内，`ArkTSArray<T>` 出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时，编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。
+引用语义和成员级转换尚未实现，将在后续版本提供。本版本内，`ArkTSArray<T>` 出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时，编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。
 
-本版本声明 14 个无体成员，设计共 30 个，其余 16 个随 AR-05/06 提供。所有成员在 ArkTS 侧实现，下面的成员说明描述 ArkTS 侧语义。本版本只交付声明，尚未提供创建实例或调用成员的跨边界路径。
+本版本声明 14 个无体成员，设计共 30 个，其余 16 个将在后续版本提供。所有成员在 ArkTS 侧实现，下面的成员说明描述 ArkTS 侧语义。本版本只交付声明，尚未提供创建实例或调用成员的跨边界路径。
 
 ### init(Float64)
 
@@ -48,7 +48,7 @@ public init(@RestParam items: Array<T>)
 
 功能：用给定元素构造一个 ArkTS 数组对象。
 
-说明：`@RestParam items` 到 ArkTS `Array` 构造器的发射形态尚未定稿，登记为 AR-05/06 开放项。ArkTS/JS 的 `new Array(...items)` 在 `items` 恰为单个数字元素时会命中「长度构造」重载（例如 `new Array(3.0)` 得到长度为 3 的空位数组），构造方式须避开该陷阱。
+说明：`@RestParam items` 到 ArkTS `Array` 构造器的发射形态尚未定稿，属于后续版本的开放项。ArkTS/JS 的 `new Array(...items)` 在 `items` 恰为单个数字元素时会命中「长度构造」重载（例如 `new Array(3.0)` 得到长度为 3 的空位数组），构造方式须避开该陷阱。
 
 参数：
 
@@ -73,12 +73,12 @@ public static func isArray(arg: ArkTSType): Bool
 ### static prop prototype
 
 ```cangjie
-public static prop prototype: ArkTSType
+public static prop prototype: ArkTSArray<ArkTSType>
 ```
 
 功能：ArkTS `Array` 构造函数的原型对象。该属性是构造函数上的静态成员，通过类名访问，实例上不提供。
 
-类型：[ArkTSType](interop_arkts_package_interfaces.md#interface-arktstype)
+类型：[ArkTSArray\<T\>](#class-arktsarrayt)\<[ArkTSType](interop_arkts_package_interfaces.md#interface-arktstype)\>
 
 ### prop length
 
@@ -199,7 +199,7 @@ public func indexOf(searchElement: T, fromIndex!: Option<Float64> = None): Float
 
 功能：从 `fromIndex` 开始查找元素首次出现的下标。
 
-说明：ArkTS 侧 `indexOf` 按严格相等（`===`）比较。`T` 为引用类型时，跨边界句柄是否保持同一 ArkTS 对象身份尚未定稿，登记为 AR-05/06 开放项；定稿前不保证这类查找返回预期结果。
+说明：ArkTS 侧 `indexOf` 按严格相等（`===`）比较。`T` 为引用类型时，跨边界句柄是否保持同一 ArkTS 对象身份尚未定稿，属于后续版本的开放项；定稿前不保证这类查找返回预期结果。
 
 参数：
 
@@ -218,7 +218,7 @@ public func lastIndexOf(searchElement: T, fromIndex!: Option<Float64> = None): F
 
 功能：从 `fromIndex` 开始向前查找元素最后一次出现的下标。
 
-说明：ArkTS 侧 `lastIndexOf` 按严格相等（`===`）比较。`T` 为引用类型时，跨边界句柄是否保持同一 ArkTS 对象身份尚未定稿，登记为 AR-05/06 开放项；定稿前不保证这类查找返回预期结果。
+说明：ArkTS 侧 `lastIndexOf` 按严格相等（`===`）比较。`T` 为引用类型时，跨边界句柄是否保持同一 ArkTS 对象身份尚未定稿，属于后续版本的开放项；定稿前不保证这类查找返回预期结果。
 
 参数：
 
@@ -250,9 +250,9 @@ public foreign class ArkTSString {
 
 功能：ArkTS `string` 的仓颉侧类型，是 JS 字符串值的句柄，可承载原始字符串或 `String` 包装对象。设计上它以引用方式承载该字符串值，跨边界传递时不拷贝内容，字符串运算在 ArkTS 侧完成。`charAt`/`toString` 按值返回仓颉 `String`，必然发生内容拷贝；`slice`/`substring`/`toUpperCase`/`toLowerCase` 返回 JS 原始字符串，由返回的 `ArkTSString` 句柄承载。
 
-引用语义和成员级转换随 AR-05/06 落地，本版本尚未实现。AR-03 内，`ArkTSString` 出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时，编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。
+引用语义和成员级转换尚未实现，将在后续版本提供。本版本内，`ArkTSString` 出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时，编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。
 
-本版本声明 11 个无体成员，设计共 47 个，其余 36 个随 AR-05/06 提供。所有成员在 ArkTS 侧实现，下面的成员说明描述 ArkTS 侧语义。本版本只交付声明，尚未提供创建实例或调用成员的跨边界路径。
+本版本声明 11 个无体成员，设计共 47 个，其余 36 个将在后续版本提供。所有成员在 ArkTS 侧实现，下面的成员说明描述 ArkTS 侧语义。本版本只交付声明，尚未提供创建实例或调用成员的跨边界路径。
 
 ### init(Option\<String>)
 
@@ -416,24 +416,54 @@ public func toString(): String
 
 ```cangjie
 @ArkTS
-public class ArkTSFunc<F> {
-    private init()
+public foreign class ArkTSFunc<F> {
+    public init(f: F)
 }
 ```
 
 功能：ArkTS 函数值的仓颉侧类型，`F` 为仓颉函数类型。
 
-本版本它是空壳：没有对外成员，构造函数为私有，因此不可构造，也不能直接调用。`F` 必须是满足 `ArkTSType` 约束的仓颉函数类型；构造函数值、直接调用与约束检查都设计为编译器内建行为（不走 where 子句），随 AR-05/06 提供，当前版本不保证可用。由于父类型 `Function` 尚未加入标准库，`ArkTSFunc<F> <: Function` 的继承关系暂不声明。
+`F` 必须是满足 `ArkTSType` 约束的仓颉函数类型；该约束检查、构造函数值与直接调用均设计为编译器内建行为（不走 where 子句）。由于父类型 `Function` 尚未加入标准库，`ArkTSFunc<F> <: Function` 的继承关系暂不声明。
+
+### init(F)
+
+```cangjie
+public init(f: F)
+```
+
+功能：由仓颉函数值显式构造 `ArkTSFunc<F>`，构造形式为 `ArkTSFunc<F>(f)`。`f` 可以是函数名、lambda、方法引用或类型为 `F` 的变量。
+
+参数：
+
+- f: `F` - 仓颉函数值。
+
+说明：不支持从仓颉函数值隐式转换到 `ArkTSFunc<F>`，也不支持型变。
 
 ## class ArkTSFuncWithThis\<ThisT, F\>
 
 ```cangjie
 @ArkTS
-public class ArkTSFuncWithThis<ThisT, F> {
-    private init()
+public foreign class ArkTSFuncWithThis<ThisT, F> {
+    public func bind(thisArg: ThisT): ArkTSFunc<F>
 }
 ```
 
 功能：带 `this` 参数的 ArkTS 函数值的仓颉侧类型，`ThisT` 为该 `this` 参数映射后的类型，`F` 为仓颉函数类型。
 
-与 [ArkTSFunc](#class-arktsfuncf) 相同，本版本它是空壳：没有对外成员，构造函数为私有，因此不可构造，也不能直接调用。`ThisT` 与 `F` 的约束设计为编译器内建检查，随 AR-05/06 提供，当前版本不保证可用。
+`ArkTSFuncWithThis<ThisT, F>` 没有公开构造函数，其值只可能来自带 `@HasThis` 的 `foreign func` 声明。`ThisT` 与 `F` 的约束设计为编译器内建检查。
+
+### func bind(ThisT)
+
+```cangjie
+public func bind(thisArg: ThisT): ArkTSFunc<F>
+```
+
+功能：把 `thisArg` 作为 ArkTS 侧的 `this` 绑定到函数值，返回可直接调用的 `ArkTSFunc<F>`。对同一个值多次调用 `bind` 得到互相独立的结果。
+
+参数：
+
+- thisArg: `ThisT` - ArkTS 侧 `this` 参数的值。
+
+返回值：
+
+- [ArkTSFunc\<F\>](#class-arktsfuncf) - 绑定 `thisArg` 后可直接调用的函数值。
