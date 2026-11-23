@@ -232,8 +232,8 @@ make_cangjie_lib(
     install(TARGETS cangjie-std-interop DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
 
 # std.interop.arkts is declaration-only in this version: its bodyless foreign
-# members have no implementations until the reference semantics lands with
-# AR-05/06, so a shared/static library cannot link. The .cjo is produced and
+# members have no implementations until the reference semantics lands in
+# a later release, so a shared/static library cannot link. The .cjo is produced and
 # installed by add_cangjie_library(cangjie${BACKEND_TYPE}InteropArkts ...)
 # above; restore the library targets when the member glue exists.
 

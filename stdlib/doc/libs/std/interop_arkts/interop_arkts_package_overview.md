@@ -29,7 +29,7 @@ interop.arkts 包提供 ArkTS 互操作的标准库预置类型，供后续版�
 
 | 类名 | 功能 |
 | --- | --- |
-| [ArkTSArray\<T\>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsarrayt) | ArkTS 数组对象的仓颉侧类型。 |
+| [ArkTSArray\<T>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsarrayt) | ArkTS 数组对象的仓颉侧类型。 |
 | [ArkTSString](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsstring) | ArkTS 字符串对象的仓颉侧类型。 |
-| [ArkTSFunc\<F\>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsfuncf) | ArkTS 函数值的仓颉侧类型。 |
-| [ArkTSFuncWithThis\<ThisT, F\>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsfuncwiththisthist-f) | 带 `this` 参数的 ArkTS 函数值的仓颉侧类型。 |
+| [ArkTSFunc\<F>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsfuncf) | ArkTS 函数值的仓颉侧类型。 |
+| [ArkTSFuncWithThis\<ThisT, F>](./interop_arkts_package_api/interop_arkts_package_classes.md#class-arktsfuncwiththisthist-f) | 带 `this` 参数的 ArkTS 函数值的仓颉侧类型。 |
