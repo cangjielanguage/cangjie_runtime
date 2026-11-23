@@ -16,33 +16,29 @@ BaseObject* GenerationPostTraceBarrier::ReadWeakRef(BaseObject* obj, RefField<fa
         CHECK(theCollector.IsCurrentPointer(tmpField));
     }
     BaseObject* referent = tmpField.GetTargetObject();
-    if (referent == nullptr) {
-        return nullptr;
-    }
-    // Young GC does not mark old-generation objects, so preserve non-target referents.
-    if (!theCollector.IsTargetAddress(referent)) {
+    if (referent == nullptr || !theCollector.IsTargetAddress(referent)) {
         return referent;
     }
     RegionInfo* regionInfo = RegionInfo::GetRegionInfoAt(reinterpret_cast<MAddress>(referent));
-    bool isMarked = regionInfo->IsMarkedObject(referent);
-    if (!isMarked) { // skip live referents
-        // A weak referent recorded after the satb buffer's final drain is never
-        // processed, so it stays unmarked and would be reclaimed, leaving a
-        // dangling pointer to the mutator. The enqueued bit on the region outlives
-        // the cleared satb node, so mark the referent here to complete the rescue.
-        size_t offset = regionInfo->GetAddressOffset(reinterpret_cast<MAddress>(referent));
-        if (regionInfo->IsLoadedWeakRef(offset)) {
-            if (!regionInfo->MarkObject(referent)) {
-                regionInfo->AddLiveByteCount(referent->GetSize());
-            }
-            return tmpField.GetTargetObject();
-        }
-        void** referentAddr = reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(obj) + TYPEINFO_PTR_SIZE);
-        DLOG(BARRIER, "update referent@%p: 0x%zx -> %p", referentAddr, *referentAddr, nullptr);
-        *referentAddr = nullptr; // set referent field as null
-        return nullptr;
+    size_t offset = regionInfo->GetAddressOffset(reinterpret_cast<MAddress>(referent));
+    if (regionInfo->IsMarkedObject(offset)) {
+        return referent;
     }
-    return tmpField.GetTargetObject();
+    // Complete weak-reference promotion if the referent has not been marked yet.
+    if (regionInfo->IsLoadedWeakRef(offset)) {
+        if (!regionInfo->MarkObject(referent)) {
+            regionInfo->AddLiveByteCount(referent->GetSize());
+        }
+        return referent;
+    }
+    // Objects in retained allocation regions do not need a mark for this collection.
+    if (!regionInfo->IsGgcCollectionRegion()) {
+        return referent;
+    }
+    void** referentAddr = reinterpret_cast<void**>(reinterpret_cast<uintptr_t>(obj) + TYPEINFO_PTR_SIZE);
+    DLOG(BARRIER, "update referent@%p: 0x%zx -> %p", referentAddr, *referentAddr, nullptr);
+    *referentAddr = nullptr; // set referent field as null
+    return nullptr;
 }
 
 void GenerationPostTraceBarrier::WriteStruct(BaseObject* obj, MAddress dst, size_t dstLen, MAddress src,

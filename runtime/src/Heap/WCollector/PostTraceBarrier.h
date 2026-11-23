@@ -11,7 +11,7 @@
 #include "IdleBarrier.h"
 
 namespace MapleRuntime {
-// PostTraceBarrier is the barrier for concurrent marking phase.
+// WGC weak reads require stable candidate metadata until the Preforward pause.
 class PostTraceBarrier : public IdleBarrier {
 public:
     explicit PostTraceBarrier(Collector& collector) : IdleBarrier(collector) {}
