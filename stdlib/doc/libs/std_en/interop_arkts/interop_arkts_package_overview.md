@@ -11,11 +11,11 @@ The interop.arkts package provides the standard-library preset types for ArkTS i
 
 The compiler treats this package as a preset declaration package: `ArkTSArray`, `ArkTSString` and `ArkTSType` declared in `std.interop.arkts` are recognised as the preset external ArkTS types; declarations with the same names in other packages stay ordinary types and are unaffected.
 
-This version ships the package as declarations only: the build produces and installs `std.interop.arkts.cjo` (and the LTO bitcode) but no linkable shared or static library; the library targets return when the member implementations land in a later release.
+This version ships the package as declarations only: the build produces and installs `std.interop.arkts.cjo` (and the LTO bitcode on platforms that enable LTO) but no linkable shared or static library; the library targets return when the member implementations land in a later release.
 
 This version ships the preset declarations; the reference semantics and member-level conversion arrive in a later release and are not implemented yet. When one of the three preset types above (`ArkTSArray`, `ArkTSString` or `ArkTSType`) appears in an `@ArkTS foreign` signature position (a parameter, the return value, or a nested position), the compiler rejects the usage and reports that the reference semantics of that type is not available in this version. `ArkTSFunc` and `ArkTSFuncWithThis` are not among these three preset types and do not follow that path; their signature positions are rejected as ordinary unsupported types, with a position-specific message.
 
-Cross-boundary runtime contract: interoplib (`ohos.ark_interop`) guarantees the rooting of temporary `JSValue` values and the translation of ArkTS exceptions into Cangjie exceptions; generated interop code does not insert explicit root operations or try-catch blocks. GC root registration and release, cross-language ownership, and thread constraints are defined in a later release and are not defined in this version.
+Cross-boundary runtime contract: interoplib (`ohos.ark_interop`) guarantees the rooting of temporary `JSValue` values and the translation of ArkTS exceptions into Cangjie exceptions; generated interop code does not insert explicit root operations, but it wraps cross-boundary calls in `try/catch (BusinessException)`: only an external-library error code or an ArkTS-side throw is translated into a Cangjie exception and rethrown, while the other `BusinessException`s keep their type, error code and message and are rethrown as-is. GC root registration and release, cross-language ownership, and thread constraints are defined in a later release and are not defined in this version.
 
 ## API List
 

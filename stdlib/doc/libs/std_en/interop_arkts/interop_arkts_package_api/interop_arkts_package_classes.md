@@ -44,6 +44,7 @@ Parameters:
 ### static func isArray(ArkTSType)
 
 ```cangjie
+public static func isArray(arg: ArkTSType): Bool
 ```
 
 Description: checks whether the given value is an ArkTS array object.
@@ -59,6 +60,7 @@ Returns:
 ### static prop prototype
 
 ```cangjie
+public static prop prototype: ArkTSArray<ArkTSType>
 ```
 
 Description: the prototype object of the ArkTS `Array` constructor. It is a static member of the constructor, accessed through the type name; instances do not expose it.
@@ -68,6 +70,7 @@ Type: [ArkTSType](interop_arkts_package_interfaces.md#interface-arktstype)
 ### prop length
 
 ```cangjie
+public prop length: Float64
 ```
 
 Description: the number of elements in the array.
@@ -77,6 +80,7 @@ Type: [Float64](../../core/core_package_api/core_package_intrinsics.md#float64)
 ### func pop()
 
 ```cangjie
+public func pop(): Option<T>
 ```
 
 Description: removes and returns the last element of the array.
@@ -88,6 +92,7 @@ Returns:
 ### func push(Array\<T>)
 
 ```cangjie
+public func push(@RestParam items: Array<T>): Float64
 ```
 
 Description: appends elements to the end of the array.
@@ -103,6 +108,7 @@ Returns:
 ### func join(Option\<String>)
 
 ```cangjie
+public func join(separator!: Option<String> = None): String
 ```
 
 Description: converts the array elements to strings and joins them with a separator, following the ArkTS `Array.prototype.join` semantics.
@@ -118,6 +124,7 @@ Returns:
 ### func reverse()
 
 ```cangjie
+public func reverse(): ArkTSArray<T>
 ```
 
 Description: reverses the element order in place.
@@ -129,6 +136,7 @@ Returns:
 ### func shift()
 
 ```cangjie
+public func shift(): Option<T>
 ```
 
 Description: removes and returns the first element of the array.
@@ -140,6 +148,7 @@ Returns:
 ### func unshift(Array\<T>)
 
 ```cangjie
+public func unshift(@RestParam items: Array<T>): Float64
 ```
 
 Description: inserts elements at the beginning of the array and shifts the existing elements back.
@@ -155,6 +164,7 @@ Returns:
 ### func slice(Option\<Float64>, Option\<Float64>)
 
 ```cangjie
+public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSString
 ```
 
 Description: copies the elements in the index range `[start, end)` into a new ArkTS array, following the ArkTS `Array.prototype.slice` semantics (including negative indices).
@@ -171,6 +181,7 @@ Returns:
 ### func indexOf(T, Option\<Float64>)
 
 ```cangjie
+public func indexOf(searchElement: T, fromIndex!: Option<Float64> = None): Float64
 ```
 
 Description: searches from `fromIndex` for the first occurrence of an element.
@@ -189,6 +200,7 @@ Returns:
 ### func lastIndexOf(T, Option\<Float64>)
 
 ```cangjie
+public func lastIndexOf(searchElement: T, fromIndex!: Option<Float64> = None): Float64
 ```
 
 Description: searches backwards from `fromIndex` for the last occurrence of an element.
@@ -254,6 +266,7 @@ Parameters:
 ### prop length
 
 ```cangjie
+public prop length: Float64
 ```
 
 Description: the string length, counted in ArkTS UTF-16 code units.
@@ -263,6 +276,7 @@ Type: [Float64](../../core/core_package_api/core_package_intrinsics.md#float64)
 ### func charAt(Float64)
 
 ```cangjie
+public func charAt(pos: Float64): String
 ```
 
 Description: returns the character at the given index.
@@ -278,6 +292,7 @@ Returns:
 ### func charCodeAt(Float64)
 
 ```cangjie
+public func charCodeAt(pos: Float64): Float64
 ```
 
 Description: returns the UTF-16 code unit value of the character at the given index.
@@ -293,6 +308,7 @@ Returns:
 ### func indexOf(String, Option\<Float64>)
 
 ```cangjie
+public func indexOf(searchString: String, position!: Option<Float64> = None): Float64
 ```
 
 Description: searches from `position` for the first occurrence of a substring.
@@ -309,6 +325,7 @@ Returns:
 ### func lastIndexOf(String, Option\<Float64>)
 
 ```cangjie
+public func lastIndexOf(searchString: String, position!: Option<Float64> = None): Float64
 ```
 
 Description: searches backwards from `position` for the last occurrence of a substring.
@@ -325,6 +342,7 @@ Returns:
 ### func slice(Option\<Float64>, Option\<Float64>)
 
 ```cangjie
+public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSString
 ```
 
 Description: copies the characters in the index range `[start, end)` into a new ArkTS string, following the ArkTS `String.prototype.slice` semantics (including negative indices).
@@ -341,6 +359,7 @@ Returns:
 ### func substring(Float64, Option\<Float64>)
 
 ```cangjie
+public func substring(start: Float64, end!: Option<Float64> = None): ArkTSString
 ```
 
 Description: copies the characters in the index range `[start, end)` into a new ArkTS string, following the ArkTS `String.prototype.substring` semantics (a negative index is treated as `0`).
@@ -357,6 +376,7 @@ Returns:
 ### func toUpperCase()
 
 ```cangjie
+public func toUpperCase(): ArkTSString
 ```
 
 Description: converts the string to upper case.
@@ -368,6 +388,7 @@ Returns:
 ### func toLowerCase()
 
 ```cangjie
+public func toLowerCase(): ArkTSString
 ```
 
 Description: converts the string to lower case.
@@ -379,6 +400,7 @@ Returns:
 ### func toString()
 
 ```cangjie
+public func toString(): String
 ```
 
 Description: returns the string contents by value.
@@ -470,6 +492,7 @@ Description: the Cangjie-side type of an ArkTS function value that declares a `t
 ### func bind(ThisT)
 
 ```cangjie
+public func bind(thisArg: ThisT): ArkTSFunc<F>
 ```
 
 Description: binds `thisArg` as the ArkTS-side `this` to the function value and returns the bound `ArkTSFunc<F>`. Calling `bind` several times on the same value yields independent results.

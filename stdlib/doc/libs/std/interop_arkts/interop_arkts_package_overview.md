@@ -11,7 +11,7 @@ interop.arkts 包提供 ArkTS 互操作的标准库预置类型，供后续版�
 
 该包由编译器作为预置声明包识别：声明在 `std.interop.arkts` 包中的 `ArkTSArray`、`ArkTSString`、`ArkTSType` 才会被当作预置的外部 ArkTS 类型；其它包中的同名声明仍按普通类型处理，不受影响。
 
-本版本该包为声明-only：构建只产出并安装 `std.interop.arkts.cjo`（以及 LTO 位码），不提供可链接的共享库或静态库；成员实现将在后续版本提供，届时再恢复库目标。
+本版本该包为声明-only：构建只产出并安装 `std.interop.arkts.cjo`（以及在支持 LTO 的平台上产出 LTO 位码），不提供可链接的共享库或静态库；成员实现将在后续版本提供，届时再恢复库目标。
 
 本版本交付的是预置声明，引用语义与成员级转换尚未实现，将在后续版本提供。上述三个预置类型（`ArkTSArray`/`ArkTSString`/`ArkTSType`）出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时，编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。`ArkTSFunc`/`ArkTSFuncWithThis` 不属于上述三个预置类型，不走这条提示；它们的签名位按普通的不支持类型处理，参数位置与返回值位置都会被拒绝，并按位置给出提示。
 

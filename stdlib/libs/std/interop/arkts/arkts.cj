@@ -8,13 +8,9 @@
 
 package std.interop.arkts
 
-// Build precondition (merge order): these declarations use `public foreign
-// class` and body-less members, which the 7.1 toolchain accepts only after the
-// parse relaxation. Entering the default stdlib build (`add_cangjie_library
-// ... ALL` for cangjie${BACKEND_TYPE}InteropArkts) with an older toolchain fails
-// in the parse phase and takes the whole bootstrap down with it. Build this
-// subpackage (and the parent `cangjieInterop`) with a 7.1 compiler first; the
-// composite-SDK bootstrap is the executable evidence for that precondition.
+// These declarations use `public foreign class` and body-less members, which
+// require a compiler that accepts the ArkTS interop syntax. Build this package
+// with such a compiler; an older one fails in the parse phase.
 
 /**
  * `ArkTSType` is the root interface of all ArkTS interop types. The design goal

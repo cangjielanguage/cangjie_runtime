@@ -44,6 +44,7 @@ public init(@RestParam items: Array<T>)
 ### static func isArray(ArkTSType)
 
 ```cangjie
+public static func isArray(arg: ArkTSType): Bool
 ```
 
 功能：判断给定值是否为 ArkTS 数组对象。
@@ -59,6 +60,7 @@ public init(@RestParam items: Array<T>)
 ### static prop prototype
 
 ```cangjie
+public static prop prototype: ArkTSArray<ArkTSType>
 ```
 
 功能：ArkTS `Array` 构造函数的原型对象。该属性是构造函数上的静态成员，通过类名访问，实例上不提供。
@@ -68,6 +70,7 @@ public init(@RestParam items: Array<T>)
 ### prop length
 
 ```cangjie
+public prop length: Float64
 ```
 
 功能：数组的元素个数。
@@ -77,6 +80,7 @@ public init(@RestParam items: Array<T>)
 ### func pop()
 
 ```cangjie
+public func pop(): Option<T>
 ```
 
 功能：移除并返回数组的最后一个元素。
@@ -88,6 +92,7 @@ public init(@RestParam items: Array<T>)
 ### func push(Array\<T>)
 
 ```cangjie
+public func push(@RestParam items: Array<T>): Float64
 ```
 
 功能：在数组末尾追加元素。
@@ -103,6 +108,7 @@ public init(@RestParam items: Array<T>)
 ### func join(Option\<String>)
 
 ```cangjie
+public func join(separator!: Option<String> = None): String
 ```
 
 功能：把数组各元素转换为字符串后用分隔符连接，语义与 ArkTS `Array.prototype.join` 一致。
@@ -118,6 +124,7 @@ public init(@RestParam items: Array<T>)
 ### func reverse()
 
 ```cangjie
+public func reverse(): ArkTSArray<T>
 ```
 
 功能：原地反转数组元素顺序。
@@ -129,6 +136,7 @@ public init(@RestParam items: Array<T>)
 ### func shift()
 
 ```cangjie
+public func shift(): Option<T>
 ```
 
 功能：移除并返回数组的第一个元素。
@@ -140,6 +148,7 @@ public init(@RestParam items: Array<T>)
 ### func unshift(Array\<T>)
 
 ```cangjie
+public func unshift(@RestParam items: Array<T>): Float64
 ```
 
 功能：在数组开头插入元素，原有元素依次后移。
@@ -155,6 +164,7 @@ public init(@RestParam items: Array<T>)
 ### func slice(Option\<Float64>, Option\<Float64>)
 
 ```cangjie
+public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSString
 ```
 
 功能：截取下标区间 `[start, end)` 内的元素，组成新的 ArkTS 数组，语义与 ArkTS `Array.prototype.slice` 一致（包含负下标处理）。
@@ -171,6 +181,7 @@ public init(@RestParam items: Array<T>)
 ### func indexOf(T, Option\<Float64>)
 
 ```cangjie
+public func indexOf(searchElement: T, fromIndex!: Option<Float64> = None): Float64
 ```
 
 功能：从 `fromIndex` 开始查找元素首次出现的下标。
@@ -189,6 +200,7 @@ public init(@RestParam items: Array<T>)
 ### func lastIndexOf(T, Option\<Float64>)
 
 ```cangjie
+public func lastIndexOf(searchElement: T, fromIndex!: Option<Float64> = None): Float64
 ```
 
 功能：从 `fromIndex` 开始向前查找元素最后一次出现的下标。
@@ -254,6 +266,7 @@ public init(value!: Option<String> = None)
 ### prop length
 
 ```cangjie
+public prop length: Float64
 ```
 
 功能：字符串的长度，按 ArkTS 的 UTF-16 编码单元计数。
@@ -263,6 +276,7 @@ public init(value!: Option<String> = None)
 ### func charAt(Float64)
 
 ```cangjie
+public func charAt(pos: Float64): String
 ```
 
 功能：返回指定下标处的字符。
@@ -278,6 +292,7 @@ public init(value!: Option<String> = None)
 ### func charCodeAt(Float64)
 
 ```cangjie
+public func charCodeAt(pos: Float64): Float64
 ```
 
 功能：返回指定下标处字符的 UTF-16 编码单元值。
@@ -293,6 +308,7 @@ public init(value!: Option<String> = None)
 ### func indexOf(String, Option\<Float64>)
 
 ```cangjie
+public func indexOf(searchString: String, position!: Option<Float64> = None): Float64
 ```
 
 功能：从 `position` 开始查找子串首次出现的下标。
@@ -309,6 +325,7 @@ public init(value!: Option<String> = None)
 ### func lastIndexOf(String, Option\<Float64>)
 
 ```cangjie
+public func lastIndexOf(searchString: String, position!: Option<Float64> = None): Float64
 ```
 
 功能：从 `position` 开始向前查找子串最后一次出现的下标。
@@ -325,6 +342,7 @@ public init(value!: Option<String> = None)
 ### func slice(Option\<Float64>, Option\<Float64>)
 
 ```cangjie
+public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSString
 ```
 
 功能：截取下标区间 `[start, end)` 内的字符，组成新的 ArkTS 字符串，语义与 ArkTS `String.prototype.slice` 一致（包含负下标处理）。
@@ -341,6 +359,7 @@ public init(value!: Option<String> = None)
 ### func substring(Float64, Option\<Float64>)
 
 ```cangjie
+public func substring(start: Float64, end!: Option<Float64> = None): ArkTSString
 ```
 
 功能：截取下标区间 `[start, end)` 内的字符，组成新的 ArkTS 字符串，语义与 ArkTS `String.prototype.substring` 一致（负下标按 `0` 处理）。
@@ -357,6 +376,7 @@ public init(value!: Option<String> = None)
 ### func toUpperCase()
 
 ```cangjie
+public func toUpperCase(): ArkTSString
 ```
 
 功能：把字符串转换为大写形式。
@@ -368,6 +388,7 @@ public init(value!: Option<String> = None)
 ### func toLowerCase()
 
 ```cangjie
+public func toLowerCase(): ArkTSString
 ```
 
 功能：把字符串转换为小写形式。
@@ -379,6 +400,7 @@ public init(value!: Option<String> = None)
 ### func toString()
 
 ```cangjie
+public func toString(): String
 ```
 
 功能：按值取出字符串内容。
@@ -470,6 +492,7 @@ public foreign class ArkTSFuncWithThis<ThisT, F> {
 ### func bind(ThisT)
 
 ```cangjie
+public func bind(thisArg: ThisT): ArkTSFunc<F>
 ```
 
 功能：把 `thisArg` 作为 ArkTS 侧的 `this` 绑定到函数值，返回绑定后的 `ArkTSFunc<F>`。对同一个值多次调用 `bind` 得到互相独立的结果。
