@@ -1345,7 +1345,7 @@ private:
             uint32_t prevRegionIdx; // support fast deletion for region list.
 
             uint32_t liveByteCount;
-            int32_t rawPointerObjectCount;
+            uint32_t nextRegionIdx0; // used to traverse ghost regions.
         };
 
         union {
@@ -1361,8 +1361,8 @@ private:
         uintptr_t regionEnd0;
         RouteInfo routeInfo;
 
-        // used to traverse ghost region.
-        uint32_t nextRegionIdx0;
+        // Keep raw pointer count near the role/state read on the pin path.
+        int32_t rawPointerObjectCount;
 
         // the writing operation in C++ Bit-Field feature is not atomic, if we wants to
         // change the value, we must use specific interface implenmented by BitField.

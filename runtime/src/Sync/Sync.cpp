@@ -561,10 +561,9 @@ bool MCC_MonitorWait(const void* ptr, int64_t timeout)
 {
     CJMonitor* monitor = CastToT<CJMonitor*>(ptr);
     CJMutex* mutex = monitor->mutexPtr;
-    Heap::GetHeap().GetCollector().AddRawPointerObject(reinterpret_cast<BaseObject*>(mutex));
     Heap::GetHeap().GetCollector().AddRawPointerObject(reinterpret_cast<BaseObject*>(monitor));
+    // MonitorWait pins the mutex through suspension and reacquisition.
     bool ret = MonitorWait(mutex, &monitor->wq, timeout);
-    Heap::GetHeap().GetCollector().RemoveRawPointerObject(reinterpret_cast<BaseObject*>(mutex));
     Heap::GetHeap().GetCollector().RemoveRawPointerObject(reinterpret_cast<BaseObject*>(monitor));
     return ret;
 }
@@ -593,10 +592,8 @@ bool MCC_MultiConditionMonitorWait(const void* ptr, void* waitQueuePtr, int64_t 
 {
     CJMultiConditionMonitor* monitor = CastToT<CJMultiConditionMonitor*>(ptr);
     CJMutex* mutex = monitor->mutexPtr;
-    Heap::GetHeap().GetCollector().AddRawPointerObject(reinterpret_cast<BaseObject*>(mutex));
     Heap::GetHeap().GetCollector().AddRawPointerObject(reinterpret_cast<BaseObject*>(waitQueuePtr));
     bool ret = MonitorWait(mutex, &CastToT<CJWaitQueue*>(waitQueuePtr)->wq, timeout);
-    Heap::GetHeap().GetCollector().RemoveRawPointerObject(reinterpret_cast<BaseObject*>(mutex));
     Heap::GetHeap().GetCollector().RemoveRawPointerObject(reinterpret_cast<BaseObject*>(waitQueuePtr));
     return ret;
 }
