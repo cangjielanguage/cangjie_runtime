@@ -82,8 +82,24 @@ func generateTypeAST(tyNode: Option<ASTFormat_Type>): TypeNode {
     astNode.beginPos = Position(begin.fileId, begin.line, begin.column)
     astNode.endPos = Position(end.fileId, end.line, end.column)
     astNode.astKind = astKind
-    astNode.modal = createModalInfo(tyBase.GetModal())
+    buildModalFrom(astNode, tyBase)
     return astNode
+}
+
+@When[local_mode_api == "on"]
+internal func setNodeModal(astNode: TypeNode, modal: ModalInfo): Unit {
+    match (astNode) {
+        case t: PrimitiveType => t.modal = modal
+        case t: RefType => t.modal = modal
+        case t: QualifiedType => t.modal = modal
+        case t: ParenType => t.modal = modal
+        case t: TupleType => t.modal = modal
+        case t: ThisType => t.modal = modal
+        case t: PrefixType => t.modal = modal
+        case t: FuncType => t.modal = modal
+        case t: VArrayType => t.modal = modal
+        case _ => ()
+    }
 }
 
 func createPrimitiveType(tyNode: ASTFormat_Type, nodeBase: ASTFormat_NodeBase): TypeNode {
@@ -320,3 +336,4 @@ func createPrefixType(tyNode: ASTFormat_Type, nodeBase: ASTFormat_NodeBase): Typ
     var ty = generateTypeAST(prefixType.GetComponentType())
     return PrefixType(typeName, colon, tks, ty)
 }
+

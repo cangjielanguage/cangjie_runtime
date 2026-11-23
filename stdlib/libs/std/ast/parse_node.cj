@@ -10,7 +10,7 @@ package std.ast
 
 import std.collection.ArrayList
 
-let EXPR_LIST: Array<String> = [
+let BASE_EXPR_LIST: Array<String> = [
     "block",
     "wildcard_expr",
     "call_expr",
@@ -53,9 +53,9 @@ let EXPR_LIST: Array<String> = [
     "resume_expr",
     "spawn_expr",
     "synchronized_expr",
-    "macro_expand_expr",
-    "exclave_expr"
+    "macro_expand_expr"
 ]
+let EXPR_LIST: Array<String> = BASE_EXPR_LIST.concat(getVariantExprKinds())
 let DECL_LIST: Array<String> = [
     "main_decl",
     "func_decl",

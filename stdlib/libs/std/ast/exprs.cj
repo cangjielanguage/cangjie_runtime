@@ -1235,7 +1235,7 @@ public class CallExpr <: Expr {
                     this.lParen_ = v.lParen_
                     this.args_ = v.args_
                     this.rParen_ = v.rParen_
-                    this.modal_ = v.modal_
+                    copyModalFrom(this, v)
                 case None => throw ASTException("Cannot construct the 'CallExpr' node.")
             }
         } catch (e: ParseASTException) {
@@ -1249,7 +1249,9 @@ public class CallExpr <: Expr {
     private var lParen_: Token = Token(TokenKind.LPAREN)
     private var args_: ArrayList<Argument> = ArrayList<Argument>()
     private var rParen_: Token = Token(TokenKind.RPAREN)
+    @When[local_mode_api == "on"]
     private var modal_: ModalInfo = ModalInfo()
+    @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() { modal_ }
         set(v) { modal_ = v }
@@ -1305,7 +1307,8 @@ public class CallExpr <: Expr {
         ret.append(lParen_)
         ret.append(arguments.toTokens())
         ret.append(rParen_)
-        ret.append(modal_.toTokens())
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
@@ -1318,7 +1321,7 @@ public class CallExpr <: Expr {
         for (arg in args_) {
             arg.traverse(v)
         }
-        modal_.traverse(v)
+        traverseModal(this, v)
         return
     }
 
@@ -1334,7 +1337,7 @@ public class CallExpr <: Expr {
             ret += getIndent(currentIndent) + "-arguments: ${i}, "
             ret += args_[i].dump(currentIndent)
         }
-        ret += modal_.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
     }
@@ -2849,6 +2852,7 @@ public class PrimitiveTypeExpr <: Expr {
         keyword_ = kind
     }
     private var keyword_: Token = Token()
+    @When[local_mode_api == "on"]
     private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
@@ -2859,18 +2863,21 @@ public class PrimitiveTypeExpr <: Expr {
             keyword_ = v
         }
     }
+    @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() { modal_ }
         set(v) { modal_ = v }
     }
     public func toTokens(): Tokens {
-        Tokens().append(keyword_).append(modal_.toTokens())
+        var ret = Tokens().append(keyword_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
-        modal_.traverse(v)
+        traverseModal(this, v)
         return
     }
 
@@ -2881,12 +2888,14 @@ public class PrimitiveTypeExpr <: Expr {
             currentIndent++
         }
         ret += getTokenIndent("-keyword", keyword_, currentIndent)
-        ret += modal_.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
     }
 }
 
+// Available only when local_mode_api is enabled.
+@When[local_mode_api == "on"]
 public class ExclaveExpr <: Expr {
     init(`exclave`: Token, block: Block) {
         this.exclave_ = `exclave`
@@ -4383,3 +4392,4 @@ func addParen(ret: Tokens, innerExpr: Expr, thisExpr: Expr, addOnEqualPred!: Boo
         ret.append(innerExpr.toTokens())
     }
 }
+

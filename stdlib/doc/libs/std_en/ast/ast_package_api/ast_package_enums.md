@@ -369,6 +369,8 @@ public enum TokenKind <: ToString {
     | THROWING                     /*  "throwing"    */
     | DOUBLE_COLON                 /*  "::"          */
     | FEATURES                     /*  "features"    */
+    | EXCLAVE                      /*  "exclave"     */
+    | DEMODE                       /*   "demode"     */
     | ...
 }
 ```

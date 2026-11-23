@@ -840,8 +840,7 @@ public class FuncDecl <: Decl {
                 this.block_ = v.block_
                 this.overloadedOperators_ = v.overloadedOperators_
                 this.isEnumConstruct = v.isEnumConstruct
-                this.modal_ = v.modal_
-                this.thisParam_ = v.thisParam_
+                copyModalFrom(this, v)
             case None => throw ASTException("Cannot construct the 'FuncDecl' node.")
         }
     }
@@ -864,13 +863,17 @@ public class FuncDecl <: Decl {
     private var colon_ = Token()
     private var retTy_: Option<TypeNode> = None<TypeNode>
     private var block_: Block = Block()
-    private var modal_: ModalInfo = ModalInfo()
-    private var thisParam_: Option<ThisParam> = None<ThisParam>
     var isEnumConstruct: Bool = false
+    @When[local_mode_api == "on"]
+    private var thisParam_: Option<ThisParam> = None<ThisParam>
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
+    @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() { modal_ }
         set(v) { modal_ = v }
     }
+    @When[local_mode_api == "on"]
     public mut prop thisParam: Option<ThisParam> {
         get() { thisParam_ }
         set(v) { thisParam_ = v }
@@ -954,7 +957,7 @@ public class FuncDecl <: Decl {
         for (i in 0..modifiers.size) {
             ret.append(modifiers[i].toTokens())
         }
-        ret.append(modal_.toTokens())
+        appendModalTokens(this, ret)
         if (isValidToken(keyword)) {
             ret.append(keyword)
         }
@@ -975,14 +978,7 @@ public class FuncDecl <: Decl {
             Tokens()
         }
         ret.append(paramTokens).append(lParen_)
-        match (thisParam_) {
-            case Some(tp) =>
-                ret.append(tp.toTokens())
-                if (isValidToken(tp.comma)) {
-                    ret.append(tp.comma)
-                }
-            case None => ()
-        }
+        appendThisParamTokens(this, ret)
         ret.append(funcParams.toTokens())
         ret.append(rParen_)
         match (retTy_) {
@@ -1008,11 +1004,7 @@ public class FuncDecl <: Decl {
             return
         }
         this.traverseCommonChild(v)
-        modal_.traverse(v)
-        match (thisParam_) {
-            case Some(node) => node.traverse(v)
-            case None => ()
-        }
+        traverseModal(this, v)
         traverseNodes(v, params_)
         match (retTy_) {
             case Some(node) => node.traverse(v)
@@ -1038,13 +1030,7 @@ public class FuncDecl <: Decl {
                     "overloadOp: ${overloadedOperators_[0].value + overloadedOperators_[1].value}"
             }
         }
-        ret += modal_.dump(currentIndent)
-        match (thisParam_) {
-            case Some(node) =>
-                ret += getIndent(currentIndent) + "-thisParam: "
-                ret += node.dump(currentIndent)
-            case None => ()
-        }
+        ret += dumpModal(this, currentIndent)
         ret += dumpNodes("-funcParams", funcParams, currentIndent)
 
         match (retTy_) {
@@ -1828,7 +1814,8 @@ public open class FuncParam <: Decl {
     }
 }
 
-
+// Available only when local_mode_api is enabled.
+@When[local_mode_api == "on"]
 public class ThisParam <: Decl {
     init(thisTok: Token, modal: ModalInfo, comma: Token) {
         super()
@@ -1838,23 +1825,40 @@ public class ThisParam <: Decl {
     }
     public init(inputs: Tokens) {
         super()
-        try {
-            match (parseExpr(inputs) as ThisParam) {
-                case Some(v) =>
-                    this.begin_ = v.beginPos
-                    this.end_ = v.endPos
-                    this.this_ = v.this_
-                    this.modal_ = v.modal_
-                    this.comma_ = v.comma_
+        // ThisParam can only be produced by the parser inside a func param list;
+        // embed the tokens into a dummy func decl and extract the receiver,
+        // in the same way as parseFuncParam does for FuncParam.
+        // The dummy decl must contain no param other than the receiver itself,
+        // otherwise the extra params would be silently dropped.
+        var v = try {
+            // The dummy decl must consume the input tokens exactly. Otherwise
+            // the first declaration would be taken and trailing tokens (e.g.
+            // from 'this) {} func evil() {} func dummy(this') would be silently
+            // dropped, making the receiver not equivalent to the input.
+            let tokens = quote(func dummy($(inputs)) {})
+            let (decl, consumed) = parseDeclFragment(tokens)
+            if (consumed != tokens.size) {
+                throw ASTException("Cannot construct the 'ThisParam' node.")
+            }
+            match (decl as FuncDecl) {
+                case Some(fd) =>
+                    if (fd.funcParams.size != 0) {
+                        throw ASTException("Cannot construct the 'ThisParam' node.")
+                    }
+                    match (fd.thisParam) {
+                        case Some(tp) => tp
+                        case None => throw ASTException("Cannot construct the 'ThisParam' node.")
+                    }
                 case None => throw ASTException("Cannot construct the 'ThisParam' node.")
             }
-        } catch (e: ParseASTException) {
-            if (e.message == String.empty) {
-                throw ASTException("Cannot construct the 'ThisParam' node.")
-            } else {
-                throw ASTException(e.message)
-            }
+        } catch (e: ParseASTException | ASTException) {
+            throw ASTException("Cannot construct the 'ThisParam' node.")
         }
+        this.begin_ = v.beginPos
+        this.end_ = v.endPos
+        this.this_ = v.`this`
+        this.modal_ = v.modal
+        this.comma_ = v.comma
     }
     public init() {
         super()
@@ -1882,6 +1886,9 @@ public class ThisParam <: Decl {
     }
     public func toTokens(): Tokens {
         var ret = Tokens().append(this_).append(modal_.toTokens())
+        if (isValidToken(comma_)) {
+            ret.append(comma_)
+        }
         return ret
     }
 
@@ -1901,8 +1908,12 @@ public class ThisParam <: Decl {
         if (indent != 0 || beginNode) {
             currentIndent++
         }
+        ret += super.dump(currentIndent)
         ret += getTokenIndent("-this", this_, currentIndent)
         ret += modal_.dump(currentIndent)
+        if (isValidToken(comma_)) {
+            ret += getTokenIndent("-comma", comma_, currentIndent)
+        }
         ret += getIndent(indent) + "}\n"
         ret
     }

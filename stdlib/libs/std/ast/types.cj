@@ -21,7 +21,6 @@ public open class TypeNode <: Node {
     }
     private var typeParameterName_: Token = Token(TokenKind.IDENTIFIER, "")
     private var colon_: Token = Token(TokenKind.COLON)
-    private var modal_: ModalInfo = ModalInfo()
     public mut prop typeParameterName: Token {
         get() {
             typeParameterName_
@@ -39,19 +38,6 @@ public open class TypeNode <: Node {
             colon_ = v
         }
     }
-    // Postfix modal (@local! / @local? / @~local) trailing this type. Empty when absent.
-    public mut prop modal: ModalInfo {
-        get() {
-            modal_
-        }
-        set(v) {
-            modal_ = v
-        }
-    }
-    // Tokens for the trailing modal, if any. Subclasses append this at the end of toTokens().
-    protected func modalTokens(): Tokens {
-        return modal_.toTokens()
-    }
 
     public open func toTokens(): Tokens {
         if (typeParameterName_.value.isEmpty()) {
@@ -62,7 +48,6 @@ public open class TypeNode <: Node {
     public open func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
-        modal_.traverse(v)
         return
     }
 
@@ -72,7 +57,6 @@ public open class TypeNode <: Node {
             ret += getTokenIndent("-typeParameterName", typeParameterName_, indent)
             ret += getTokenIndent("-COLON", colon_, indent)
         }
-        ret += modal_.dump(indent)
         ret
     }
 }
@@ -85,7 +69,7 @@ public class PrimitiveType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.keyword_ = v.keyword_
                 case None => throw ASTException("Cannot construct the 'PrimitiveType' node.")
             }
@@ -99,6 +83,8 @@ public class PrimitiveType <: TypeNode {
         this.keyword_ = keyword
     }
     private var keyword_: Token = Token()
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -108,13 +94,26 @@ public class PrimitiveType <: TypeNode {
             keyword_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
-        return super.toTokens().append(keyword_).append(modalTokens())
+        var ret = super.toTokens().append(keyword_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         return
     }
 
@@ -125,6 +124,7 @@ public class PrimitiveType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getTokenIndent("-keyword", keyword_, currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
@@ -148,7 +148,7 @@ public class RefType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.identifier_ = v.identifier_
                     this.lAngle_ = checkValid(v.lAngle_)
                     this.typeArguments_ = v.typeArguments_
@@ -167,6 +167,8 @@ public class RefType <: TypeNode {
     private var typeArguments_: ArrayList<TypeNode> = ArrayList<TypeNode>()
     private var commas_: Tokens = Tokens()
     private var rAngle_: Token = Token()
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop identifier: Token {
         get() {
             identifier_
@@ -211,6 +213,16 @@ public class RefType <: TypeNode {
         }
     }
 
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
         var ret = super.toTokens().append(identifier_)
         if (!typeArguments_.isEmpty()) {
@@ -222,13 +234,14 @@ public class RefType <: TypeNode {
             ret.append(typeArguments_[typeArguments_.size - 1].toTokens())
             ret.append(rAngle_.tryGet() ?? Token(TokenKind.GT))
         }
-        ret.append(modalTokens())
+        appendModalTokens(this, ret)
         ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -245,6 +258,7 @@ public class RefType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getTokenIndent("-identifier", identifier_, currentIndent)
         for (i in 0..typeArguments_.size) {
             ret += getIndent(currentIndent) + "-typeArguments: ${i}, "
@@ -274,7 +288,7 @@ public class QualifiedType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.baseType_ = v.baseType_
                     this.dot_ = v.dot_
                     this.identifier_ = v.identifier_
@@ -296,6 +310,8 @@ public class QualifiedType <: TypeNode {
     private var typeArguments_: ArrayList<TypeNode> = ArrayList<TypeNode>()
     private var commas_: Tokens = Tokens()
     private var rAngle_: Token = Token()
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
 
     public mut prop baseType: TypeNode {
         get() {
@@ -357,6 +373,16 @@ public class QualifiedType <: TypeNode {
             rAngle_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
         var ret = super.toTokens().append(baseType_.toTokens()).append(dot_).append(identifier_)
         if (!typeArguments_.isEmpty()) {
@@ -368,13 +394,14 @@ public class QualifiedType <: TypeNode {
             ret.append(typeArguments_[typeArguments_.size - 1].toTokens())
             ret.append(rAngle_)
         }
-        ret.append(modalTokens())
+        appendModalTokens(this, ret)
         ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -392,6 +419,7 @@ public class QualifiedType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getIndent(currentIndent) + "-baseType: "
         ret += baseType_.dump(currentIndent)
         ret += getTokenIndent("identifier", identifier_, currentIndent)
@@ -419,7 +447,7 @@ public class ParenType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.lParen_ = v.lParen_
                     this.ty_ = v.ty_
                     this.rParen_ = v.rParen_
@@ -432,6 +460,8 @@ public class ParenType <: TypeNode {
     private var lParen_: Token = Token(TokenKind.LPAREN)
     private var ty_: TypeNode = TypeNode()
     private var rParen_: Token = Token(TokenKind.RPAREN)
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop lParen: Token {
         get() {
             lParen_
@@ -458,13 +488,26 @@ public class ParenType <: TypeNode {
             rParen_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
-        super.toTokens().append(lParen_).append(ty_.toTokens()).append(rParen_).append(modalTokens())
+        var ret = super.toTokens().append(lParen_).append(ty_.toTokens()).append(rParen_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -479,6 +522,7 @@ public class ParenType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getIndent(currentIndent) + "-parenthesizedType: "
         ret += ty_.dump(currentIndent + 1)
         ret += getIndent(indent) + "}\n"
@@ -502,7 +546,7 @@ public class TupleType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.lParen_ = v.lParen_
                     this.commas_ = v.commas_
                     this.types_ = v.types_
@@ -518,6 +562,8 @@ public class TupleType <: TypeNode {
     private var types_: ArrayList<TypeNode> = ArrayList<TypeNode>()
     private var commas_: Tokens = Tokens()
     private var rParen_: Token = Token(TokenKind.RPAREN)
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop lParen: Token {
         get() {
             lParen_
@@ -544,6 +590,16 @@ public class TupleType <: TypeNode {
             rParen_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
         var ret = super.toTokens().append(lParen_)
         if (commas_.size == 0) {
@@ -555,12 +611,15 @@ public class TupleType <: TypeNode {
             }
             ret.append(types_[types_.size - 1].toTokens())
         }
-        ret.append(rParen_).append(modalTokens())
+        ret.append(rParen_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -577,6 +636,7 @@ public class TupleType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         for (i in 0..types_.size) {
             ret += getIndent(currentIndent) + "-types: ${i}, "
             ret += types_[i].dump(currentIndent)
@@ -607,7 +667,7 @@ public class ThisType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.keyword_ = v.keyword_
                 case None => throw ASTException("Cannot construct the 'ThisType' node.")
             }
@@ -617,6 +677,8 @@ public class ThisType <: TypeNode {
     }
     public init() {}
     private var keyword_: Token = Token(TokenKind.THISTYPE)
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -625,13 +687,26 @@ public class ThisType <: TypeNode {
             keyword_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
-        super.toTokens().append(keyword_).append(modalTokens())
+        var ret = super.toTokens().append(keyword_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         return
     }
 
@@ -642,6 +717,7 @@ public class ThisType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getTokenIndent("-keyword", keyword_, currentIndent)
         ret += getIndent(indent) + "}\n"
         ret
@@ -661,7 +737,7 @@ public class PrefixType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.prefixOps_ = v.prefixOps_
                     this.baseType_ = v.baseType_
                 case None => throw ASTException("Cannot construct the 'PrefixType' node.")
@@ -673,6 +749,8 @@ public class PrefixType <: TypeNode {
     public init() {}
     private var prefixOps_: Tokens = Tokens()
     private var baseType_: TypeNode = TypeNode()
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop prefixOps: Tokens {
         get() {
             prefixOps_
@@ -689,13 +767,26 @@ public class PrefixType <: TypeNode {
             baseType_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
-        super.toTokens().append(prefixOps).append(baseType_).append(modalTokens())
+        var ret = super.toTokens().append(prefixOps).append(baseType_)
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -710,6 +801,7 @@ public class PrefixType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         for (i in 0..prefixOps_.size) {
             ret += getTokenIndent("-prefixOps: ${i}", prefixOps_[i], currentIndent)
         }
@@ -739,7 +831,7 @@ public class FuncType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.keyword_ = checkValid(v.keyword_)
                     this.lParen_ = v.lParen_
                     this.types_ = v.types_
@@ -761,6 +853,8 @@ public class FuncType <: TypeNode {
     private var rParen_: Token = Token(TokenKind.RPAREN)
     private var arrow_: Token = Token(TokenKind.ARROW)
     private var retTy_: TypeNode = TypeNode()
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -821,6 +915,16 @@ public class FuncType <: TypeNode {
             retTy_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
         var ret = super.toTokens()
 
@@ -836,7 +940,8 @@ public class FuncType <: TypeNode {
             }
             ret.append(types_[types_.size - 1].toTokens())
         }
-        ret.append(rParen_).append(arrow_).append(retTy_.toTokens()).append(modalTokens())
+        ret.append(rParen_).append(arrow_).append(retTy_.toTokens())
+        appendModalTokens(this, ret)
 
         ret
     }
@@ -844,6 +949,7 @@ public class FuncType <: TypeNode {
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -861,6 +967,7 @@ public class FuncType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getTokenIndent("-keyword", keyword_, currentIndent)
         for (i in 0..types_.size) {
             ret += getIndent(currentIndent) + "-types: ${i}, "
@@ -892,7 +999,7 @@ public class VArrayType <: TypeNode {
                     this.begin_ = v.beginPos
                     this.end_ = v.endPos
                     super.typeParameterName = v.typeParameterName
-                    super.modal = v.modal
+                    copyModalFrom(this, v)
                     this.keyword_ = v.keyword_
                     this.lAngle_ = v.lAngle_
                     this.elementTy_ = v.elementTy_
@@ -912,6 +1019,8 @@ public class VArrayType <: TypeNode {
     private var dollar_: Token = Token(TokenKind.DOLLAR)
     private var constant_: Token = Token()
     private var rAngle_: Token = Token(TokenKind.GT)
+    @When[local_mode_api == "on"]
+    private var modal_: ModalInfo = ModalInfo()
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -963,10 +1072,20 @@ public class VArrayType <: TypeNode {
             rAngle_ = v
         }
     }
+    @When[local_mode_api == "on"]
+    public mut prop modal: ModalInfo {
+        get() {
+            modal_
+        }
+        set(v) {
+            modal_ = v
+        }
+    }
+
     public func toTokens(): Tokens {
         var comma = Token(TokenKind.COMMA).addPosition(elementTy_.endPos.fileID, elementTy_.endPos.line,
             elementTy_.endPos.column + 1)
-        super
+        var ret = super
             .toTokens()
             .append(keyword_)
             .append(lAngle_)
@@ -975,12 +1094,14 @@ public class VArrayType <: TypeNode {
             .append(dollar_)
             .append(size)
             .append(rAngle_)
-            .append(modalTokens())
+        appendModalTokens(this, ret)
+        return ret
     }
 
     public func traverse(v: Visitor): Unit {
         v.visit(this)
         super.traverse(v)
+        traverseModal(this, v)
         if (v.needBreakTraverse()) {
             return
         }
@@ -995,6 +1116,7 @@ public class VArrayType <: TypeNode {
             currentIndent++
         }
         ret += super.dump(currentIndent)
+        ret += dumpModal(this, currentIndent)
         ret += getTokenIndent("-VARRAY", keyword_, currentIndent)
         ret += getIndent(currentIndent) + "-elementTy: "
         ret += elementTy_.dump(currentIndent)
@@ -1004,3 +1126,4 @@ public class VArrayType <: TypeNode {
         ret
     }
 }
+

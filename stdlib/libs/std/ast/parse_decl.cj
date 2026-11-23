@@ -21,7 +21,7 @@ public func parseDecl(input: Tokens, astKind!: String = ""): Decl {
                         p: CPointer<UInt8> => return CJ_AST_ParsePrimaryConstructor(match (MACRO_OBJECT.get()) {
                             case Some(ptr) => ptr
                             case None => CPointer<Unit>()
-                        }, p)
+                        }, p, CPointer<Int64>())
                     }
                 )
             }
@@ -71,6 +71,35 @@ public func parseDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int6
     return (astNode, count)
 }
 
+/*
+ * Parses the input tokens as a single primary constructor decl and returns
+ * the number of tokens that were consumed, in the same way as parseDeclFragment.
+ * Now parseDecl(astKind: "PrimaryCtorDecl") and the native entry rejects
+ * a second parameter list (named-parameter syntax).
+ *
+ * @throws ParseASTException if input tokens cannot be parsed to a PrimaryCtorDecl node.
+ */
+func parsePrimaryCtorDeclFragment(input: Tokens, startFrom!: Int64 = 0): (Decl, Int64) {
+    let (node, count) = unsafe {
+        try {
+            parseFragment(
+                input,
+                startFrom,
+                {
+                    p: CPointer<UInt8>, sizeRef: CPointer<Int64> => return CJ_AST_ParsePrimaryConstructor(match (MACRO_OBJECT.get()) {
+                        case Some(ptr) => ptr
+                        case None => CPointer<Unit>()
+                    }, p, sizeRef)
+                }
+            )
+        } catch (e: Exception) {
+            throw ParseASTException("Failed to parse 'PrimaryCtorDecl' fragment.")
+        }
+    }
+    var astNode = generateDeclAST(node.GetRootAsDecl())
+    return (astNode, count)
+}
+
 /**
  * @throws ASTException if input tokens cannot be parsed to a FuncParam node.
  */
@@ -78,11 +107,24 @@ func parseFuncParam(input: Tokens): FuncParam {
     var params = ArrayList<FuncParam>()
     try {
         let tokens = quote(foo($(input)){})
-        params = PrimaryCtorDecl(tokens).funcParams
-    } catch (_: ASTException) {
+        // The dummy decl must consume the input tokens exactly. Otherwise the
+        // first declaration would be taken and trailing tokens (e.g. from
+        // 'x: Int64) {} func evil() {}') would be silently dropped, making the
+        // reconstructed param not equivalent to the input.
+        let (decl, consumed) = parsePrimaryCtorDeclFragment(tokens)
+        if (consumed != tokens.size) {
+            throw ASTException("Cannot construct the 'FuncParam' node.")
+        }
+        match (decl as PrimaryCtorDecl) {
+            case Some(pcd) => params = pcd.funcParams
+            case None => throw ASTException("Cannot construct the 'FuncParam' node.")
+        }
+    } catch (_: ParseASTException | ASTException) {
         throw ASTException("Cannot construct the 'FuncParam' node.")
     }
-    if (params.size == 0) {
+    // The input must denote exactly one param; extra params would otherwise
+    // be silently dropped.
+    if (params.size != 1) {
         throw ASTException("Cannot construct the 'FuncParam' node.")
     }
     params[0]
@@ -354,20 +396,6 @@ func createFuncParam(decl: ASTFormat_Decl): Decl {
     return createFuncParam(decl.GetDeclAsFuncParam(), 0, 1)
 }
 
-func createThisParamDecl(decl: ASTFormat_Decl): Decl {
-    var tp = match (decl.GetDeclAsThisParam()) {
-        case Some(v) => v
-        case None => throw ParseASTException()
-    }
-    var thisTok = Token(TokenKind.THIS).addPosition(tp.GetThisPos())
-    var modal = createModalInfo(tp.GetModal())
-    var comma = Token()
-    if (isValidPosition(tp.GetCommaPos())) {
-        comma = Token(TokenKind.COMMA).addPosition(tp.GetCommaPos())
-    }
-    return ThisParam(thisTok, modal, comma)
-}
-
 func createMacroExpandParam(decl: ASTFormat_Decl): Decl {
     let pm = match (decl.GetDeclAsMacroExpandParam()) {
         case Some(v) => v
@@ -459,6 +487,7 @@ func generateFuncParams(funcBody: ASTFormat_FuncBody): ArrayList<FuncParam> {
     return funcParams
 }
 
+@When[local_mode_api == "on"]
 func createThisParam(paramList: ?ASTFormat_FuncParamList): ?ThisParam {
     var pl = match (paramList) {
         case Some(v) => v
@@ -497,11 +526,7 @@ func generateCommonFuncDecl(funcDecl: ?ASTFormat_FuncDecl, declNode: Decl) {
     funcDeclNode.constraintCommas = commaPos
     funcDeclNode.isGenericDecl = isGeneric
     funcDeclNode.isEnumConstruct = fd.GetIsEnumConstruct()
-    funcDeclNode.modal = createModalInfo(fd.GetModal())
-    match (createThisParam(fb.GetParamList())) {
-        case Some(tp) => funcDeclNode.thisParam = Some<ThisParam>(tp)
-        case None => ()
-    }
+    buildModalFrom(funcDeclNode, fd, fb)
     return funcDeclNode
 }
 
@@ -719,3 +744,4 @@ func createMacroExpandDecl(decl: ASTFormat_Decl) {
         case None => throw ParseASTException("Failed to create the 'MacroExpandDecl' node.")
     }
 }
+
