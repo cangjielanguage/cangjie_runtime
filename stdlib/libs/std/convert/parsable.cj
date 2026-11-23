@@ -95,8 +95,6 @@ func parseCompInt(rawData: Array<Byte> @local?, formatBaseNum: UInt64, multmin: 
     return num
 }
 
-// OHOS excludes local Array accessors, so normal parsing uses heap-mode Array operations.
-@When[local_mode_api != "on"]
 func parseCompInt(rawData: Array<Byte>, formatBaseNum: UInt64, multmin: UInt64, maxAbsVal: UInt64, isMark!: Bool = true): UInt64 {
     var num: UInt64 = 0
     var lineLength = 0
