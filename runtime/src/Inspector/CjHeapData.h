@@ -169,6 +169,7 @@ public:
     void ModifyLength();
 
     void AddU1List(const u1* value, size_t count);
+    void AddU1List(const char* value, size_t count);
     void AddU2List(const u2* value, size_t count);
     void AddU4List(const u4* value, size_t count);
     void AddU8List(const u8* value, size_t count);

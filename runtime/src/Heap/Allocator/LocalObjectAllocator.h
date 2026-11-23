@@ -11,13 +11,12 @@
 #include <functional>
 
 #include "Common/BaseObject.h"
+#include "Common/StackType.h"
 #include "Common/TypeDef.h"
+#include "Mutator/Mutator.h"
 #include "ObjectModel/RefField.h"
 
 namespace MapleRuntime {
-struct FrameAddress;
-class Mutator;
-
 // Metadata exposed to inspection/debugging clients while a local region is
 // stopped-the-world.  The dump layer must not depend on a concrete allocator
 // region type, so only stable ownership and layout information is exported.

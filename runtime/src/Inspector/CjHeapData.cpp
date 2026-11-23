@@ -203,7 +203,6 @@ bool CjHeapData::DumpHeap(int fd, bool needStopTheWorld)
         LOG(RTLOG_ERROR, "Failed to open heap dump file, stop dumping heap info, %s", strerror(errno));
         return false;
     }
-
     if (needStopTheWorld) {
         ScopedStopTheWorld scopedStopTheWorld("dump heap to fd");
         InitSerializedIdWrapper();
@@ -844,7 +843,7 @@ void CjHeapData::WriteString()
         const CString str = string.first;
         AddU4(static_cast<u4>(sizeof(SerializedStringId) + str.Length()));
         AddStringId(id);
-        AddU1List(reinterpret_cast<const uint8_t*>(str.Str()), str.Length());
+        AddU1List(str.Str(), str.Length());
         EndRecord();
     }
 }
@@ -936,6 +935,15 @@ void CjHeapData::AddID(const u8 value)
 void CjHeapData::AddU1List(const u1* value, size_t count)
 {
     HandleAddU1(value, count);
+    length += count;
+}
+
+void CjHeapData::AddU1List(const char* value, size_t count)
+{
+    if (count == 0) {
+        return;
+    }
+    HandleAddU1(static_cast<const u1*>(static_cast<const void*>(value)), count);
     length += count;
 }
 
@@ -1087,8 +1095,9 @@ void CjHeapData::AddObjectIdList(const std::vector<BaseObject*>& objects)
 
 void CjHeapData::EndRecord()
 {
-    const char* ptr = reinterpret_cast<const char*>(buffer.data());
-    fwrite(ptr, length, 1, fp);
+    if (fwrite(buffer.data(), length, 1, fp) != 1) {
+        LOG(RTLOG_ERROR, "write heap data record failed: length=%zu", static_cast<size_t>(length));
+    }
     length = 0;
     std::vector<uint8_t>().swap(buffer);
 }
@@ -1097,10 +1106,10 @@ void CjHeapData::WriteFixedHeader()
 {
     if (hasLocalObjects) {
         const char localIdent[] = "CANGJIE PROFILE 1.0.3";
-        AddU1List(reinterpret_cast<const uint8_t*>(localIdent), sizeof(localIdent));
+        AddU1List(localIdent, sizeof(localIdent));
     } else {
         const char legacyIdent[] = "CANGJIE PROFILE 1.0.2";
-        AddU1List(reinterpret_cast<const uint8_t*>(legacyIdent), sizeof(legacyIdent));
+        AddU1List(legacyIdent, sizeof(legacyIdent));
     }
     const u4 idSize = serializedIdWrapper.Use4ByteId() ? sizeof(u4) : sizeof(u8);
     AddU4(idSize);

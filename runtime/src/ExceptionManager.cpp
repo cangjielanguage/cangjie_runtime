@@ -111,7 +111,9 @@ void ExceptionManager::OutOfMemory()
 
 void ExceptionManager::LocalRegionOutOfMemory()
 {
-    ExceptionWrapper& eWrapper = Mutator::GetMutator()->GetExceptionWrapper();
+    Mutator* mutator = Mutator::GetMutator();
+    CHECK_DETAIL(mutator != nullptr, "cannot throw local region out of memory without mutator");
+    ExceptionWrapper& eWrapper = mutator->GetExceptionWrapper();
     eWrapper.SetFatalException(false);
     eWrapper.SetExceptionType(ExceptionWrapper::ExceptionType::LOCAL_REGION_OUT_OF_MEMORY);
     ThrowImplicitException(LOCAL_REGION_OOM);
