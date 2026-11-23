@@ -1959,6 +1959,13 @@ extern "C" FuncPtr* CJ_MCC_GetMTable(TypeInfo* ti, TypeInfo* itf)
 
 extern "C" TypeInfo* CJ_MCC_GetMethodOuterTI(TypeInfo* ti, TypeInfo* itf, U64 index)
 {
+    // Fast path for the ubiquitous case (a class calling its own inherited/own methods):
+    // the answer is the receiver's own TypeInfo, so resolve it here instead of entering
+    // the full resolver, whose callee-saved register setup dwarfs the actual check.
+    U32 itfUUID = itf->GetUUID();
+    if (ti == itf || ti->GetUUID() == itfUUID) {
+        return ti;
+    }
     return ti->GetMethodOuterTI(itf, index);
 }
 

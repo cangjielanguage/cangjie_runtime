@@ -18,13 +18,15 @@ package std.ast
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: FuncDecl, src: FuncDecl): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
     dst.thisParam = src.thisParam
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: FuncDecl, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
@@ -37,7 +39,9 @@ func appendThisParamTokens(src: FuncDecl, to: Tokens): Unit {
 
 @When[local_mode_api == "on"]
 func traverseModal(src: FuncDecl, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
     match (src.thisParam) {
         case Some(node) => node.traverse(v)
         case None => ()
@@ -46,7 +50,10 @@ func traverseModal(src: FuncDecl, v: Visitor): Unit {
 
 @When[local_mode_api == "on"]
 func dumpModal(src: FuncDecl, indent: UInt16): String {
-    var ret = src.modal.dump(indent)
+    var ret = ""
+    if (!src.modal_.isEmpty()) {
+        ret = src.modal_.dump(indent)
+    }
     match (src.thisParam) {
         case Some(node) =>
             ret += getIndent(indent) + "-thisParam: "
@@ -62,22 +69,29 @@ func dumpModal(src: FuncDecl, indent: UInt16): String {
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: CallExpr, src: CallExpr): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: CallExpr, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: CallExpr, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: CallExpr, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 // ---------------------------------------------------------------------------
@@ -86,17 +100,24 @@ func dumpModal(src: CallExpr, indent: UInt16): String {
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: PrimitiveTypeExpr, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: PrimitiveTypeExpr, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: PrimitiveTypeExpr, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 // ---------------------------------------------------------------------------
@@ -105,182 +126,245 @@ func dumpModal(src: PrimitiveTypeExpr, indent: UInt16): String {
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: PrimitiveType, src: PrimitiveType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: PrimitiveType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: PrimitiveType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: PrimitiveType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: RefType, src: RefType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: RefType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: RefType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: RefType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: QualifiedType, src: QualifiedType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: QualifiedType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: QualifiedType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: QualifiedType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: ParenType, src: ParenType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: ParenType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: ParenType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: ParenType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: TupleType, src: TupleType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: TupleType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: TupleType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: TupleType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: ThisType, src: ThisType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: ThisType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: ThisType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: ThisType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: PrefixType, src: PrefixType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: PrefixType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: PrefixType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: PrefixType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: FuncType, src: FuncType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: FuncType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: FuncType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: FuncType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 @When[local_mode_api == "on"]
 func copyModalFrom(dst: VArrayType, src: VArrayType): Unit {
-    dst.modal = src.modal
+    dst.modal_ = src.modal_
 }
 
 @When[local_mode_api == "on"]
 func appendModalTokens(src: VArrayType, to: Tokens): Unit {
-    to.append(src.modal.toTokens())
+    if (!src.modal_.isEmpty()) {
+        to.append(src.modal_.toTokens())
+    }
 }
 
 @When[local_mode_api == "on"]
 func traverseModal(src: VArrayType, v: Visitor): Unit {
-    src.modal.traverse(v)
+    if (!src.modal_.isEmpty()) {
+        src.modal_.traverse(v)
+    }
 }
 
 @When[local_mode_api == "on"]
 func dumpModal(src: VArrayType, indent: UInt16): String {
-    return src.modal.dump(indent)
+    if (src.modal_.isEmpty()) {
+        return ""
+    }
+    return src.modal_.dump(indent)
 }
 
 // ---------------------------------------------------------------------------
