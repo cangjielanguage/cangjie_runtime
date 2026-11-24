@@ -105,6 +105,28 @@ Returns:
 
 - [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) - the new array length.
 
+Example:
+
+<!-- compile -->
+<!-- cfg="--experimental" -->
+```cangjie
+import std.interop.arkts.*
+
+main() {
+    unsafe {
+        // Variadic construction: three arguments do not hit the length overload init(Float64)
+        let arr = ArkTSArray<Float64>(1.0, 2.0, 3.0)
+        let length = arr.push(4.0, 5.0)
+        let text = arr.join(separator: "-")
+        let index = arr.indexOf(3.0, fromIndex: 0.0)
+        println("${length} ${text} ${index}")
+    }
+}
+```
+
+Note: the example shows the call shape. This version ships the declarations only; the cross-boundary calls at run time are out of scope for this version.
+
+
 ### func join(Option\<String>)
 
 ```cangjie
@@ -215,27 +237,6 @@ Parameters:
 Returns:
 
 - [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) - the last index of the element, or `-1` when it is absent.
-
-Example:
-
-<!-- compile -->
-<!-- cfg="--experimental" -->
-```cangjie
-import std.interop.arkts.*
-
-main() {
-    unsafe {
-        // Variadic construction: three arguments do not hit the length overload init(Float64)
-        let arr = ArkTSArray<Float64>(1.0, 2.0, 3.0)
-        let length = arr.push(4.0, 5.0)
-        let text = arr.join(separator: "-")
-        let index = arr.indexOf(3.0, fromIndex: 0.0)
-        println("${length} ${text} ${index}")
-    }
-}
-```
-
-Note: the example shows the call shape. This version ships the declarations only; the cross-boundary calls at run time are out of scope for this version.
 
 ## class ArkTSString
 

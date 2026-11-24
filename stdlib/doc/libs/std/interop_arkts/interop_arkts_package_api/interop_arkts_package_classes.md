@@ -105,6 +105,28 @@ public func push(@RestParam items: Array<T>): Float64
 
 - [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) - 追加后的数组长度。
 
+示例：
+
+<!-- compile -->
+<!-- cfg="--experimental" -->
+```cangjie
+import std.interop.arkts.*
+
+main() {
+    unsafe {
+        // 变长参数构造：传 3 个实参不会命中 init(Float64) 的长度构造重载
+        let arr = ArkTSArray<Float64>(1.0, 2.0, 3.0)
+        let length = arr.push(4.0, 5.0)
+        let text = arr.join(separator: "-")
+        let index = arr.indexOf(3.0, fromIndex: 0.0)
+        println("${length} ${text} ${index}")
+    }
+}
+```
+
+说明：示例给出调用形态。本版本只交付声明，运行期的跨边界调用不在本版本范围内。
+
+
 ### func join(Option\<String>)
 
 ```cangjie
@@ -215,27 +237,6 @@ public func lastIndexOf(searchElement: T, fromIndex!: Option<Float64> = None): F
 返回值：
 
 - [Float64](../../core/core_package_api/core_package_intrinsics.md#float64) - 最后一次出现的下标；未找到时返回 `-1`。
-
-示例：
-
-<!-- compile -->
-<!-- cfg="--experimental" -->
-```cangjie
-import std.interop.arkts.*
-
-main() {
-    unsafe {
-        // 变长参数构造：传 3 个实参不会命中 init(Float64) 的长度构造重载
-        let arr = ArkTSArray<Float64>(1.0, 2.0, 3.0)
-        let length = arr.push(4.0, 5.0)
-        let text = arr.join(separator: "-")
-        let index = arr.indexOf(3.0, fromIndex: 0.0)
-        println("${length} ${text} ${index}")
-    }
-}
-```
-
-说明：示例给出调用形态。本版本只交付声明，运行期的跨边界调用不在本版本范围内。
 
 ## class ArkTSString
 
