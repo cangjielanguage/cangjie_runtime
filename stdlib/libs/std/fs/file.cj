@@ -690,7 +690,6 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[local_mode_api != "on"]
     private func checkCanRead(): Unit {
         if (!isHandleValid(_fileDescriptor._fileHandle)) {
             throw FSException("Cannot read file '${_fileInfo.path}': file is not opened.")
@@ -744,7 +743,6 @@ public class File <: Resource & IOStream & Seekable {
         }
     }
 
-    @When[local_mode_api != "on"]
     private func directRead(buffer: Array<Byte>): Int64 {
         unsafe {
             let bufPtr: CPointerHandle<Byte> = acquireArrayRawData(buffer)
