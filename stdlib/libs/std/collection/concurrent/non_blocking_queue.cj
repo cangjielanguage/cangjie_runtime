@@ -381,16 +381,32 @@ public class ConcurrentLinkedQueue<E> <: Collection<E> {
  */
 func newBlock<E>(tailBlock: Block<E>, tail: AtomicReference<Block<E>>): Unit {
     if (!tailBlock.isExtended.compareAndSwap(false, true)) {
+        // Lost the extension race: spin until the winner links `next`. If the winner OOM'd
+        // and reset isExtended, take over the extension ourselves rather than spin forever
+        // on an unwritten `next` (which would deadlock while holding putMonitor). A
+        // successful re-claim falls through to the allocation below.
         while (true) {
             if (let Some(_) <- tailBlock.next.load()) {
                 return
             }
+            if (tailBlock.isExtended.compareAndSwap(false, true)) {
+                break
+            }
         }
     }
 
-    let newBlock = Block<E>(tailBlock.version + 1)
-    tailBlock.next.store(newBlock)
-    tail.store(newBlock)
+    // Won the extension race: allocate and link the new block. If allocation fails
+    // (OutOfMemoryError <: Error), reset isExtended so a later thread can retry the extension
+    // instead of every producer spinning forever on an unwritten `next` (which would deadlock
+    // the queue). The reservation counter putQsize is rolled back separately in tryAddCore.
+    try {
+        let newBlock = Block<E>(tailBlock.version + 1)
+        tailBlock.next.store(newBlock)
+        tail.store(newBlock)
+    } catch (e: Error) {
+        tailBlock.isExtended.store(false)
+        throw e
+    }
 }
 
 /**
