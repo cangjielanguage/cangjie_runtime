@@ -19,6 +19,12 @@ option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile declarations guarded by @When[loca
 if(CANGJIE_ENABLE_LOCAL_MODE_API AND NOT CANGJIE_ENABLE_LOCAL_MODE)
     message(FATAL_ERROR "CANGJIE_ENABLE_LOCAL_MODE_API=ON requires CANGJIE_ENABLE_LOCAL_MODE=ON")
 endif()
+# The experimental std.interop.arkts package follows the same opt-in pattern as the
+# local-mode APIs: only a compatible compiler accepts its ArkTS interop declarations,
+# so the package target is added to the build only when this is ON, and the declarations
+# themselves are additionally guarded by @When[arkts_interop == "on"]. Reusing this
+# module keeps the OFF default; the full stdlib project and build.py opt in explicitly.
+option(CANGJIE_ENABLE_ARKTS_INTEROP "Compile the experimental std.interop.arkts package" OFF)
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
@@ -163,6 +169,17 @@ function(add_cangjie_library target_name)
         list(APPEND cangjie_compile_flags "--cfg" "local_mode_api=on")
     else()
         list(APPEND cangjie_compile_flags "--cfg" "local_mode_api=off")
+    endif()
+
+    # The user-defined condition `arkts_interop` mirrors the local-mode pattern: the
+    # std.interop.arkts declarations are guarded by @When[arkts_interop == "on"], so the
+    # value is always passed explicitly and cjc never sees an undefined condition. It is
+    # independent of the target gate (CANGJIE_ENABLE_ARKTS_INTEROP), which decides whether
+    # the package target exists at all.
+    if(CANGJIE_ENABLE_ARKTS_INTEROP)
+        list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=on")
+    else()
+        list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=off")
     endif()
 
     if (CANGJIELIB_IS_CJNATIVE_BACKEND)

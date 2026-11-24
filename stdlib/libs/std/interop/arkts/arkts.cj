@@ -10,7 +10,10 @@ package std.interop.arkts
 
 // These declarations use `public foreign class` and body-less members, which
 // require a compiler that accepts the ArkTS interop syntax. Build this package
-// with such a compiler; an older one fails in the parse phase.
+// with such a compiler; an older one fails in the parse phase. Like the
+// local-mode APIs, every declaration is guarded by @When[arkts_interop == "on"],
+// so a build that passes `--cfg arkts_interop=off` (the default) yields an empty
+// package instead of a parse error.
 
 /**
  * `ArkTSType` is the root interface of all ArkTS interop types. The design goal
@@ -20,6 +23,7 @@ package std.interop.arkts
  * implement this interface, are not available in this release and will be
  * available in a later release.
  */
+@When[arkts_interop == "on"]
 @ArkTS
 public interface ArkTSType {}
 
@@ -45,6 +49,7 @@ public interface ArkTSType {}
  * bound to ArkTS `Array`, and the rest will be available in a later release.
  * Every member is implemented on the ArkTS side.
  */
+@When[arkts_interop == "on"]
 @ArkTS[foreignName: "Array"]
 public foreign class ArkTSArray<T> {
     public init(arrayLength: Float64)
@@ -79,6 +84,7 @@ public foreign class ArkTSArray<T> {
  * designed members, declared without bodies, under the same package and name
  * contract as `ArkTSArray<T>`; the rest will be available in a later release.
  */
+@When[arkts_interop == "on"]
 @ArkTS[foreignName: "String"]
 public foreign class ArkTSString {
     public init(value!: Option<String> = None)
@@ -109,6 +115,7 @@ public foreign class ArkTSString {
 //   compiler-builtin behaviors (like `CFunc<F>`). A Cangjie function type is
 //   not an ArkTS-compatible type, so the compiler special-cases this
 //   constructor instead of treating it as an ordinary foreign member.
+@When[arkts_interop == "on"]
 @ArkTS
 public foreign class ArkTSFunc<F> {
     public init(f: F)
@@ -125,6 +132,7 @@ public foreign class ArkTSFunc<F> {
  * declarations, and `bind` returns a callable `ArkTSFunc<F>` bound to
  * `thisArg`.
  */
+@When[arkts_interop == "on"]
 @ArkTS
 public foreign class ArkTSFuncWithThis<ThisT, F> {
     public func bind(thisArg: ThisT): ArkTSFunc<F>
