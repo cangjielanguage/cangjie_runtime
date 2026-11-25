@@ -84,7 +84,7 @@ public class PrimitiveType <: TypeNode {
     }
     private var keyword_: Token = Token()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -97,7 +97,10 @@ public class PrimitiveType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -168,7 +171,7 @@ public class RefType <: TypeNode {
     private var commas_: Tokens = Tokens()
     private var rAngle_: Token = Token()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop identifier: Token {
         get() {
             identifier_
@@ -216,7 +219,10 @@ public class RefType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -311,7 +317,7 @@ public class QualifiedType <: TypeNode {
     private var commas_: Tokens = Tokens()
     private var rAngle_: Token = Token()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
 
     public mut prop baseType: TypeNode {
         get() {
@@ -376,7 +382,10 @@ public class QualifiedType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -461,7 +470,7 @@ public class ParenType <: TypeNode {
     private var ty_: TypeNode = TypeNode()
     private var rParen_: Token = Token(TokenKind.RPAREN)
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop lParen: Token {
         get() {
             lParen_
@@ -491,7 +500,10 @@ public class ParenType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -563,7 +575,7 @@ public class TupleType <: TypeNode {
     private var commas_: Tokens = Tokens()
     private var rParen_: Token = Token(TokenKind.RPAREN)
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop lParen: Token {
         get() {
             lParen_
@@ -593,7 +605,10 @@ public class TupleType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -678,7 +693,7 @@ public class ThisType <: TypeNode {
     public init() {}
     private var keyword_: Token = Token(TokenKind.THISTYPE)
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -690,7 +705,10 @@ public class ThisType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -750,7 +768,7 @@ public class PrefixType <: TypeNode {
     private var prefixOps_: Tokens = Tokens()
     private var baseType_: TypeNode = TypeNode()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop prefixOps: Tokens {
         get() {
             prefixOps_
@@ -770,7 +788,10 @@ public class PrefixType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -854,7 +875,7 @@ public class FuncType <: TypeNode {
     private var arrow_: Token = Token(TokenKind.ARROW)
     private var retTy_: TypeNode = TypeNode()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -918,7 +939,10 @@ public class FuncType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v
@@ -1020,7 +1044,7 @@ public class VArrayType <: TypeNode {
     private var constant_: Token = Token()
     private var rAngle_: Token = Token(TokenKind.GT)
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -1075,7 +1099,10 @@ public class VArrayType <: TypeNode {
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
         get() {
-            modal_
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
         }
         set(v) {
             modal_ = v

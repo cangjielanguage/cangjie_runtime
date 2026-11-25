@@ -160,12 +160,21 @@ public class ModalInfo {
     }
 }
 
-// Build a ModalInfo from an ASTFormat_ModalInfo. Returns an empty ModalInfo when absent.
+// Shared empty instance: node constructors reference it directly, so building a node
+// without a modal performs no allocation. The `modal` getter copies on write before
+// handing out a mutable instance, so this instance is never mutated.
+@When[local_mode_api == "on"]
+let emptyModalInfo = ModalInfo()
+
+// Build a ModalInfo from an ASTFormat_ModalInfo. Returns the shared emptyModalInfo
+// singleton when absent or NONE, so the parse path allocates nothing for modal-less
+// nodes. The returned singleton must never be mutated in place: AST-node read paths
+// go through the `modal` getter, which copies on write when it sees the singleton.
 @When[local_mode_api == "on"]
 func createModalInfo(modal: Option<ASTFormat_ModalInfo>): ModalInfo {
     var info = match (modal) {
         case Some(v) => v
-        case None => return ModalInfo()
+        case None => return emptyModalInfo
     }
     var mode = match (info.GetLocal()) {
         case ASTFormat_ASTMode.ASTMode_AST_MODE_NONE => ASTMode.MODAL_NONE
@@ -174,7 +183,7 @@ func createModalInfo(modal: Option<ASTFormat_ModalInfo>): ModalInfo {
         case ASTFormat_ASTMode.ASTMode_AST_MODE_FULL => ASTMode.MODAL_FULL
     }
     if (mode == ASTMode.MODAL_NONE) {
-        return ModalInfo()
+        return emptyModalInfo
     }
     let at = Token(TokenKind.AT).addPosition(info.GetAtPos())
     let localPos = info.GetLocalPos()

@@ -867,11 +867,18 @@ public class FuncDecl <: Decl {
     @When[local_mode_api == "on"]
     private var thisParam_: Option<ThisParam> = None<ThisParam>
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
-        get() { modal_ }
-        set(v) { modal_ = v }
+        get() {
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
+        }
+        set(v) {
+            modal_ = v
+        }
     }
     @When[local_mode_api == "on"]
     public mut prop thisParam: Option<ThisParam> {
@@ -1857,14 +1864,14 @@ public class ThisParam <: Decl {
         this.begin_ = v.beginPos
         this.end_ = v.endPos
         this.this_ = v.`this`
-        this.modal_ = v.modal
+        this.modal_ = v.modal_
         this.comma_ = v.comma
     }
     public init() {
         super()
     }
     private var this_: Token = Token(TokenKind.THIS)
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     private var comma_: Token = Token()
     public mut prop `this`: Token {
         get() { this_ }
@@ -1874,8 +1881,15 @@ public class ThisParam <: Decl {
         }
     }
     public mut prop modal: ModalInfo {
-        get() { modal_ }
-        set(v) { modal_ = v }
+        get() {
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
+        }
+        set(v) {
+            modal_ = v
+        }
     }
     public mut prop comma: Token {
         get() { comma_ }
@@ -1885,7 +1899,10 @@ public class ThisParam <: Decl {
         }
     }
     public func toTokens(): Tokens {
-        var ret = Tokens().append(this_).append(modal_.toTokens())
+        var ret = Tokens().append(this_)
+        if (!modal_.isEmpty()) {
+            ret.append(modal_.toTokens())
+        }
         if (isValidToken(comma_)) {
             ret.append(comma_)
         }
@@ -1898,7 +1915,9 @@ public class ThisParam <: Decl {
         if (v.needBreakTraverse()) {
             return
         }
-        modal_.traverse(v)
+        if (!modal_.isEmpty()) {
+            modal_.traverse(v)
+        }
         return
     }
 
@@ -1910,7 +1929,9 @@ public class ThisParam <: Decl {
         }
         ret += super.dump(currentIndent)
         ret += getTokenIndent("-this", this_, currentIndent)
-        ret += modal_.dump(currentIndent)
+        if (!modal_.isEmpty()) {
+            ret += modal_.dump(currentIndent)
+        }
         if (isValidToken(comma_)) {
             ret += getTokenIndent("-comma", comma_, currentIndent)
         }

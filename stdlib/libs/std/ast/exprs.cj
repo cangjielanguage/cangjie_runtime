@@ -1250,11 +1250,18 @@ public class CallExpr <: Expr {
     private var args_: ArrayList<Argument> = ArrayList<Argument>()
     private var rParen_: Token = Token(TokenKind.RPAREN)
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
-        get() { modal_ }
-        set(v) { modal_ = v }
+        get() {
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
+        }
+        set(v) {
+            modal_ = v
+        }
     }
     public mut prop callFunc: Expr {
         get() {
@@ -2853,7 +2860,7 @@ public class PrimitiveTypeExpr <: Expr {
     }
     private var keyword_: Token = Token()
     @When[local_mode_api == "on"]
-    private var modal_: ModalInfo = ModalInfo()
+    var modal_: ModalInfo = emptyModalInfo
     public mut prop keyword: Token {
         get() {
             keyword_
@@ -2865,8 +2872,15 @@ public class PrimitiveTypeExpr <: Expr {
     }
     @When[local_mode_api == "on"]
     public mut prop modal: ModalInfo {
-        get() { modal_ }
-        set(v) { modal_ = v }
+        get() {
+            if (refEq(modal_, emptyModalInfo)) {
+                modal_ = ModalInfo()
+            }
+            return modal_
+        }
+        set(v) {
+            modal_ = v
+        }
     }
     public func toTokens(): Tokens {
         var ret = Tokens().append(keyword_)
