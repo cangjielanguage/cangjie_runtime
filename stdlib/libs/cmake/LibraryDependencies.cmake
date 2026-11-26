@@ -150,6 +150,15 @@ set(INTEROP_ARKTS_DEPENDENCIES
 # symbol from the parent package (verify with `cjc --scan-dependency`), unlike
 # math.numeric/collection.concurrent whose subpackages do import the parent.
 # Add the parent only if such an import appears.
+# ExternConversionException is hosted by std.interop.arkts (not the arkts.lang
+# facade) so the generated preset wrapper bodies name it without an import; the
+# facade re-exports it through its `public import std.interop.arkts.*`. The
+# wrapper bodies also reference cj_arkts_context_v1 (ForeignRuntimeException,
+# context accessors) and ohos.business_exception (BusinessException) directly;
+# those packages are outside the stdlib tree and are wired into the gated
+# std.interop.arkts build through CANGJIE_ARKTS_INTEROP_IMPORT_DIRS (see
+# AddCJNATIVELibrary.cmake). The dependency direction is one-way: neither of
+# them may import std.interop.arkts, or the preset package cycles.
 
 set(REF_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}

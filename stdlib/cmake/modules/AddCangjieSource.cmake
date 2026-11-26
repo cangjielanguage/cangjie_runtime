@@ -25,6 +25,12 @@ endif()
 # themselves are additionally guarded by @When[arkts_interop == "on"]. Reusing this
 # module keeps the OFF default; the full stdlib project and build.py opt in explicitly.
 option(CANGJIE_ENABLE_ARKTS_INTEROP "Compile the experimental std.interop.arkts package" OFF)
+# CJO directories the opt-in std.interop.arkts build forwards as --import-path so the
+# package can see the interop runtime it references (cj_arkts_context_v1 and
+# ohos.business_exception). Consumed by AddCJNATIVELibrary.cmake; the member bodies
+# the package now carries require these directories to be set.
+set(CANGJIE_ARKTS_INTEROP_IMPORT_DIRS "" CACHE STRING
+    "Semicolon-separated CJO directories for the opt-in std.interop.arkts build (interop runtime)")
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
@@ -194,8 +200,8 @@ function(add_cangjie_library target_name)
 
     set(MKDIR_TEMP_FILES_CMD)
     # append backend-options. cmake_parse_arguments stores the BACKEND_OPTS
-    # values in CANGJIELIB_BACKEND_OPTS; the former CANGJIELIB_OPTS variable
-    # was never set, so the documented option was silently dropped.
+    # values in CANGJIELIB_BACKEND_OPTS; read the backend options from that
+    # variable.
     list(LENGTH CANGJIELIB_BACKEND_OPTS options_length)
     if(NOT (options_length EQUAL 0))
         list(APPEND cangjie_compile_flags ${CANGJIELIB_BACKEND_OPTS})

@@ -3,17 +3,17 @@
 ## class ArkTSArray\<T>
 
 ```cangjie
-public foreign class ArkTSArray<T> {
+public class ArkTSArray<T> where T <: JSInteropType<T> {
     public init(arrayLength: Float64)
-    public init(@RestParam items: Array<T>)
+    public init(items: Array<T>)
 }
 ```
 
-Description: the Cangjie-side type of an ArkTS `Array<T>`/`T[]` object. By design it references the same instance as the ArkTS array object, so a modification on either side is visible on the other.
+Function: the Cangjie-side type of an ArkTS `Array<T>`/`T[]` object. It references the same ArkTS array object, so modifications on either side are visible on the other; member calls act on that same array object.
 
-The reference semantics and member-level conversion arrive in a later release; they are not implemented in this version. In this version, when an `ArkTSArray<T>` appears in an `@ArkTS foreign` signature position (a parameter, the return value, or a nested position), the compiler rejects the usage and reports that the reference semantics of that type is not available in this version.
+This version delivers the reference semantics and the member-level conversion: the class is a compiler-prepared generic wrapper (the compiler installs the `JSObject` reference storage, the wrapping constructors and the accessor), the member bodies are implemented by this package's source, and the element conversions follow the hidden `T <: JSInteropType<T>` runtime contract (`T.fromJSValue` / `toJSValue`). An `ArkTSArray<T>` position in an `@ArkTS foreign` signature (parameter, return or nested position) maps as a reference type. An element type that does not satisfy the constraint - a user class without a `JSInteropType` conformance included - is rejected at the use site with the ordinary generic-constraint diagnostic.
 
-This version declares 14 body-less members out of the 30 designed members; the remaining 16 come in a later release. Every member is implemented on the ArkTS side, and the member descriptions below state the ArkTS-side semantics. This version ships the declarations only: no cross-boundary path exists yet to create an instance or call a member.
+This version ships 12 members (the two constructors plus `length`/`pop`/`push`/`join`/`reverse`/`shift`/`unshift`/`slice`/`indexOf`/`lastIndexOf`) out of the 30 designed members; the static members that depend on `ArkTSType` values (`isArray`, `prototype`) and the rest will be available in a later release. Every member is implemented on the ArkTS side; the member descriptions below describe the ArkTS-side semantics. `push`/`unshift` take `Array<T>` in this version (the variadic `@RestParam` spelling ships with its call-site packing in a later release).
 
 ### init(Float64)
 
@@ -21,7 +21,7 @@ This version declares 14 body-less members out of the 30 designed members; the r
 public init(arrayLength: Float64)
 ```
 
-Description: constructs an ArkTS array object of the given length, with new elements left as ArkTS-side holes.
+Function: constructs an ArkTS array object of the given length (the ArkTS `new Array(n)` semantics); the added elements are ArkTS-side holes.
 
 Parameters:
 
@@ -30,16 +30,14 @@ Parameters:
 ### init(Array\<T>)
 
 ```cangjie
-public init(@RestParam items: Array<T>)
+public init(items: Array<T>)
 ```
 
-Description: constructs an ArkTS array object from the given elements.
-
-Note: how the `@RestParam items` list is passed to the ArkTS `Array` constructor is not settled yet and is an open item for a later release. ArkTS/JS `new Array(...items)` hits the length-constructor overload when `items` is exactly one numeric element (for example, `new Array(3.0)` yields a hole-filled array of length 3), so the construction rule must avoid that trap.
+Function: constructs an ArkTS array object from the given elements.
 
 Parameters:
 
-- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the array elements; the variadic syntax allows the array literal brackets `[]` to be omitted.
+- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the array elements; each element converts through its `JSInteropType` conformance.
 
 ### static func isArray(ArkTSType)
 
@@ -48,6 +46,8 @@ public static func isArray(arg: ArkTSType): Bool
 ```
 
 Description: checks whether the given value is an ArkTS array object.
+
+Note: this member is not delivered in this version and will be available in a later release.
 
 Parameters:
 
@@ -64,6 +64,8 @@ public static prop prototype: ArkTSArray<ArkTSType>
 ```
 
 Description: the prototype object of the ArkTS `Array` constructor. It is a static member of the constructor, accessed through the type name; instances do not expose it.
+
+Note: this member is not delivered in this version and will be available in a later release.
 
 Type: [ArkTSType](interop_arkts_package_interfaces.md#interface-arktstype)
 
@@ -92,14 +94,14 @@ Returns:
 ### func push(Array\<T>)
 
 ```cangjie
-public func push(@RestParam items: Array<T>): Float64
+public func push(items: Array<T>): Float64
 ```
 
 Description: appends elements to the end of the array.
 
 Parameters:
 
-- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the elements to append; the variadic syntax allows the array literal brackets `[]` to be omitted.
+- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the elements to append. This version takes `Array<T>`; the variadic `@RestParam` syntax arrives in a later release.
 
 Returns:
 
@@ -114,17 +116,21 @@ import std.interop.arkts.*
 
 main() {
     unsafe {
-        // Variadic construction: three arguments do not hit the length overload init(Float64)
-        let arr = ArkTSArray<Float64>(1.0, 2.0, 3.0)
-        let length = arr.push(4.0, 5.0)
+        // Construct from an element array
+        let arr = ArkTSArray<Float64>([1.0, 2.0, 3.0])
+        let length = arr.push([4.0, 5.0])
         let text = arr.join(separator: "-")
         let index = arr.indexOf(3.0, fromIndex: 0.0)
         println("${length} ${text} ${index}")
+
+        // Construct from a length (the ArkTS new Array(n) semantics)
+        let sized = ArkTSArray<Float64>(3.0)
+        println(sized.length)
     }
 }
 ```
 
-Note: the example shows the call shape. This version ships the declarations only; the cross-boundary calls at run time are out of scope for this version.
+Note: the example shows the run-time call shape. This version ships the two constructors and 12 members, and the cross-boundary calls run on the ArkTS side; `push`/`unshift` take `Array<T>`, while the variadic `@RestParam` syntax and the static members such as `isArray`/`prototype` arrive in a later release.
 
 
 ### func join(Option\<String>)
@@ -170,14 +176,14 @@ Returns:
 ### func unshift(Array\<T>)
 
 ```cangjie
-public func unshift(@RestParam items: Array<T>): Float64
+public func unshift(items: Array<T>): Float64
 ```
 
 Description: inserts elements at the beginning of the array and shifts the existing elements back.
 
 Parameters:
 
-- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the elements to insert; the variadic syntax allows the array literal brackets `[]` to be omitted.
+- items: [Array](../../core/core_package_api/core_package_structs.md#struct-arrayt)\<T> - the elements to insert. This version takes `Array<T>`; the variadic `@RestParam` syntax arrives in a later release.
 
 Returns:
 
@@ -186,7 +192,7 @@ Returns:
 ### func slice(Option\<Float64>, Option\<Float64>)
 
 ```cangjie
-public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSString
+public func slice(start!: Option<Float64> = None, end!: Option<Float64> = None): ArkTSArray<T>
 ```
 
 Description: copies the elements in the index range `[start, end)` into a new ArkTS array, following the ArkTS `Array.prototype.slice` semantics (including negative indices).
@@ -246,11 +252,11 @@ public foreign class ArkTSString {
 }
 ```
 
-Description: the Cangjie-side type of an ArkTS `string`. It is a handle to a JS string value and can carry either a primitive string or a `String` wrapper object. By design it carries the value by reference, so crossing the boundary does not copy the contents and the string operations run on the ArkTS side. `charAt`/`toString` return a Cangjie `String` by value and necessarily copy the contents; `slice`/`substring`/`toUpperCase`/`toLowerCase` return a primitive JS string, carried by the returned `ArkTSString` handle.
+Description: the Cangjie-side type of an ArkTS `string`. It is a handle to a JS string value and carries a JS string primitive (it is not a JS object). Crossing the boundary does not copy the string contents, and the string operations run on the ArkTS side. `charAt`/`toString` return a Cangjie `String` by value and necessarily copy the contents; `slice`/`substring`/`toUpperCase`/`toLowerCase` return a primitive JS string, carried by the returned `ArkTSString` handle.
 
-The reference semantics and member-level conversion arrive in a later release; they are not implemented in this version. In this version, when an `ArkTSString` appears in an `@ArkTS foreign` signature position (a parameter, the return value, or a nested position), the compiler rejects the usage and reports that the reference semantics of that type is not available in this version.
+This version delivers the member-level conversion and a constructible prepared wrapper: `ArkTSString` is an ordinary (non-generic) wrapper prepared by the compiler, the compiler generates its member bodies onto the prepared wrapper, and both construction and member calls are usable. An `ArkTSString` position in an `@ArkTS foreign` signature (a parameter, the return value, or a nested position) maps as a reference type.
 
-This version declares 11 body-less members out of the 47 designed members; the remaining 36 come in a later release. Every member is implemented on the ArkTS side, and the member descriptions below state the ArkTS-side semantics. This version ships the declarations only: no cross-boundary path exists yet to create an instance or call a member.
+This version ships 11 members (the constructor plus `length`/`charAt`/`charCodeAt`/`indexOf`/`lastIndexOf`/`slice`/`substring`/`toUpperCase`/`toLowerCase`/`toString`) out of the 47 designed members; the remaining 36 arrive in a later release. Every member is implemented on the ArkTS side, and the member descriptions below state the ArkTS-side semantics.
 
 ### init(Option\<String>)
 
@@ -258,7 +264,7 @@ This version declares 11 body-less members out of the 47 designed members; the r
 public init(value!: Option<String> = None)
 ```
 
-Description: constructs an ArkTS string object from the given value.
+Description: constructs an `ArkTSString` handle carrying the given string value.
 
 Parameters:
 
@@ -429,7 +435,7 @@ main() {
 }
 ```
 
-Note: the example shows the call shape. This version ships the declarations only; the cross-boundary calls at run time are out of scope for this version.
+Note: the example shows the run-time call shape. This version ships the constructible `ArkTSString` wrapper and 11 members, and the cross-boundary calls run on the ArkTS side.
 
 ## class ArkTSFunc\<F>
 
@@ -507,3 +513,17 @@ Returns:
 - [ArkTSFunc\<F>](#class-arktsfuncf) - the function value bound to `thisArg`.
 
 Note: in this version `bind` performs member lookup and type checking only, and calling `bind` reports "not supported"; the direct call of an `ArkTSFunc<F>` is not implemented either. Both will be provided in a later version, so no runnable example is possible in this version.
+
+## class ExternConversionException
+
+```cangjie
+public class ExternConversionException <: Exception {
+    public init(message: String)
+}
+```
+
+Description: the named exception thrown when a cross-boundary conversion fails, whose message distinguishes "type mismatch" from "invalid value".
+
+This package hosts the type: the wrapper bodies the compiler generates for the preset types belong to this package and throw the exception by name, while the `arkts.lang` facade re-exports it through its `public import std.interop.arkts.*`, so applications reaching it through `arkts.lang` can `throw`/`catch` it by name. The facade does not declare the type itself: a facade-side declaration would force the generated preset wrappers to import `arkts.lang`, creating the same-package cycle (`std.interop.arkts` → `arkts.lang` → `std.interop.arkts`).
+
+Note: this is an ordinary public exception class, not one of the three preset external ArkTS types (`ArkTSArray`/`ArkTSString`/`ArkTSType`), and it takes no part in the signature-position rejection. `std.core`'s `Extern` mechanism also exports an exception of the same name (present when `env != "ohos"`); a name reached through an explicit import of this package or of `arkts.lang` takes precedence over the implicitly pre-imported `std.core`, and code facing both can qualify the name. This version ships the exception type itself; the actual throw sites are provided by the compiler-generated conversion points, and this package carries no conversion logic.

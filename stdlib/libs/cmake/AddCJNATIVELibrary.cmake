@@ -231,9 +231,10 @@ make_cangjie_lib(
     set_target_properties(cangjie-std-interop PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS cangjie-std-interop DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
 
-# std.interop.arkts is experimental and declaration-only in this version: its bodyless
-# foreign members have no implementations until the reference semantics lands in
-# a later release, so a shared/static library cannot link. Like the local-mode APIs it
+# std.interop.arkts is experimental in this version: the reference semantics and the
+# member-level conversion are delivered (the compiler-generated ArkTSString bodies and
+# the runtime-written ArkTSArray<T> bodies land in the static library), while the
+# static-member and remaining designed members stay deferred. Like the local-mode APIs it
 # is isolated in two layers: (1) the package target below joins the ALL build only when
 # CANGJIE_ENABLE_ARKTS_INTEROP is ON, and only that gated path compiles it with
 # --experimental; (2) every declaration is guarded by @When[arkts_interop == "on"], and
@@ -1029,14 +1030,23 @@ add_cangjie_library(
 # The package declares its preset types with the experimental @ArkTS interop
 # capability, so the opt-in build passes --experimental explicitly; the default
 # build does not compile the package at all.
+# CANGJIE_ARKTS_INTEROP_IMPORT_DIRS (declared in AddCangjieSource.cmake) lists the
+# directories holding the CJOs of the interop runtime packages the generated preset
+# wrapper bodies reference directly (cj_arkts_context_v1 and ohos.business_exception);
+# they ship outside the stdlib tree, so the opt-in build forwards each one as
+# `--import-path`. The member bodies require these directories to be set.
 if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    set(arkts_interop_backend_opts --experimental)
+    foreach(arkts_interop_import_dir ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS})
+        list(APPEND arkts_interop_backend_opts "--import-path" ${arkts_interop_import_dir})
+    endforeach()
     add_cangjie_library(
         cangjie${BACKEND_TYPE}InteropArkts
         NO_SUB_PKG
         IS_STDLIB
         IS_PACKAGE
         IS_CJNATIVE_BACKEND
-        BACKEND_OPTS --experimental
+        BACKEND_OPTS ${arkts_interop_backend_opts}
         PACKAGE_NAME "interop.arkts"
         MODULE_NAME "std"
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop/arkts

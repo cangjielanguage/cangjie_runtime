@@ -19,6 +19,9 @@ message(STATUS "Cangjie standard library local API: ${CANGJIE_ENABLE_LOCAL_MODE_
 # ALL build and only a compatible compiler can parse its ArkTS interop declarations.
 option(CANGJIE_ENABLE_ARKTS_INTEROP "Build the experimental std.interop.arkts package" OFF)
 message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
+if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    message(STATUS "Cangjie standard library ArkTS interop CJO import dirs: ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS}")
+endif()
 # The standard library sources reference local-mode syntax throughout, so the full project
 # cannot be built with the parser support disabled. Reject it here instead of letting the
 # failure surface as a flood of syntax errors. Reusing the AddCangjieSource module on its
