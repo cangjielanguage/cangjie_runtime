@@ -1067,6 +1067,50 @@ public:
     bool IsOld0() const { return metadata.isOld0 == 1; }
 
     RegionType GetRegionType() const { return static_cast<RegionType>(metadata.regionType); }
+
+    // Only valid during WGC PostTrace, before the Preforward pause.
+    // Live candidate mark bits remain available throughout that interval.
+    bool IsWgcCollectionRegion() const
+    {
+        switch (GetRegionType()) {
+            case RegionType::FROM_REGION:
+            case RegionType::UNMOVABLE_FROM_REGION:
+            case RegionType::RAW_POINTER_PINNED_REGION:
+            case RegionType::FULL_PINNED_REGION:
+            case RegionType::LARGE_REGION:
+            // A stale weak-field snapshot must not treat retired storage as a
+            // retained allocation region. Its dead referent is rejected by mark.
+            case RegionType::GARBAGE_REGION:
+            case RegionType::FREE_REGION:
+                return true;
+            case RegionType::THREAD_LOCAL_REGION:
+            case RegionType::RECENT_FULL_REGION:
+            case RegionType::RECENT_PINNED_REGION:
+            case RegionType::RECENT_LARGE_REGION:
+            case RegionType::TL_RAW_POINTER_REGION:
+            case RegionType::TL_LARGE_RAW_POINTER_REGION:
+                return false;
+            default:
+                LOG(RTLOG_ERROR, "unexpected WGC PostTrace region type %u", GetRegionType());
+                return true;
+        }
+    }
+
+    // Generational PostTrace weak reads require mark checks outside retained allocation regions.
+    bool IsGgcCollectionRegion() const
+    {
+        switch (GetRegionType()) {
+            case RegionType::THREAD_LOCAL_REGION:
+            case RegionType::RECENT_FULL_REGION:
+            case RegionType::RECENT_PINNED_REGION:
+            case RegionType::RECENT_LARGE_REGION:
+            case RegionType::TL_RAW_POINTER_REGION:
+            case RegionType::TL_LARGE_RAW_POINTER_REGION:
+                return false;
+            default:
+                return true;
+        }
+    }
     UnitRole GetUnitRole() const { return static_cast<UnitRole>(metadata.unitRole); }
 
     size_t GetUnitIdx() const { return RegionInfo::UnitInfo::GetUnitIdx(reinterpret_cast<const UnitInfo*>(this)); }

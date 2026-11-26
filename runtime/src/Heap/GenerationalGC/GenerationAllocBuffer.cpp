@@ -91,6 +91,7 @@ namespace {
 // Black allocation: objects allocated from swept slot regions during GC trace/enumeration
 // phases must be marked immediately, otherwise the concurrent sweep of the current cycle
 // may reclaim them before any traced root references them (use-after-free).
+// During generational post-trace, mark new slot objects so weak reads recognize them as live.
 // NOTE: the object header (typeInfo) is not initialized yet at this point,
 // so only the caller-known totalSize is used, never obj->GetSize().
 // Uses the global GC phase: this path may also run on GC pool threads which have no Mutator.
@@ -99,7 +100,8 @@ void MarkAllocatedObject(MAddress addr, size_t objSize)
     GCPhase phase = Heap::GetHeap().GetGCPhase();
     if (LIKELY(phase != GCPhase::GC_PHASE_ENUM && phase != GCPhase::GC_PHASE_TRACE &&
                phase != GCPhase::GC_PHASE_GENERATION_ENUM && phase != GCPhase::GC_PHASE_GENERATION_TRACE &&
-               phase != GCPhase::GC_PHASE_CLEAR_SATB_BUFFER)) {
+               phase != GCPhase::GC_PHASE_CLEAR_SATB_BUFFER &&
+               phase != GCPhase::GC_PHASE_GENERATION_POST_TRACE)) {
         return;
     }
     auto* obj = reinterpret_cast<BaseObject*>(addr);

@@ -428,14 +428,11 @@ void WCollector::PostTrace()
     WeakRefBuffer::Instance().ClearWeakRefBuffer();
     // clear satb buffer when gc finish tracing.
     SatbBuffer::Instance().ClearBuffer();
-    // reclaim large objects immediately after tracing is done.
     PrepareCycleRef();
     CollectPinnedGarbage();
     RefineFromSpace();
     fwdTable.PrepareForwardTable();
-    // We may move large objects to old region, so we need to make sure their referents are
-    // being prepared to be forward.
-    CollectLargeGarbage();
+    // Keep Large mark/loaded/resurrection flags until PostTrace readers leave.
 }
 
 void WCollector::Preforward()
@@ -445,6 +442,9 @@ void WCollector::Preforward()
     {
         ScopedLightSync scopedLightSync("Preforward", true, GCPhase::GC_PHASE_PREFORWARD);
     }
+    // The handshake has finished; Large reclamation and flag reset can run
+    // concurrently without extending the existing light-sync pause.
+    CollectLargeGarbage();
 
     GCThreadPool* threadPool = GetThreadPool();
     MRT_ASSERT(threadPool != nullptr, "thread pool is null");
