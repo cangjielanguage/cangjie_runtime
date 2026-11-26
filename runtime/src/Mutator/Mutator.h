@@ -13,6 +13,7 @@
 #include "Exception/Exception.h"
 #include "Heap/Allocator/Allocator.h"
 #include "Heap/Collector/GcInfos.h"
+#include "Heap/HeapVerifier.h"
 #include "LoaderManager.h"
 #include "Mutator/ThreadLocal.h"
 #include "SatbBuffer.h"
@@ -33,7 +34,6 @@ extern "C" MRT_EXPORT bool MRT_CheckRuntimeFinished();
 
 class BaseObject;
 class Mutator;
-struct VerifyStackRootContext;
 
 // Releases per-mutator local object allocator data (regions, caches and
 // metadata). Defined in Mutator.cpp; no-op when the mutator never used local

@@ -9,13 +9,12 @@
 #define MRT_GC_STACKINFO_H
 
 #include "Base/LogFile.h"
+#include "Heap/HeapVerifier.h"
 #include "StackInfo.h"
 #include "StackMap/StackMapTypeDef.h"
 
 namespace MapleRuntime {
 #define TRACE_STACK_MAX_DEPTH 15
-
-struct VerifyStackRootContext;
 
 class GCStackInfo : public StackInfo {
 public:

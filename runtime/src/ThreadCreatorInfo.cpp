@@ -49,9 +49,9 @@ public:
             UnwindContext caller;
             lastFrameType = uwContext.frameInfo.GetFrameType();
 #ifndef _WIN64
-            if (uwContext.UnwindToCallerContext(caller) == false) {
+            if (!uwContext.UnwindToCallerContext(caller)) {
 #else
-            if (uwContext.UnwindToCallerContext(caller, uwCtxStatus) == false) {
+            if (!uwContext.UnwindToCallerContext(caller, uwCtxStatus)) {
 #endif
                 return; // give up
             }
