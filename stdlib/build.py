@@ -136,8 +136,6 @@ def generate_cmake_defs(args):
         "-DCANGJIE_ENABLE_ASAN_COV=" + bool_to_opt(args.asancov),
         # Always pass the chosen value so it takes precedence over the CMake cache.
         "-DCANGJIE_ENABLE_LOCAL_MODE_API=" + bool_to_opt(args.local_mode_api),
-        # Same for the opt-in std.interop.arkts package (see --enable-arkts-interop).
-        "-DCANGJIE_ENABLE_ARKTS_INTEROP=" + bool_to_opt(args.arkts_interop),
         "-DBUILD_GCC_TOOLCHAIN=" + (args.gcc_toolchain if args.gcc_toolchain and args.target is None else ""),
     ]
 
@@ -226,8 +224,6 @@ def build(args):
     # options given to this invocation (e.g. --local_mode_api) always take effect
     # instead of silently reusing values cached by a previous build.
     LOG.info("local API (@When[local_mode_api == \"on\"]): %s", "on" if args.local_mode_api else "off")
-    LOG.info("experimental std.interop.arkts package: %s",
-             "enabled" if args.arkts_interop else "disabled")
     output = subprocess.Popen(cmake_command, cwd=cmake_build_dir, stdout=PIPE)
     log_output(output)
 
@@ -454,16 +450,7 @@ def main():
         "--no_local_mode_api", dest="local_mode_api", action="store_false",
         help="omit the experimental local-mode APIs of the standard library (default)"
     )
-    arkts_interop = parser_build.add_mutually_exclusive_group()
-    arkts_interop.add_argument(
-        "--enable-arkts-interop", dest="arkts_interop", action="store_true",
-        help="build the experimental std.interop.arkts package with --experimental"
-    )
-    arkts_interop.add_argument(
-        "--disable-arkts-interop", dest="arkts_interop", action="store_false",
-        help="omit the experimental std.interop.arkts package from the build (default)"
-    )
-    parser_build.set_defaults(func=build, local_mode_api=False, arkts_interop=False)
+    parser_build.set_defaults(func=build, local_mode_api=False)
 
     parser_install = subparsers.add_parser("install", help="install targets")
 

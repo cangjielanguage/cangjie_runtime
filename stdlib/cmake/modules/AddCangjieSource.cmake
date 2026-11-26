@@ -25,6 +25,31 @@ endif()
 # themselves are additionally guarded by @When[arkts_interop == "on"]. Reusing this
 # module keeps the OFF default; the full stdlib project and build.py opt in explicitly.
 option(CANGJIE_ENABLE_ARKTS_INTEROP "Compile the experimental std.interop.arkts package" OFF)
+# Whether CANGJIE_BUILD_ARGS carries the std.interop.arkts condition as a whole
+# argument. build.py turns every --build-args value into one list element and the
+# module forwards each element as is, so one element may itself hold a command line
+# (`--cfg arkts_interop=on`, `--cfg=arkts_interop=on`, or a longer run). A whole
+# argument match keeps values such as `arkts_interop=onn` or a longer word ending in
+# `arkts_interop=on` from counting.
+function(cangjie_build_args_has_arkts_interop OUT_VAR)
+    set(has_interop OFF)
+    foreach(build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(build_tokens NATIVE_COMMAND "${build_arg}")
+        set(previous_token "")
+        foreach(token IN LISTS build_tokens)
+            if(token STREQUAL "--cfg=arkts_interop=on" OR
+                (previous_token STREQUAL "--cfg" AND token STREQUAL "arkts_interop=on"))
+                set(has_interop ON)
+                break()
+            endif()
+            set(previous_token "${token}")
+        endforeach()
+        if(has_interop)
+            break()
+        endif()
+    endforeach()
+    set(${OUT_VAR} ${has_interop} PARENT_SCOPE)
+endfunction()
 # CJO directories the opt-in std.interop.arkts build forwards as --import-path so the
 # package can see the interop runtime it references (cj_arkts_context_v1 and
 # ohos.business_exception). Consumed by AddCJNATIVELibrary.cmake; the member bodies
@@ -182,7 +207,11 @@ function(add_cangjie_library target_name)
     # value is always passed explicitly and cjc never sees an undefined condition. It is
     # independent of the target gate (CANGJIE_ENABLE_ARKTS_INTEROP), which decides whether
     # the package target exists at all.
-    if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    cangjie_build_args_has_arkts_interop(ARKTS_INTEROP_CFG_FROM_ARGS)
+    if(ARKTS_INTEROP_CFG_FROM_ARGS)
+        # The caller supplies the condition through CANGJIE_BUILD_ARGS; repeating the
+        # key would make cjc reject the command line.
+    elseif(CANGJIE_ENABLE_ARKTS_INTEROP)
         list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=on")
     else()
         list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=off")

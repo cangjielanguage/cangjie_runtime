@@ -15,13 +15,6 @@ message(STATUS "Cangjie standard library local mode: ${CANGJIE_ENABLE_LOCAL_MODE
 # The experimental local-mode APIs are opt-in, independently of syntax support.
 option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile the experimental local-mode APIs of the standard library" OFF)
 message(STATUS "Cangjie standard library local API: ${CANGJIE_ENABLE_LOCAL_MODE_API}")
-# The experimental std.interop.arkts package is opt-in: it is isolated from the default
-# ALL build and only a compatible compiler can parse its ArkTS interop declarations.
-option(CANGJIE_ENABLE_ARKTS_INTEROP "Build the experimental std.interop.arkts package" OFF)
-message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
-if(CANGJIE_ENABLE_ARKTS_INTEROP)
-    message(STATUS "Cangjie standard library ArkTS interop CJO import dirs: ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS}")
-endif()
 # The standard library sources reference local-mode syntax throughout, so the full project
 # cannot be built with the parser support disabled. Reject it here instead of letting the
 # failure surface as a flood of syntax errors. Reusing the AddCangjieSource module on its
@@ -31,6 +24,17 @@ if(NOT CANGJIE_ENABLE_LOCAL_MODE)
         "The Cangjie standard library requires CANGJIE_ENABLE_LOCAL_MODE=ON; its sources use local-mode syntax.")
 endif()
 include(AddCangjieSource)
+
+# The experimental std.interop.arkts package follows the condition the caller passes to
+# the compiler: `--build-args "--cfg=arkts_interop=on"` enables the package and its CJO
+# import dirs. The value is derived on every configure so it never goes stale.
+cangjie_build_args_has_arkts_interop(ARKTS_INTEROP_CFG_DEFAULT)
+set(CANGJIE_ENABLE_ARKTS_INTEROP ${ARKTS_INTEROP_CFG_DEFAULT} CACHE BOOL
+    "Build the experimental std.interop.arkts package" FORCE)
+message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
+if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    message(STATUS "Cangjie standard library ArkTS interop CJO import dirs: ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS}")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
