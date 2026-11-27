@@ -54,8 +54,61 @@ endfunction()
 # package can see the interop runtime it references (cj_arkts_context_v1 and
 # ohos.business_exception). Consumed by AddCJNATIVELibrary.cmake; the member bodies
 # the package now carries require these directories to be set.
+#
+# Legal form: a semicolon-separated list of absolute, canonical directory paths, each
+# of which already contains at least one .cjo file. The value comes from the build
+# invocation (-D), so cangjie_validate_arkts_interop_import_dirs() rejects relative
+# paths, ".." components, non-directories and directories without a CJO before the
+# value reaches cjc.
 set(CANGJIE_ARKTS_INTEROP_IMPORT_DIRS "" CACHE STRING
-    "Semicolon-separated CJO directories for the opt-in std.interop.arkts build (interop runtime)")
+    "Semicolon-separated absolute CJO directories for the opt-in std.interop.arkts build (interop runtime)")
+
+# Validate the external CJO directories used by the opt-in std.interop.arkts build.
+# The value is user-supplied, so an invalid entry is turned into one configure-time
+# error instead of a late `cjc: can not find package` failure during the build.
+function(cangjie_validate_arkts_interop_import_dirs)
+    if(NOT CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
+        message(FATAL_ERROR
+            "CANGJIE_ENABLE_ARKTS_INTEROP is ON but CANGJIE_ARKTS_INTEROP_IMPORT_DIRS is empty. "
+            "Set it to the semicolon-separated absolute directories that contain the CJO files "
+            "of the interop runtime packages (cj_arkts_context_v1 and ohos.business_exception), "
+            "for example -DCANGJIE_ARKTS_INTEROP_IMPORT_DIRS=\"/path/to/interop/cjo;/path/to/ohos/cjo\".")
+    endif()
+    foreach(import_dir IN LISTS CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
+        if(import_dir STREQUAL "")
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS contains an empty entry. Check for a leading, "
+                "trailing or doubled ';' in the value.")
+        endif()
+        # CMake already consumed ';' as the list separator, so only the remaining
+        # ambiguous shapes need rejecting: relative paths and upward traversal.
+        if(NOT IS_ABSOLUTE "${import_dir}")
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' is not an absolute path. "
+                "A relative entry would depend on the configure working directory.")
+        endif()
+        if(import_dir MATCHES "(^|/)\\.\\.(/|$)")
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' contains a '..' component. "
+                "Use the canonical directory path.")
+        endif()
+        if(NOT EXISTS "${import_dir}")
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' does not exist. Point it at "
+                "the directory that holds the CJO files of the interop runtime packages.")
+        endif()
+        if(NOT IS_DIRECTORY "${import_dir}")
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' is not a directory.")
+        endif()
+        file(GLOB import_cjo_files "${import_dir}/*.cjo")
+        if(NOT import_cjo_files)
+            message(FATAL_ERROR
+                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' contains no .cjo file. "
+                "cjc imports packages from these directories, so each one must hold at least one CJO.")
+        endif()
+    endforeach()
+endfunction()
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
@@ -106,7 +159,15 @@ endfunction()
 #     [OUTPUT_DIR]                # Specify the lib name, and will install to the directory with this name
 #     [PACKAGE_NAME]              # Package name of target cangjie source file
 #     [MODULE_NAME]               # Module name of target cangjie source file and we will generate product to a directory with this name
-#     [BACKEND_OPTS]              # This argument is backend-options passed to backend
+#     [BACKEND_OPTS]              # Backend/frontend options passed to cjc. They are
+#                                 # appended to the shared compile flags, so they reach
+#                                 # both the normal and the LTO (bitcode) compile
+#                                 # commands. Pass only options defined in this file or
+#                                 # in a caller under the same review; do not feed them
+#                                 # from unvalidated environment input, user arguments
+#                                 # or other external variables. Each list element is
+#                                 # forwarded as exactly one command argument; quote a
+#                                 # value that contains spaces.
 #     [WHEN_CONFIG_NAME_OPTS]     # This argument is other options passed to cjc
 #     [WHEN_CONFIG_VALUES_OPTS]   # This argument is other options passed to cjc
 #     [CONFIG_OPTS]               # This argument is other options passed to cjc
@@ -230,10 +291,13 @@ function(add_cangjie_library target_name)
     set(MKDIR_TEMP_FILES_CMD)
     # append backend-options. cmake_parse_arguments stores the BACKEND_OPTS
     # values in CANGJIELIB_BACKEND_OPTS; read the backend options from that
-    # variable.
+    # variable. Each element is appended as one quoted flag so a value that
+    # contains spaces stays a single argument.
     list(LENGTH CANGJIELIB_BACKEND_OPTS options_length)
     if(NOT (options_length EQUAL 0))
-        list(APPEND cangjie_compile_flags ${CANGJIELIB_BACKEND_OPTS})
+        foreach(backend_opt IN LISTS CANGJIELIB_BACKEND_OPTS)
+            list(APPEND cangjie_compile_flags "${backend_opt}")
+        endforeach()
     endif()
     # append config options
     if(NOT ("${CANGJIELIB_CONFIG_OPTS}" STREQUAL ""))
@@ -368,7 +432,11 @@ function(add_cangjie_library target_name)
         COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
                 ${COMPILE_CMD}
         DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
-        COMMENT "Generating ${target_name}")
+        COMMENT "Generating ${target_name}"
+        # VERBATIM keeps the arguments of the compile command (including
+        # BACKEND_OPTS values such as --import-path directories with spaces or
+        # other special characters) intact for the invoked build tool.
+        VERBATIM)
 
     add_custom_target(
         ${target_name} ALL
@@ -394,7 +462,8 @@ function(add_cangjie_library target_name)
             # compile the same package, which means they may write the same bc cache file. Running simultaneously
             # may cause IO error on windows in some cases.
             DEPENDS ${target_name}
-            COMMENT "Generating ${target_name}_bc")
+            COMMENT "Generating ${target_name}_bc"
+            VERBATIM)
 
         add_custom_target(
             ${target_name}_bc ALL

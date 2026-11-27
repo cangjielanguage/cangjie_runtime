@@ -33,6 +33,9 @@ set(CANGJIE_ENABLE_ARKTS_INTEROP ${ARKTS_INTEROP_CFG_DEFAULT} CACHE BOOL
     "Build the experimental std.interop.arkts package" FORCE)
 message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
 if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    # Reject a malformed external import-dir list here, at configure time, instead of
+    # letting cjc fail later with `can not find package`.
+    cangjie_validate_arkts_interop_import_dirs()
     message(STATUS "Cangjie standard library ArkTS interop CJO import dirs: ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS}")
 endif()
 

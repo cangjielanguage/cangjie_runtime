@@ -1034,11 +1034,14 @@ add_cangjie_library(
 # directories holding the CJOs of the interop runtime packages the generated preset
 # wrapper bodies reference directly (cj_arkts_context_v1 and ohos.business_exception);
 # they ship outside the stdlib tree, so the opt-in build forwards each one as
-# `--import-path`. The member bodies require these directories to be set.
+# `--import-path`. The member bodies require these directories to be set; the value is
+# validated at configure time by cangjie_validate_arkts_interop_import_dirs().
 if(CANGJIE_ENABLE_ARKTS_INTEROP)
     set(arkts_interop_backend_opts --experimental)
-    foreach(arkts_interop_import_dir ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS})
-        list(APPEND arkts_interop_backend_opts "--import-path" ${arkts_interop_import_dir})
+    foreach(arkts_interop_import_dir IN LISTS CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
+        # Quote the directory so it stays one argument even when the path contains
+        # spaces or other characters the build tool would otherwise split on.
+        list(APPEND arkts_interop_backend_opts "--import-path" "${arkts_interop_import_dir}")
     endforeach()
     add_cangjie_library(
         cangjie${BACKEND_TYPE}InteropArkts
