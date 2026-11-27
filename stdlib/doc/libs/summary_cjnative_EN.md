@@ -114,7 +114,6 @@
 <!--Del_sink-->
 - [std.interop.arkts](std_en/interop_arkts/interop_arkts_package_overview.md)
     - [Interfaces](std_en/interop_arkts/interop_arkts_package_api/interop_arkts_package_interfaces.md)
-    - [Classes](std_en/interop_arkts/interop_arkts_package_api/interop_arkts_package_classes.md)
 <!--DelEnd_sink-->
 - [std.io](std_en/io/io_package_overview.md)
     - [Functions](std_en/io/io_package_api/io_package_funcs.md)

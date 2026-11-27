@@ -76,38 +76,10 @@ The build functionality of build.py provides the following additional options:
     - `android31-x86_64`: Cross-compile for android(x86_64, API 31)
 - `--target-toolchain`: Specifies the path to compilation tools (required for cross-compilation)
 - `--target-sysroot`: Specifies the directory of target system libraries (required for cross-compilation)
-- `--build-args`: options forwarded to cjc (optional). Each occurrence becomes one CMake list element and is then split on shell rules into cjc arguments, so `--build-args="-g --apc=1"` forwards two arguments; a single argument that must keep spaces needs quotes inside the value (for example `--build-args="'VALUE WITH SPACES'"`). A value that starts with `-` must use the equals form `--build-args=VALUE`; the separated form `--build-args VALUE` is rejected by argparse because the value is read as an option. For example `--build-args=--experimental` or `--build-args=--cfg=arkts_interop=on`. Repeat the flag for several values. A value must not contain `;` (the CMake list separator). The resulting list is added to every stdlib package and to both the normal and the LTO compile commands, so pass only options the whole build accepts.
+- `--build-args`: cjc build options (optional)
 - `--jobs(-j)`: maximum number of concurrent build tasks
 - `--hwasan`：Building the HWASAN version of std (for OHOS cross-compilation)
 - `--cjlib-sanitizer-support`： Build sanitizer version of cangjie std library. Valid values: `asan`, `tsan` or `hwasan`.
-
-### Experimental ArkTS interoperability package
-
-`std.interop.arkts` is built only when the build args carry the user-defined condition
-`--cfg=arkts_interop=on` (or `--cfg arkts_interop=on`), for example:
-
-```shell
-python3 build.py build -t release --build-args=--cfg=arkts_interop=on
-```
-
-The option `CANGJIE_ENABLE_ARKTS_INTEROP` is derived from `CANGJIE_BUILD_ARGS` on every
-configure; setting `-DCANGJIE_ENABLE_ARKTS_INTEROP=ON` alone does not enable the package.
-
-In that mode the interop runtime CJOs live outside the stdlib tree, so their directories
-must be supplied as the CMake cache variable `CANGJIE_ARKTS_INTEROP_IMPORT_DIRS`: a
-semicolon-separated list of absolute, canonical directory paths, each containing at least
-one `.cjo` file, for example:
-
-```shell
-cmake -DCANGJIE_BUILD_ARGS="--cfg=arkts_interop=on" \
-      -DCANGJIE_ARKTS_INTEROP_IMPORT_DIRS="/opt/interop/cjo;/opt/ohos/cjo" ...
-```
-
-The value may contain spaces; quote it for the shell. Configure fails with an explicit
-error if an entry is relative, contains `..`, does not exist, is not a directory, or
-contains no CJO. `build.py` does not forward extra `-D` options, so configure with
-`cmake` directly (or set the cache entry before running `build.py`) when the import
-directories are needed.
 
 The install functionality of build.py provides the following additional options:
 

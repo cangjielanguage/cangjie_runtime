@@ -231,25 +231,20 @@ make_cangjie_lib(
     set_target_properties(cangjie-std-interop PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS cangjie-std-interop DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
 
-# std.interop.arkts is experimental in this version: the reference semantics and the
-# member-level conversion are delivered (the compiler-generated ArkTSString bodies and
-# the runtime-written ArkTSArray<T> bodies land in the static library), while the
-# static-member and remaining designed members stay deferred. Like the local-mode APIs it
-# is isolated in two layers: (1) the package target below joins the ALL build only when
-# CANGJIE_ENABLE_ARKTS_INTEROP is ON, and only that gated path compiles it with
-# --experimental; (2) every declaration is guarded by @When[arkts_interop == "on"], and
-# CANGJIE_ENABLE_ARKTS_INTEROP also selects the --cfg value. When it is OFF neither the
-# target nor the declarations exist, so no .cjo or archive is produced or installed.
+# std.interop.arkts is experimental in this version: the package defines only the
+# ArkTSType root interface, so it imports no external package and needs no shared library.
+# Like the local-mode APIs it is isolated in two layers: (1) the package target below joins
+# the ALL build only when CANGJIE_ENABLE_ARKTS_INTEROP is ON, and only that gated path
+# compiles it with --experimental; (2) the declaration is guarded by
+# @When[arkts_interop == "on"], and CANGJIE_ENABLE_ARKTS_INTEROP also selects the --cfg
+# value. When it is OFF neither the target nor the declaration exists, so no .cjo or
+# archive is produced or installed.
 #
-# Only the static archive is delivered. The package's member bodies call the Cangjie
-# packages that live outside the stdlib tree (cj_arkts_context_v1, ohos.ark_interop and
-# ohos.business_exception), so make_cangjie_lib's shared link (--no-undefined) cannot
-# resolve them without bundling those app-level packages into the stdlib DSO; that would
-# duplicate their symbols in every consumer. The compiler requests this package's archive
-# (libcangjie-std-interop.arkts.a) for non-LTO static linking, which is the delivered
-# path. add_dependencies makes the archive wait for the package's POST_BUILD object
-# (std/interop.arkts.o); both the archive and the package target exist only in the
-# gated ON path, so the default build is unchanged.
+# Only the static archive is delivered. The package still produces a CJO with the
+# interface declaration, which the compiler requests as libcangjie-std-interop.arkts.a for
+# non-LTO static linking; add_dependencies makes the archive wait for the package's
+# POST_BUILD object (std/interop.arkts.o). Both the archive and the package target exist
+# only in the gated ON path, so the default build is unchanged.
 if(CANGJIE_ENABLE_ARKTS_INTEROP)
     add_library(cangjie-std-interop.arkts STATIC ${output_cj_object_dir}/std/interop.arkts.o)
     set_target_properties(cangjie-std-interop.arkts PROPERTIES LINKER_LANGUAGE C)
@@ -1042,22 +1037,12 @@ add_cangjie_library(
 # and discovers the sources itself through `file(GLOB ... CONFIGURE_DEPENDS)`.
 # The target therefore needs no `SOURCES` argument and no per-package
 # CMakeLists.txt / add_subdirectory.
-# The package declares its preset types with the experimental @ArkTS interop
-# capability, so the opt-in build passes --experimental explicitly; the default
-# build does not compile the package at all.
-# CANGJIE_ARKTS_INTEROP_IMPORT_DIRS (declared in AddCangjieSource.cmake) lists the
-# directories holding the CJOs of the interop runtime packages the generated preset
-# wrapper bodies reference directly (cj_arkts_context_v1 and ohos.business_exception);
-# they ship outside the stdlib tree, so the opt-in build forwards each one as
-# `--import-path`. The member bodies require these directories to be set; the value is
-# validated at configure time by cangjie_validate_arkts_interop_import_dirs().
+# The package declares the ArkTSType root interface with the experimental @ArkTS
+# interop capability, so the opt-in build passes --experimental explicitly; the
+# default build does not compile the package at all. The package imports nothing,
+# so it needs no external CJO directory.
 if(CANGJIE_ENABLE_ARKTS_INTEROP)
     set(arkts_interop_backend_opts --experimental)
-    foreach(arkts_interop_import_dir IN LISTS CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
-        # Quote the directory so it stays one argument even when the path contains
-        # spaces or other characters the build tool would otherwise split on.
-        list(APPEND arkts_interop_backend_opts "--import-path" "${arkts_interop_import_dir}")
-    endforeach()
     add_cangjie_library(
         cangjie${BACKEND_TYPE}InteropArkts
         NO_SUB_PKG

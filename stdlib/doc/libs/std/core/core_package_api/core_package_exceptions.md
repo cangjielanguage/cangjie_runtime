@@ -508,7 +508,7 @@ public class ExternConversionException <: Exception {
 
 > **注意：**
 >
-> 不支持平台：OpenHarmony。
+> OpenHarmony 上也提供该异常：编译器生成的 ArkTS 互操作转换点会抛出并捕获它。
 
 父类型：
 

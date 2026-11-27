@@ -76,29 +76,10 @@ output
     - `android31-x86_64` ：交叉编译 android(x86_64, API 31)
 - `--target-toolchain` ：指定编译工具所在路径（交叉编译需要指定）
 - `--target-sysroot` ：指定编译目标系统库所在目录（交叉编译需要指定）
-- `--build-args`：转发给 cjc 的构建选项（可选）。每个 `--build-args` 取值成为 CMake 列表中的一个元素，随后按 shell 规则分词为 cjc 参数，例如 `--build-args="-g --apc=1"` 会转发两个参数；含空格的单个参数需在取值内部加引号（例如 `--build-args="'VALUE WITH SPACES'"`）。取值以 `-` 开头时必须使用等号形式 `--build-args=VALUE`；分离写法 `--build-args VALUE` 会被 argparse 当作选项而拒绝。例如 `--build-args=--experimental` 或 `--build-args=--cfg=arkts_interop=on`。需要多个取值时重复该选项。取值中不得包含 `;`（CMake 列表分隔符）。该列表会加入每个 stdlib 包，并同时进入普通编译与 LTO 编译命令，因此只应传入整个构建都能接受的选项。
+- `--build-args` ：cjc 构建选项（可选）
 - `--jobs(-j)` : 并发构建任务最大数量
 - `--hwasan` ：构建 hwasan 版本 std（OHOS 交叉编译使用）
 - `--cjlib-sanitizer-support`： 构建 sanitizer 版本的仓颉标准库。可选项有 `asan`, `tsan` 和 `hwasan`。
-
-### 实验性 ArkTS 互操作包
-
-仅当构建参数带有用户自定义条件 `--cfg=arkts_interop=on`（或 `--cfg arkts_interop=on`）时才构建 `std.interop.arkts`，例如：
-
-```shell
-python3 build.py build -t release --build-args=--cfg=arkts_interop=on
-```
-
-选项 `CANGJIE_ENABLE_ARKTS_INTEROP` 每次 configure 都根据 `CANGJIE_BUILD_ARGS` 推导；单独设置 `-DCANGJIE_ENABLE_ARKTS_INTEROP=ON` 不会启用该包。
-
-此时互操作运行时的 CJO 位于 stdlib 源码树之外，需要通过 CMake 缓存变量 `CANGJIE_ARKTS_INTEROP_IMPORT_DIRS` 提供：以分号分隔的目录列表，每一项都必须是完整路径，且每个目录至少包含一个 `.cjo` 文件，例如：
-
-```shell
-cmake -DCANGJIE_BUILD_ARGS="--cfg=arkts_interop=on" \
-      -DCANGJIE_ARKTS_INTEROP_IMPORT_DIRS="/opt/interop/cjo;/opt/ohos/cjo" ...
-```
-
-取值可以包含空格，交给 shell 时需加引号。若某个条目是相对路径、包含 `..`、不存在、不是目录，或其中没有 CJO，configure 会以明确错误终止。`build.py` 不转发额外的 `-D` 选项，因此需要这些导入目录时请直接用 `cmake` configure（或在运行 `build.py` 前设置好缓存项）。
 
 `build.py` 的 `install` 功能提供如下额外选项：
 

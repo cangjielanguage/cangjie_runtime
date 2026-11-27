@@ -618,7 +618,7 @@ Function: Represents an exception class for values that can't be converted betwe
 
 > **Note:**
 >
-> Unsupported platform: OpenHarmony.
+> This exception is also available on OpenHarmony: the compiler-generated ArkTS interop conversion points throw and catch it.
 
 Parent Types:
 

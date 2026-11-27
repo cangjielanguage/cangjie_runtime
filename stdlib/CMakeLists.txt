@@ -26,18 +26,12 @@ endif()
 include(AddCangjieSource)
 
 # The experimental std.interop.arkts package follows the condition the caller passes to
-# the compiler: `--build-args "--cfg=arkts_interop=on"` enables the package and its CJO
-# import dirs. The value is derived on every configure so it never goes stale.
+# the compiler: `--build-args "--cfg=arkts_interop=on"` enables the package. The value is
+# derived on every configure so it never goes stale.
 cangjie_build_args_has_arkts_interop(ARKTS_INTEROP_CFG_DEFAULT)
 set(CANGJIE_ENABLE_ARKTS_INTEROP ${ARKTS_INTEROP_CFG_DEFAULT} CACHE BOOL
     "Build the experimental std.interop.arkts package" FORCE)
 message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
-if(CANGJIE_ENABLE_ARKTS_INTEROP)
-    # Reject a malformed external import-dir list here, at configure time, instead of
-    # letting cjc fail later with `can not find package`.
-    cangjie_validate_arkts_interop_import_dirs()
-    message(STATUS "Cangjie standard library ArkTS interop CJO import dirs: ${CANGJIE_ARKTS_INTEROP_IMPORT_DIRS}")
-endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)

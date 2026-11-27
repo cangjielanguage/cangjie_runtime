@@ -95,65 +95,6 @@ function(cangjie_arkts_interop_cfg_flags OUT_VAR)
     endif()
     set(${OUT_VAR} "${flags}" PARENT_SCOPE)
 endfunction()
-# CJO directories the opt-in std.interop.arkts build forwards as --import-path so the
-# package can see the interop runtime it references (cj_arkts_context_v1 and
-# ohos.business_exception). Consumed by AddCJNATIVELibrary.cmake; the member bodies
-# the package now carries require these directories to be set.
-#
-# Legal form: a semicolon-separated list of absolute, canonical directory paths, each
-# of which already contains at least one .cjo file. The value comes from the build
-# invocation (-D), so cangjie_validate_arkts_interop_import_dirs() rejects relative
-# paths, ".." components, non-directories and directories without a CJO before the
-# value reaches cjc.
-set(CANGJIE_ARKTS_INTEROP_IMPORT_DIRS "" CACHE STRING
-    "Semicolon-separated absolute CJO directories for the opt-in std.interop.arkts build (interop runtime)")
-
-# Validate the external CJO directories used by the opt-in std.interop.arkts build.
-# The value is user-supplied, so an invalid entry is turned into one configure-time
-# error instead of a late `cjc: can not find package` failure during the build.
-function(cangjie_validate_arkts_interop_import_dirs)
-    if(NOT CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
-        message(FATAL_ERROR
-            "CANGJIE_ENABLE_ARKTS_INTEROP is ON but CANGJIE_ARKTS_INTEROP_IMPORT_DIRS is empty. "
-            "Set it to the semicolon-separated absolute directories that contain the CJO files "
-            "of the interop runtime packages (cj_arkts_context_v1 and ohos.business_exception), "
-            "for example -DCANGJIE_ARKTS_INTEROP_IMPORT_DIRS=\"/path/to/interop/cjo;/path/to/ohos/cjo\".")
-    endif()
-    foreach(import_dir IN LISTS CANGJIE_ARKTS_INTEROP_IMPORT_DIRS)
-        if(import_dir STREQUAL "")
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS contains an empty entry. Check for a leading, "
-                "trailing or doubled ';' in the value.")
-        endif()
-        # CMake already consumed ';' as the list separator, so only the remaining
-        # ambiguous shapes need rejecting: relative paths and upward traversal.
-        if(NOT IS_ABSOLUTE "${import_dir}")
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' is not an absolute path. "
-                "A relative entry would depend on the configure working directory.")
-        endif()
-        if(import_dir MATCHES "(^|/)\\.\\.(/|$)")
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' contains a '..' component. "
-                "Use the canonical directory path.")
-        endif()
-        if(NOT EXISTS "${import_dir}")
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' does not exist. Point it at "
-                "the directory that holds the CJO files of the interop runtime packages.")
-        endif()
-        if(NOT IS_DIRECTORY "${import_dir}")
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' is not a directory.")
-        endif()
-        file(GLOB import_cjo_files "${import_dir}/*.cjo")
-        if(NOT import_cjo_files)
-            message(FATAL_ERROR
-                "CANGJIE_ARKTS_INTEROP_IMPORT_DIRS entry '${import_dir}' contains no .cjo file. "
-                "cjc imports packages from these directories, so each one must hold at least one CJO.")
-        endif()
-    endforeach()
-endfunction()
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
