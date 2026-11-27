@@ -75,7 +75,7 @@ void ExceptionWrapper::RestoreContext(CalleeSavedRegisterContext& context)
 
         Mutator* mutator = Mutator::GetMutator();
         // Skip local cleanup when this mutator has never used local allocation.
-        if (UNLIKELY(mutator->GetLocalObjectAllocatorData() != nullptr)) {
+        if (UNLIKELY(mutator != nullptr && mutator->GetLocalObjectAllocatorData() != nullptr)) {
             mutator->EndLocalObjectRegionsForFrame(framePtr->GetFA());
         }
 

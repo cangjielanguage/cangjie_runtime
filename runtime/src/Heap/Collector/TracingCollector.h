@@ -16,13 +16,13 @@
 #include "Common/MarkWorkStack.h"
 #include "Heap/Allocator/RegionSpace.h"
 #include "Heap/Collector/ForwardDataManager.h"
+#include "Heap/HeapVerifier.h"
 #include "Mutator/MutatorManager.h"
 
 // set 1 to enable concurrent mark test.
 #define MRT_TEST_CONCURRENT_MARK (false)
 
 namespace MapleRuntime {
-struct VerifyStackRootContext;
 // number of nanoseconds in a microsecond.
 constexpr uint64_t NS_PER_US = 1000;
 constexpr uint64_t NS_PER_S = 1000000000;

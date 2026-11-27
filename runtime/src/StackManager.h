@@ -12,12 +12,11 @@
 
 #include "Common/StackType.h"
 #include "Common/TypeDef.h"
+#include "Heap/HeapVerifier.h"
 #include "StackMap/StackMap.h"
 #include "UnwindStack/StackInfo.h"
 
 namespace MapleRuntime {
-struct VerifyStackRootContext;
-
 class StackManager {
 public:
     StackManager();
