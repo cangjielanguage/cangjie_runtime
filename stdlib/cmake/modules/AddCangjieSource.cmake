@@ -322,8 +322,12 @@ function(add_cangjie_library target_name)
         set(output_lto_bc_full_name "${output_lto_bc_full_name}.bc") # set output path and output name
     endif()
 
-    foreach(build_args ${CANGJIE_BUILD_ARGS})
-        list(APPEND cangjie_compile_flags "${build_args}")
+    # build.py turns every --build-args value into one CMake list element, so a single element may still carry a
+    # shell-level command line such as `-g --apc=1`. Under VERBATIM each option must be its own argv entry, so split
+    # every element on shell rules; quotes inside the value keep a space-containing option as one argument.
+    foreach(cangjie_build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(cangjie_build_tokens NATIVE_COMMAND "${cangjie_build_arg}")
+        list(APPEND cangjie_compile_flags ${cangjie_build_tokens})
     endforeach()
 
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
