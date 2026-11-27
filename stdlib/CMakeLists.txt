@@ -25,6 +25,14 @@ if(NOT CANGJIE_ENABLE_LOCAL_MODE)
 endif()
 include(AddCangjieSource)
 
+# The experimental std.interop.arkts package follows the condition the caller passes to
+# the compiler: `--build-args "--cfg=arkts_interop=on"` enables the package. The value is
+# derived on every configure so it never goes stale.
+cangjie_build_args_has_arkts_interop(ARKTS_INTEROP_CFG_DEFAULT)
+set(CANGJIE_ENABLE_ARKTS_INTEROP ${ARKTS_INTEROP_CFG_DEFAULT} CACHE BOOL
+    "Build the experimental std.interop.arkts package" FORCE)
+message(STATUS "Cangjie standard library ArkTS interop: ${CANGJIE_ENABLE_ARKTS_INTEROP}")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

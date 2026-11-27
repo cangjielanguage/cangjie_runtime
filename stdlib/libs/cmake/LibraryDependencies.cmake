@@ -95,7 +95,11 @@ set(TIME_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
     cangjie${BACKEND_TYPE}Core
     cangjie${BACKEND_TYPE}Collection
-    cangjie${BACKEND_TYPE}Convert)
+    cangjie${BACKEND_TYPE}Convert
+    # zone_info_read.cj imports std.binary and std.io; without these the target
+    # may run before them and cjc reports both packages as missing.
+    cangjie${BACKEND_TYPE}Binary
+    cangjie${BACKEND_TYPE}Io)
 
 set(FS_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
@@ -142,6 +146,16 @@ set(OS_DEPENDENCIES
 set(INTEROP_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
     cangjie${BACKEND_TYPE}Core)
+
+set(INTEROP_ARKTS_DEPENDENCIES
+    ${STD_CORE_DEPENDENCIES}
+    cangjie${BACKEND_TYPE}Core)
+# Deliberately no cangjie${BACKEND_TYPE}Interop here: arkts.cj imports no
+# symbol from the parent package (verify with `cjc --scan-dependency`), unlike
+# math.numeric/collection.concurrent whose subpackages do import the parent.
+# Add the parent only if such an import appears.
+# The package now defines only the ArkTSType root interface and imports nothing,
+# so it needs no package beyond the stdlib core dependencies.
 
 set(REF_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}

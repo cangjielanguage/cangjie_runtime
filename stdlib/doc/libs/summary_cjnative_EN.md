@@ -111,6 +111,10 @@
         - [Path Example](std_en/fs/fs_samples/path_samples.md)
 - [std.interop](std_en/interop/interop_package_overview.md)
     - [Classes](std_en/interop/interop_package_api/interop_package_classes.md)
+<!--Del_sink-->
+- [std.interop.arkts](std_en/interop_arkts/interop_arkts_package_overview.md)
+    - [Interfaces](std_en/interop_arkts/interop_arkts_package_api/interop_arkts_package_interfaces.md)
+<!--DelEnd_sink-->
 - [std.io](std_en/io/io_package_overview.md)
     - [Functions](std_en/io/io_package_api/io_package_funcs.md)
     - [Interfaces](std_en/io/io_package_api/io_package_interfaces.md)

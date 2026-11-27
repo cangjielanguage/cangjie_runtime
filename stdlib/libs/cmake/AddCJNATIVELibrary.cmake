@@ -231,6 +231,27 @@ make_cangjie_lib(
     set_target_properties(cangjie-std-interop PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS cangjie-std-interop DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
 
+# std.interop.arkts is experimental in this version: the package defines only the
+# ArkTSType root interface, so it imports no external package and needs no shared library.
+# Like the local-mode APIs it is isolated in two layers: (1) the package target below joins
+# the ALL build only when CANGJIE_ENABLE_ARKTS_INTEROP is ON, and only that gated path
+# compiles it with --experimental; (2) the declaration is guarded by
+# @When[arkts_interop == "on"], and CANGJIE_ENABLE_ARKTS_INTEROP also selects the --cfg
+# value. When it is OFF neither the target nor the declaration exists, so no .cjo or
+# archive is produced or installed.
+#
+# Only the static archive is delivered. The package still produces a CJO with the
+# interface declaration, which the compiler requests as libcangjie-std-interop.arkts.a for
+# non-LTO static linking; add_dependencies makes the archive wait for the package's
+# POST_BUILD object (std/interop.arkts.o). Both the archive and the package target exist
+# only in the gated ON path, so the default build is unchanged.
+if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    add_library(cangjie-std-interop.arkts STATIC ${output_cj_object_dir}/std/interop.arkts.o)
+    set_target_properties(cangjie-std-interop.arkts PROPERTIES LINKER_LANGUAGE C)
+    add_dependencies(cangjie-std-interop.arkts cangjie${BACKEND_TYPE}InteropArkts)
+    install(TARGETS cangjie-std-interop.arkts DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
+endif()
+
 make_cangjie_lib(
     std-ref IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Ref
@@ -1004,7 +1025,6 @@ add_cangjie_library(
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Interop
-    NO_SUB_PKG
     IS_STDLIB
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "interop"
@@ -1012,6 +1032,29 @@ add_cangjie_library(
     SOURCES ${INTEROP_SRCS}
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop
     DEPENDS ${INTEROP_DEPENDENCIES})
+
+# IS_PACKAGE: AddCangjieSource compiles this target with `cjc -p ${SOURCE_DIR}`
+# and discovers the sources itself through `file(GLOB ... CONFIGURE_DEPENDS)`.
+# The target therefore needs no `SOURCES` argument and no per-package
+# CMakeLists.txt / add_subdirectory.
+# The package declares the ArkTSType root interface with the experimental @ArkTS
+# interop capability, so the opt-in build passes --experimental explicitly; the
+# default build does not compile the package at all. The package imports nothing,
+# so it needs no external CJO directory.
+if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    set(arkts_interop_backend_opts --experimental)
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}InteropArkts
+        NO_SUB_PKG
+        IS_STDLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        BACKEND_OPTS ${arkts_interop_backend_opts}
+        PACKAGE_NAME "interop.arkts"
+        MODULE_NAME "std"
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/std/interop/arkts
+        DEPENDS ${INTEROP_ARKTS_DEPENDENCIES})
+endif()
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Ref

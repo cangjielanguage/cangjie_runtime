@@ -19,6 +19,82 @@ option(CANGJIE_ENABLE_LOCAL_MODE_API "Compile declarations guarded by @When[loca
 if(CANGJIE_ENABLE_LOCAL_MODE_API AND NOT CANGJIE_ENABLE_LOCAL_MODE)
     message(FATAL_ERROR "CANGJIE_ENABLE_LOCAL_MODE_API=ON requires CANGJIE_ENABLE_LOCAL_MODE=ON")
 endif()
+# The experimental std.interop.arkts package follows the same opt-in pattern as the
+# local-mode APIs: only a compatible compiler accepts its ArkTS interop declarations,
+# so the package target is added to the build only when this is ON, and the declarations
+# themselves are additionally guarded by @When[arkts_interop == "on"]. The condition is
+# always forwarded to cjc: an explicit value from CANGJIE_BUILD_ARGS is respected and not
+# repeated, otherwise this option selects the injected `on` or `off` default. Reusing
+# this module keeps the OFF default; the full stdlib project and build.py opt in
+# explicitly.
+option(CANGJIE_ENABLE_ARKTS_INTEROP "Compile the experimental std.interop.arkts package" OFF)
+# Whether CANGJIE_BUILD_ARGS carries the std.interop.arkts condition as a whole
+# argument. build.py turns every --build-args value into one list element and the
+# module forwards each element as is, so one element may itself hold a command line
+# (`--cfg arkts_interop=on`, `--cfg=arkts_interop=on`, or a longer run). A whole
+# argument match keeps values such as `arkts_interop=onn` or a longer word ending in
+# `arkts_interop=on` from counting.
+function(cangjie_build_args_has_arkts_interop OUT_VAR)
+    set(has_interop OFF)
+    foreach(build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(build_tokens NATIVE_COMMAND "${build_arg}")
+        set(previous_token "")
+        foreach(token IN LISTS build_tokens)
+            if(token STREQUAL "--cfg=arkts_interop=on" OR
+                (previous_token STREQUAL "--cfg" AND token STREQUAL "arkts_interop=on"))
+                set(has_interop ON)
+                break()
+            endif()
+            set(previous_token "${token}")
+        endforeach()
+        if(has_interop)
+            break()
+        endif()
+    endforeach()
+    set(${OUT_VAR} ${has_interop} PARENT_SCOPE)
+endfunction()
+
+# Whether CANGJIE_BUILD_ARGS explicitly sets the arkts_interop key with any value
+# (`--cfg=arkts_interop=<value>` or `--cfg arkts_interop=<value>`). An explicit value is
+# respected: the build must not inject a second copy of the key, because cjc rejects a
+# repeated config key. The key itself is matched as a whole, so `arkts_interop_extra=on`
+# does not count; any value (on, off, onn, ...) does.
+function(cangjie_build_args_has_arkts_interop_key OUT_VAR)
+    set(has_key OFF)
+    foreach(build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(build_tokens NATIVE_COMMAND "${build_arg}")
+        set(previous_token "")
+        foreach(token IN LISTS build_tokens)
+            if(token MATCHES "^--cfg=arkts_interop=" OR
+                (previous_token STREQUAL "--cfg" AND token MATCHES "^arkts_interop="))
+                set(has_key ON)
+                break()
+            endif()
+            set(previous_token "${token}")
+        endforeach()
+        if(has_key)
+            break()
+        endif()
+    endforeach()
+    set(${OUT_VAR} ${has_key} PARENT_SCOPE)
+endfunction()
+
+# The cjc arguments that supply the std.interop.arkts condition. An explicit value in
+# CANGJIE_BUILD_ARGS is forwarded as is and nothing is injected, so the key appears
+# exactly once. Only an absent key injects the default from CANGJIE_ENABLE_ARKTS_INTEROP,
+# so cjc never sees an undefined condition.
+function(cangjie_arkts_interop_cfg_flags OUT_VAR)
+    cangjie_build_args_has_arkts_interop_key(has_key)
+    set(flags)
+    if(has_key)
+        # Respect any explicit value (on, off, ...); a repeated key is rejected by cjc.
+    elseif(CANGJIE_ENABLE_ARKTS_INTEROP)
+        list(APPEND flags "--cfg" "arkts_interop=on")
+    else()
+        list(APPEND flags "--cfg" "arkts_interop=off")
+    endif()
+    set(${OUT_VAR} "${flags}" PARENT_SCOPE)
+endfunction()
 
 # Resolve a list of CMake target names / plain file paths to the actual output
 # files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
@@ -69,7 +145,15 @@ endfunction()
 #     [OUTPUT_DIR]                # Specify the lib name, and will install to the directory with this name
 #     [PACKAGE_NAME]              # Package name of target cangjie source file
 #     [MODULE_NAME]               # Module name of target cangjie source file and we will generate product to a directory with this name
-#     [BACKEND_OPTS]              # This argument is backend-options passed to backend
+#     [BACKEND_OPTS]              # Backend/frontend options passed to cjc. They are
+#                                 # appended to the shared compile flags, so they reach
+#                                 # both the normal and the LTO (bitcode) compile
+#                                 # commands. Pass only options defined in this file or
+#                                 # in a caller under the same review; do not feed them
+#                                 # from unvalidated environment input, user arguments
+#                                 # or other external variables. Each list element is
+#                                 # forwarded as exactly one command argument; quote a
+#                                 # value that contains spaces.
 #     [WHEN_CONFIG_NAME_OPTS]     # This argument is other options passed to cjc
 #     [WHEN_CONFIG_VALUES_OPTS]   # This argument is other options passed to cjc
 #     [CONFIG_OPTS]               # This argument is other options passed to cjc
@@ -165,6 +249,15 @@ function(add_cangjie_library target_name)
         list(APPEND cangjie_compile_flags "--cfg" "local_mode_api=off")
     endif()
 
+    # The user-defined condition `arkts_interop` mirrors the local-mode pattern: the
+    # std.interop.arkts declarations are guarded by @When[arkts_interop == "on"], so the
+    # value is always passed explicitly and cjc never sees an undefined condition. An
+    # explicit value from CANGJIE_BUILD_ARGS (any value, including off) is forwarded as is
+    # instead of being injected again, so the key appears exactly once on the command line;
+    # only an absent key injects `on` or `off` from CANGJIE_ENABLE_ARKTS_INTEROP.
+    cangjie_arkts_interop_cfg_flags(ARKTS_INTEROP_CFG_FLAGS)
+    list(APPEND cangjie_compile_flags ${ARKTS_INTEROP_CFG_FLAGS})
+
     if (CANGJIELIB_IS_CJNATIVE_BACKEND)
         if (CANGJIE_ASAN_SUPPORT)
             list(APPEND cangjie_compile_flags "--sanitize=address")
@@ -176,10 +269,15 @@ function(add_cangjie_library target_name)
     endif()
 
     set(MKDIR_TEMP_FILES_CMD)
-    # append backend-options
-    list(LENGTH CANGJIELIB_OPTS options_length)
+    # append backend-options. cmake_parse_arguments stores the BACKEND_OPTS
+    # values in CANGJIELIB_BACKEND_OPTS; read the backend options from that
+    # variable. Each element is appended as one quoted flag so a value that
+    # contains spaces stays a single argument.
+    list(LENGTH CANGJIELIB_BACKEND_OPTS options_length)
     if(NOT (options_length EQUAL 0))
-        list(APPEND cangjie_compile_flags ${CANGJIELIB_OPTS})
+        foreach(backend_opt IN LISTS CANGJIELIB_BACKEND_OPTS)
+            list(APPEND cangjie_compile_flags "${backend_opt}")
+        endforeach()
     endif()
     # append config options
     if(NOT ("${CANGJIELIB_CONFIG_OPTS}" STREQUAL ""))
@@ -204,8 +302,12 @@ function(add_cangjie_library target_name)
         set(output_lto_bc_full_name "${output_lto_bc_full_name}.bc") # set output path and output name
     endif()
 
-    foreach(build_args ${CANGJIE_BUILD_ARGS})
-        list(APPEND cangjie_compile_flags "${build_args}")
+    # build.py turns every --build-args value into one CMake list element, so a single element may still carry a
+    # shell-level command line such as `-g --apc=1`. Under VERBATIM each option must be its own argv entry, so split
+    # every element on shell rules; quotes inside the value keep a space-containing option as one argument.
+    foreach(cangjie_build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(cangjie_build_tokens NATIVE_COMMAND "${cangjie_build_arg}")
+        list(APPEND cangjie_compile_flags ${cangjie_build_tokens})
     endforeach()
 
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
@@ -314,7 +416,11 @@ function(add_cangjie_library target_name)
         COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
                 ${COMPILE_CMD}
         DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
-        COMMENT "Generating ${target_name}")
+        COMMENT "Generating ${target_name}"
+        # VERBATIM keeps the arguments of the compile command (including
+        # BACKEND_OPTS values such as --import-path directories with spaces or
+        # other special characters) intact for the invoked build tool.
+        VERBATIM)
 
     add_custom_target(
         ${target_name} ALL
@@ -340,7 +446,8 @@ function(add_cangjie_library target_name)
             # compile the same package, which means they may write the same bc cache file. Running simultaneously
             # may cause IO error on windows in some cases.
             DEPENDS ${target_name}
-            COMMENT "Generating ${target_name}_bc")
+            COMMENT "Generating ${target_name}_bc"
+            VERBATIM)
 
         add_custom_target(
             ${target_name}_bc ALL
