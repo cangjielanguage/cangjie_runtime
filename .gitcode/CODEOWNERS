@@ -16,9 +16,9 @@ OAT.xml @xuanjz
 /stdlib/libs/std/database/ @chongweizhi
 /stdlib/libs/std/io/ @chongweizhi
 
-/stdlib/libs/std/net/ @PigHardWorking
-/stdlib/libs/std/random/ @PigHardWorking
-/stdlib/libs/std/sync/ @PigHardWorking
+/stdlib/libs/std/net/ @jiyuan_99
+/stdlib/libs/std/random/ @jiyuan_99
+/stdlib/libs/std/sync/ @jiyuan_99
 
 /stdlib/libs/std/math/ @jiyuan_99
 /stdlib/libs/std/overflow/ @jiyuan_99
