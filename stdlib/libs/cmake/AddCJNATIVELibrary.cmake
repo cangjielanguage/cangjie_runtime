@@ -239,8 +239,23 @@ make_cangjie_lib(
 # CANGJIE_ENABLE_ARKTS_INTEROP is ON, and only that gated path compiles it with
 # --experimental; (2) every declaration is guarded by @When[arkts_interop == "on"], and
 # CANGJIE_ENABLE_ARKTS_INTEROP also selects the --cfg value. When it is OFF neither the
-# target nor the declarations exist, so no .cjo is produced or installed. Restore the
-# library targets when the member glue exists.
+# target nor the declarations exist, so no .cjo or archive is produced or installed.
+#
+# Only the static archive is delivered. The package's member bodies call the Cangjie
+# packages that live outside the stdlib tree (cj_arkts_context_v1, ohos.ark_interop and
+# ohos.business_exception), so make_cangjie_lib's shared link (--no-undefined) cannot
+# resolve them without bundling those app-level packages into the stdlib DSO; that would
+# duplicate their symbols in every consumer. The compiler requests this package's archive
+# (libcangjie-std-interop.arkts.a) for non-LTO static linking, which is the delivered
+# path. add_dependencies makes the archive wait for the package's POST_BUILD object
+# (std/interop.arkts.o); both the archive and the package target exist only in the
+# gated ON path, so the default build is unchanged.
+if(CANGJIE_ENABLE_ARKTS_INTEROP)
+    add_library(cangjie-std-interop.arkts STATIC ${output_cj_object_dir}/std/interop.arkts.o)
+    set_target_properties(cangjie-std-interop.arkts PROPERTIES LINKER_LANGUAGE C)
+    add_dependencies(cangjie-std-interop.arkts cangjie${BACKEND_TYPE}InteropArkts)
+    install(TARGETS cangjie-std-interop.arkts DESTINATION lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
+endif()
 
 make_cangjie_lib(
     std-ref IS_SHARED

@@ -14,7 +14,7 @@ interop.arkts 包提供 ArkTS 互操作的标准库预置类型，供在 `@ArkTS
 
 `ExternConversionException` 由本包宿主：编译器生成的预置包装体（属于本包）直接引用该类型而无需任何导入，`arkts.lang` 门面通过其 `public import std.interop.arkts.*` 把它再导出给应用；门面自身不声明该类型。把它声明在门面里会让预置包装体反过来导入 `arkts.lang`，而 `arkts.lang` 依赖本包，形成同包循环。注意 `std.core` 的 `Extern` 机制也有同名异常（`env != "ohos"` 时存在）：显式导入的本包/门面名字优先于隐式预导入的 `std.core`；编译器生成的代码始终以单成员导入加私有别名绑定，不受影响。
 
-本版本交付成员实现：`ArkTSString` 的成员体由编译器在预置包装上生成，`ArkTSArray<T>` 的成员体由本包源码实现（编译器安装引用存储），构建产出并安装 `std.interop.arkts.cjo` 与静态库。`ArkTSType`/`ArkTSFuncWithThis` 保持声明形态；静态成员与其余设计成员将在后续版本提供，届时恢复库目标。
+本版本交付成员实现：`ArkTSString` 的成员体由编译器在预置包装上生成，`ArkTSArray<T>` 的成员体由本包源码实现（编译器安装引用存储），构建产出并安装 `std.interop.arkts.cjo` 与静态库 `libcangjie-std-interop.arkts.a`；本版本不提供动态库 `libcangjie-std-interop.arkts.so`，因为成员实现引用了 stdlib 之外的互操作运行时包（`cj_arkts_context_v1`、`ohos.ark_interop`、`ohos.business_exception`），按标准库共享库的 `--no-undefined` 约束无法在不复制这些包的前提下完成链接。`ArkTSType`/`ArkTSFuncWithThis` 保持声明形态；静态成员与其余设计成员将在后续版本提供。
 
 `ArkTSArray<T>` 与 `ArkTSString` 本版本交付引用语义与成员级转换：二者出现在 `@ArkTS foreign` 签名位置（参数、返回值或嵌套位置）时按预置包装映射，元素/内容转换分别走 `JSInteropType` 运行时契约与 `ctx.string` 构造。`ArkTSType` 的签名位映射仍未交付：它出现在上述位置时编译器会拒绝该用法，并提示该类型的引用语义在当前版本不可用。`ArkTSFunc`/`ArkTSFuncWithThis` 不属于上述三个预置类型，不走这条提示；它们的签名位按普通的不支持类型处理，参数位置与返回值位置都会被拒绝，并按位置给出提示。
 
