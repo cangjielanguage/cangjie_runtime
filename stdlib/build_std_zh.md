@@ -91,7 +91,7 @@ python3 build.py build --build-args "--cfg=arkts_interop=on"
 
 选项 `CANGJIE_ENABLE_ARKTS_INTEROP` 每次 configure 都根据 `CANGJIE_BUILD_ARGS` 推导；单独设置 `-DCANGJIE_ENABLE_ARKTS_INTEROP=ON` 不会启用该包。
 
-此时互操作运行时的 CJO 位于 stdlib 源码树之外，需要通过 CMake 缓存变量 `CANGJIE_ARKTS_INTEROP_IMPORT_DIRS` 提供：以分号分隔的绝对规范目录列表，每个目录至少包含一个 `.cjo` 文件，例如：
+此时互操作运行时的 CJO 位于 stdlib 源码树之外，需要通过 CMake 缓存变量 `CANGJIE_ARKTS_INTEROP_IMPORT_DIRS` 提供：以分号分隔的目录列表，每一项都必须是完整路径，且每个目录至少包含一个 `.cjo` 文件，例如：
 
 ```shell
 cmake -DCANGJIE_BUILD_ARGS="--cfg=arkts_interop=on" \
