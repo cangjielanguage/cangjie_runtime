@@ -22,8 +22,11 @@ endif()
 # The experimental std.interop.arkts package follows the same opt-in pattern as the
 # local-mode APIs: only a compatible compiler accepts its ArkTS interop declarations,
 # so the package target is added to the build only when this is ON, and the declarations
-# themselves are additionally guarded by @When[arkts_interop == "on"]. Reusing this
-# module keeps the OFF default; the full stdlib project and build.py opt in explicitly.
+# themselves are additionally guarded by @When[arkts_interop == "on"]. The condition is
+# always forwarded to cjc: an explicit value from CANGJIE_BUILD_ARGS is respected and not
+# repeated, otherwise this option selects the injected `on` or `off` default. Reusing
+# this module keeps the OFF default; the full stdlib project and build.py opt in
+# explicitly.
 option(CANGJIE_ENABLE_ARKTS_INTEROP "Compile the experimental std.interop.arkts package" OFF)
 # Whether CANGJIE_BUILD_ARGS carries the std.interop.arkts condition as a whole
 # argument. build.py turns every --build-args value into one list element and the
@@ -49,6 +52,48 @@ function(cangjie_build_args_has_arkts_interop OUT_VAR)
         endif()
     endforeach()
     set(${OUT_VAR} ${has_interop} PARENT_SCOPE)
+endfunction()
+
+# Whether CANGJIE_BUILD_ARGS explicitly sets the arkts_interop key with any value
+# (`--cfg=arkts_interop=<value>` or `--cfg arkts_interop=<value>`). An explicit value is
+# respected: the build must not inject a second copy of the key, because cjc rejects a
+# repeated config key. The key itself is matched as a whole, so `arkts_interop_extra=on`
+# does not count; any value (on, off, onn, ...) does.
+function(cangjie_build_args_has_arkts_interop_key OUT_VAR)
+    set(has_key OFF)
+    foreach(build_arg IN LISTS CANGJIE_BUILD_ARGS)
+        separate_arguments(build_tokens NATIVE_COMMAND "${build_arg}")
+        set(previous_token "")
+        foreach(token IN LISTS build_tokens)
+            if(token MATCHES "^--cfg=arkts_interop=" OR
+                (previous_token STREQUAL "--cfg" AND token MATCHES "^arkts_interop="))
+                set(has_key ON)
+                break()
+            endif()
+            set(previous_token "${token}")
+        endforeach()
+        if(has_key)
+            break()
+        endif()
+    endforeach()
+    set(${OUT_VAR} ${has_key} PARENT_SCOPE)
+endfunction()
+
+# The cjc arguments that supply the std.interop.arkts condition. An explicit value in
+# CANGJIE_BUILD_ARGS is forwarded as is and nothing is injected, so the key appears
+# exactly once. Only an absent key injects the default from CANGJIE_ENABLE_ARKTS_INTEROP,
+# so cjc never sees an undefined condition.
+function(cangjie_arkts_interop_cfg_flags OUT_VAR)
+    cangjie_build_args_has_arkts_interop_key(has_key)
+    set(flags)
+    if(has_key)
+        # Respect any explicit value (on, off, ...); a repeated key is rejected by cjc.
+    elseif(CANGJIE_ENABLE_ARKTS_INTEROP)
+        list(APPEND flags "--cfg" "arkts_interop=on")
+    else()
+        list(APPEND flags "--cfg" "arkts_interop=off")
+    endif()
+    set(${OUT_VAR} "${flags}" PARENT_SCOPE)
 endfunction()
 # CJO directories the opt-in std.interop.arkts build forwards as --import-path so the
 # package can see the interop runtime it references (cj_arkts_context_v1 and
@@ -265,18 +310,12 @@ function(add_cangjie_library target_name)
 
     # The user-defined condition `arkts_interop` mirrors the local-mode pattern: the
     # std.interop.arkts declarations are guarded by @When[arkts_interop == "on"], so the
-    # value is always passed explicitly and cjc never sees an undefined condition. It is
-    # independent of the target gate (CANGJIE_ENABLE_ARKTS_INTEROP), which decides whether
-    # the package target exists at all.
-    cangjie_build_args_has_arkts_interop(ARKTS_INTEROP_CFG_FROM_ARGS)
-    if(ARKTS_INTEROP_CFG_FROM_ARGS)
-        # The caller supplies the condition through CANGJIE_BUILD_ARGS; repeating the
-        # key would make cjc reject the command line.
-    elseif(CANGJIE_ENABLE_ARKTS_INTEROP)
-        list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=on")
-    else()
-        list(APPEND cangjie_compile_flags "--cfg" "arkts_interop=off")
-    endif()
+    # value is always passed explicitly and cjc never sees an undefined condition. An
+    # explicit value from CANGJIE_BUILD_ARGS (any value, including off) is forwarded as is
+    # instead of being injected again, so the key appears exactly once on the command line;
+    # only an absent key injects `on` or `off` from CANGJIE_ENABLE_ARKTS_INTEROP.
+    cangjie_arkts_interop_cfg_flags(ARKTS_INTEROP_CFG_FLAGS)
+    list(APPEND cangjie_compile_flags ${ARKTS_INTEROP_CFG_FLAGS})
 
     if (CANGJIELIB_IS_CJNATIVE_BACKEND)
         if (CANGJIE_ASAN_SUPPORT)
