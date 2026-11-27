@@ -76,7 +76,7 @@ output
     - `android31-x86_64` ：交叉编译 android(x86_64, API 31)
 - `--target-toolchain` ：指定编译工具所在路径（交叉编译需要指定）
 - `--target-sysroot` ：指定编译目标系统库所在目录（交叉编译需要指定）
-- `--build-args`：转发给 cjc 的构建选项（可选）。每个 `--build-args` 取值成为 CMake 列表中的一个元素，再被解析为 cjc 参数，因此单个选项和带引号的选项串都合法：`--build-args --experimental` 或 `--build-args "--cfg=arkts_interop=on"`。需要多个取值时重复该选项。取值中不得包含 `;`（CMake 列表分隔符）；包含空格时需加引号。该列表会加入每个 stdlib 包，并同时进入普通编译与 LTO 编译命令，因此只应传入整个构建都能接受的选项。
+- `--build-args`：转发给 cjc 的构建选项（可选）。每个 `--build-args` 取值成为 CMake 列表中的一个元素，再被解析为 cjc 参数。取值以 `-` 开头时必须使用等号形式 `--build-args=VALUE`；分离写法 `--build-args VALUE` 会被 argparse 当作选项而拒绝。例如 `--build-args=--experimental` 或 `--build-args=--cfg=arkts_interop=on`。需要多个取值时重复该选项。取值中不得包含 `;`（CMake 列表分隔符）；取值包含空格时，需为整个参数加引号（例如 `--build-args="VALUE WITH SPACES"`）。该列表会加入每个 stdlib 包，并同时进入普通编译与 LTO 编译命令，因此只应传入整个构建都能接受的选项。
 - `--jobs(-j)` : 并发构建任务最大数量
 - `--hwasan` ：构建 hwasan 版本 std（OHOS 交叉编译使用）
 - `--cjlib-sanitizer-support`： 构建 sanitizer 版本的仓颉标准库。可选项有 `asan`, `tsan` 和 `hwasan`。
@@ -86,7 +86,7 @@ output
 仅当构建参数带有用户自定义条件 `--cfg=arkts_interop=on`（或 `--cfg arkts_interop=on`）时才构建 `std.interop.arkts`，例如：
 
 ```shell
-python3 build.py build --build-args "--cfg=arkts_interop=on"
+python3 build.py build -t release --build-args=--cfg=arkts_interop=on
 ```
 
 选项 `CANGJIE_ENABLE_ARKTS_INTEROP` 每次 configure 都根据 `CANGJIE_BUILD_ARGS` 推导；单独设置 `-DCANGJIE_ENABLE_ARKTS_INTEROP=ON` 不会启用该包。
