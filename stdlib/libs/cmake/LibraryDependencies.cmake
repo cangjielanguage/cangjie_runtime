@@ -95,7 +95,11 @@ set(TIME_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
     cangjie${BACKEND_TYPE}Core
     cangjie${BACKEND_TYPE}Collection
-    cangjie${BACKEND_TYPE}Convert)
+    cangjie${BACKEND_TYPE}Convert
+    # zone_info_read.cj imports std.binary and std.io; without these the target
+    # may run before them and cjc reports both packages as missing.
+    cangjie${BACKEND_TYPE}Binary
+    cangjie${BACKEND_TYPE}Io)
 
 set(FS_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
@@ -145,7 +149,17 @@ set(INTEROP_DEPENDENCIES
 
 set(INTEROP_ARKTS_DEPENDENCIES
     ${STD_CORE_DEPENDENCIES}
-    cangjie${BACKEND_TYPE}Core)
+    cangjie${BACKEND_TYPE}Core
+    # The external interop packages forwarded through
+    # CANGJIE_ARKTS_INTEROP_IMPORT_DIRS (ohos.ark_interop, cj_arkts_context_v1,
+    # ohos.business_exception, ohos.labels) import these stdlib packages. They
+    # must exist in CANGJIE_PATH before std.interop.arkts compiles, or cjc
+    # reports 'can not find package' for each.
+    cangjie${BACKEND_TYPE}Collection
+    cangjie${BACKEND_TYPE}Convert
+    cangjie${BACKEND_TYPE}Math
+    cangjie${BACKEND_TYPE}MathNumeric
+    cangjie${BACKEND_TYPE}Random)
 # Deliberately no cangjie${BACKEND_TYPE}Interop here: arkts.cj imports no
 # symbol from the parent package (verify with `cjc --scan-dependency`), unlike
 # math.numeric/collection.concurrent whose subpackages do import the parent.
