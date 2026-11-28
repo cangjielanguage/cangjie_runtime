@@ -21,14 +21,14 @@
 | Linux         | x86_64    | glibc 2.22；Linux Kernel 4.12 或更高版本；系统安装 libstdc++ 6.0.24 或更高版本 |
 | Linux         | aarch64   | glibc 2.27；Linux Kernel 4.15 或更高版本；系统安装 libstdc++ 6.0.24 或更高版本 |
 | Windows       | x86_64    | Windows 10 或更高版本 |
-| macOS         | aarch64   | macOS 12.0 或更高版本 |
+| macOS         | aarch64   | macOS 12.0 或更高版本（通过 Rosetta2 转译执行 x86_64 的二进制程序需要 macOS 15 或更高版本） |
 | macOS         | x86_64    | macOS 12.0 或更高版本 |
 | OpenHarmony   | aarch64   | OpenHarmony 5.1 或更高版本 |
 | OpenHarmony   | arm32     | OpenHarmony 5.1 或更高版本 |
 | OpenHarmony   | x86_64    | OpenHarmony 5.1 或更高版本 |
 | HarmonyOS     | aarch64   | HarmonyOS 5.1 或更高版本 |
 | iOS           | aarch64   | iOS 11 或更高版本（ast 库需要 iOS 12 或更高版本） |
-| iOS           | x86_64    | iOS 11 或更高版本（模拟器，ast 库需要 iOS 12 或更高版本） |
+| iOS           | x86_64    | iOS 11 或更高版本（模拟器，使用 ast 库需要 iOS 12 或更高版本。若模拟器运行在 aarch64 架构的 Mac 上，需要 macOS 15 或更高版本） |
 | Android       | aarch64   | Android API 23 或更高版本 |
 | Android       | x86_64    | Android API 26 或更高版本 |
 | Android       | arm32     | Android API 23 或更高版本 |
