@@ -21,14 +21,14 @@ The APIs provided by the standard library support running on the following opera
 | Linux         | x86_64    | glibc 2.22; Linux Kernel 4.12 or later; libstdc++ 6.0.24 or later installed |
 | Linux         | aarch64   | glibc 2.27; Linux Kernel 4.15 or later; libstdc++ 6.0.24 or later installed |
 | Windows       | x86_64    | Windows 10 or later |
-| macOS         | aarch64   | macOS 12.0 or later |
+| macOS         | aarch64   | macOS 12.0 or later (running x86_64 binaries through Rosetta 2 translation requires macOS 15 or later) |
 | macOS         | x86_64    | macOS 12.0 or later |
 | OpenHarmony   | aarch64   | OpenHarmony 5.1 or later |
 | OpenHarmony   | arm32     | OpenHarmony 5.1 or later |
 | OpenHarmony   | x86_64    | OpenHarmony 5.1 or later |
 | HarmonyOS     | aarch64   | HarmonyOS 5.1 or later |
 | iOS           | aarch64   | iOS 11 or later (ast library requires iOS 12 or later) |
-| iOS           | x86_64    | iOS 11 or later (simulator, ast library requires iOS 12 or later) |
+| iOS           | x86_64    | iOS 11 or later (simulator, ast library requires iOS 12 or later. Running the simulator on a Mac with aarch64 architecture requires macOS 15 or later) |
 | Android       | aarch64   | Android API 23 or later |
 | Android       | x86_64    | Android API 26 or later |
 | Android       | arm32     | Android API 23 or later |
